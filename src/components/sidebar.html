@@ -1,0 +1,186 @@
+<div class="drawer drawer-open">
+  <input id="my-drawer-4" type="checkbox" class="drawer-toggle" />
+  <div class="drawer-side is-drawer-close:overflow-visible">
+    <label
+      for="my-drawer-4"
+      aria-label="close sidebar"
+      class="drawer-overlay"
+    ></label>
+
+    <div
+      class="is-drawer-close:w-14 is-drawer-open:w-64 bg-base-200 flex flex-col items-start min-h-full transition-[width] duration-300 ease-in-out"
+    >
+      <!-- button to open/close drawer -->
+      <div
+        class="m-2 is-drawer-close:tooltip is-drawer-close:tooltip-right"
+        data-tip="Open"
+      >
+        <label
+          for="my-drawer-4"
+          class="btn btn-ghost btn-circle drawer-button is-drawer-open:rotate-y-180"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            stroke-linejoin="round"
+            stroke-linecap="round"
+            stroke-width="2"
+            fill="none"
+            stroke="currentColor"
+            class="inline-block size-4 my-1.5"
+          >
+            <path
+              d="M4 4m0 2a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v12a2 2 0 0 1 -2 2h-12a2 2 0 0 1 -2 -2z"
+            ></path>
+            <path d="M9 4v16"></path>
+            <path d="M14 10l2 2l-2 2"></path>
+          </svg>
+        </label>
+      </div>
+
+      <!-- Sidebar content -->
+      <ul class="menu w-full grow">
+        <li>
+          <a
+            href="../pages/time-in-out.html"
+            class="is-drawer-close:tooltip is-drawer-close:tooltip-right"
+            data-tip="Time In / Out"
+          >
+            <img
+              src="../assets/schedule.svg"
+              alt="Time In / Out"
+              class="inline-block size-4 my-1.5 dark:invert dark:brightness-0 active:invert active:brightness-0"
+            />
+            <span class="is-drawer-close:hidden">Time In / Out</span>
+          </a>
+        </li>
+        <li>
+          <a
+            href="../pages/dashboard.html"
+            class="is-drawer-close:tooltip is-drawer-close:tooltip-right"
+            data-tip="Dashboard"
+          >
+            <img
+              src="../assets/space_dashboard.svg"
+              alt="Dashboard"
+              class="inline-block size-4 my-1.5 dark:invert dark:brightness-0 active:invert active:brightness-0"
+            />
+            <span class="is-drawer-close:hidden">Dashboard</span>
+          </a>
+        </li>
+        <li>
+          <a
+            href="../pages/employee-info.html"
+            class="is-drawer-close:tooltip is-drawer-close:tooltip-right"
+            data-tip="Employee Information"
+          >
+            <img
+              src="../assets/badge.svg"
+              alt="Employee Info"
+              class="inline-block size-4 my-1.5 dark:invert dark:brightness-0 active:invert active:brightness-0"
+            />
+            <span class="is-drawer-close:hidden">Employee Information</span>
+          </a>
+        </li>
+        <li>
+          <a
+            href="../pages/attendance_management.html"
+            class="is-drawer-close:tooltip is-drawer-close:tooltip-right"
+            data-tip="Attendance Management"
+          >
+            <img
+              src="../assets/check_circle.svg"
+              alt="Attendance"
+              class="inline-block size-4 my-1.5 dark:invert dark:brightness-0 active:invert active:brightness-0"
+            />
+            <span class="is-drawer-close:hidden">Attendance Management</span>
+          </a>
+        </li>
+        <li>
+          <a
+            href="../pages/payroll-computation.html"
+            class="is-drawer-close:tooltip is-drawer-close:tooltip-right"
+            data-tip="Payroll Computation"
+          >
+            <img
+              src="../assets/calculate.svg"
+              alt="Payroll Computation"
+              class="inline-block size-4 my-1.5 dark:invert dark:brightness-0 active:invert active:brightness-0"
+            />
+            <span class="is-drawer-close:hidden">Payroll Computation</span>
+          </a>
+        </li>
+        <li>
+          <a
+            href="../pages/payslip-generation.html"
+            class="is-drawer-close:tooltip is-drawer-close:tooltip-right"
+            data-tip="Payslip Generation"
+          >
+            <img
+              src="../assets/receipt_long.svg"
+              alt="Payslip Generation"
+              class="inline-block size-4 my-1.5 dark:invert dark:brightness-0 active:invert active:brightness-0"
+            />
+            <span class="is-drawer-close:hidden">Payslip Generation</span>
+          </a>
+        </li>
+        <li>
+          <a
+            href="../pages/leave_management.html"
+            class="is-drawer-close:tooltip is-drawer-close:tooltip-right"
+            data-tip="Leave Management"
+          >
+            <img
+              src="../assets/event_available.svg"
+              alt="Leave Management"
+              class="inline-block size-4 my-1.5 dark:invert dark:brightness-0 active:invert active:brightness-0"
+            />
+            <span class="is-drawer-close:hidden">Leave Management</span>
+          </a>
+        </li>
+        <li>
+          <a
+            href="../pages/reports.html"
+            class="is-drawer-close:tooltip is-drawer-close:tooltip-right"
+            data-tip="Audit Trail and Reports"
+          >
+            <img
+              src="../assets/history.svg"
+              alt="Reports"
+              class="inline-block size-4 my-1.5 dark:invert dark:brightness-0 active:invert active:brightness-0"
+            />
+            <span class="is-drawer-close:hidden">Audit Trail and Reports</span>
+          </a>
+        </li>
+        <li>
+          <a
+            href="../pages/settings.html"
+            class="is-drawer-close:tooltip is-drawer-close:tooltip-right"
+            data-tip="Settings"
+          >
+            <img
+              src="../assets/settings.svg"
+              alt="Settings"
+              class="inline-block size-4 my-1.5 dark:invert dark:brightness-0 active:invert active:brightness-0"
+            />
+            <span class="is-drawer-close:hidden">Settings</span>
+          </a>
+        </li>
+      </ul>
+
+      <!-- Sidebar bottom controls: Logout -->
+      <div
+        class="m-2 is-drawer-close:tooltip is-drawer-close:tooltip-right mt-auto"
+        data-tip="Log Out"
+      >
+        <a href="../pages/login.html" class="btn btn-ghost btn-circle">
+          <img
+            src="../assets/logout.svg"
+            alt="Logout"
+            class="inline-block size-4 my-1.5 dark:invert dark:brightness-0 active:invert active:brightness-0"
+          />
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
