@@ -599,42 +599,6 @@
       }
     }
   }
-  .swap {
-    @layer daisyui.component {
-      position: relative;
-      display: inline-grid;
-      cursor: pointer;
-      place-content: center;
-      vertical-align: middle;
-      webkit-user-select: none;
-      user-select: none;
-      input {
-        appearance: none;
-        border: none;
-      }
-      > * {
-        grid-column-start: 1;
-        grid-row-start: 1;
-        @media (prefers-reduced-motion: no-preference) {
-          transition-property: transform, rotate, opacity;
-          transition-duration: 0.2s;
-          transition-timing-function: cubic-bezier(0, 0, 0.2, 1);
-        }
-      }
-      .swap-on, .swap-indeterminate, input:indeterminate ~ .swap-on {
-        opacity: 0%;
-      }
-      input:is(:checked, :indeterminate) {
-        & ~ .swap-off {
-          opacity: 0%;
-        }
-      }
-      input:checked ~ .swap-on, input:indeterminate ~ .swap-indeterminate {
-        opacity: 100%;
-        backface-visibility: visible;
-      }
-    }
-  }
   .checkbox {
     @layer daisyui.component {
       border: var(--border) solid var(--input-color, var(--color-base-content));
@@ -822,9 +786,6 @@
   .flex {
     display: flex;
   }
-  .hidden {
-    display: none;
-  }
   .inline-block {
     display: inline-block;
   }
@@ -840,20 +801,8 @@
     width: calc(var(--spacing) * 4);
     height: calc(var(--spacing) * 4);
   }
-  .h-5 {
-    height: calc(var(--spacing) * 5);
-  }
-  .h-10 {
-    height: calc(var(--spacing) * 10);
-  }
   .min-h-full {
     min-height: 100%;
-  }
-  .w-5 {
-    width: calc(var(--spacing) * 5);
-  }
-  .w-10 {
-    width: calc(var(--spacing) * 10);
   }
   .w-full {
     width: 100%;
@@ -863,19 +812,6 @@
   }
   .grow {
     flex-grow: 1;
-  }
-  .swap-rotate {
-    @layer daisyui.modifier {
-      .swap-on, input:indeterminate ~ .swap-on {
-        rotate: 45deg;
-      }
-      input:is(:checked, :indeterminate) ~ .swap-on, &.swap-active .swap-on {
-        rotate: 0deg;
-      }
-      input:is(:checked, :indeterminate) ~ .swap-off, &.swap-active .swap-off {
-        rotate: calc(45deg * -1);
-      }
-    }
   }
   .link {
     @layer daisyui.component {
@@ -898,14 +834,8 @@
   .flex-col {
     flex-direction: column;
   }
-  .items-center {
-    align-items: center;
-  }
   .items-start {
     align-items: flex-start;
-  }
-  .gap-2 {
-    gap: calc(var(--spacing) * 2);
   }
   .rounded-lg {
     border-radius: var(--radius-lg);
@@ -916,17 +846,8 @@
   .bg-primary {
     background-color: var(--color-primary);
   }
-  .fill-current {
-    fill: currentcolor;
-  }
   .p-6 {
     padding: calc(var(--spacing) * 6);
-  }
-  .px-2 {
-    padding-inline: calc(var(--spacing) * 2);
-  }
-  .py-1 {
-    padding-block: calc(var(--spacing) * 1);
   }
   .py-8 {
     padding-block: calc(var(--spacing) * 8);
@@ -984,15 +905,6 @@
     transition-property: width;
     transition-timing-function: var(--tw-ease, var(--default-transition-timing-function));
     transition-duration: var(--tw-duration, var(--default-transition-duration));
-  }
-  .transition-colors {
-    transition-property: color, background-color, border-color, outline-color, text-decoration-color, fill, stroke, --tw-gradient-from, --tw-gradient-via, --tw-gradient-to;
-    transition-timing-function: var(--tw-ease, var(--default-transition-timing-function));
-    transition-duration: var(--tw-duration, var(--default-transition-duration));
-  }
-  .duration-200 {
-    --tw-duration: 200ms;
-    transition-duration: 200ms;
   }
   .duration-300 {
     --tw-duration: 300ms;
