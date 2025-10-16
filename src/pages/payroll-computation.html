@@ -3,8 +3,14 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Dashboard | Nexus Payroll</title>
+    <title>Payroll Comp | Nexus Payroll</title>
     <link rel="stylesheet" href="../output.css" />
+    <link rel="stylesheet" href="../css//ag-grid/ag-theme-quartz.css" />
+    <style>
+      .ag-header-cell[col-id="Actions"] .ag-header-cell-label {
+        justify-content: center !important;
+      }
+    </style>
   </head>
   <body class="flex">
     <!-- Sidebar placeholder -->
@@ -12,9 +18,272 @@
 
     <!-- Main content -->
     <main class="flex-1 p-6">
-      <h1 class="text-2xl font-medium">Payroll Computation</h1>
+      <h1 class="text-3xl font-medium">Payroll Computation</h1>
+
+      <!-- Search and Cutoff Div -->
+      <div class="mt-5 flex w-full items-center justify-between">
+        <!-- Search Bar -->
+        <label
+          class="input border border-accent focus-within:border-accent focus-within:ring-0 focus-within:outline-none shadow-none"
+        >
+          <svg
+            class="h-[1em] opacity-50"
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+          >
+            <g
+              stroke-linejoin="round"
+              stroke-linecap="round"
+              stroke-width="2.5"
+              fill="none"
+              stroke="currentColor"
+            >
+              <circle cx="11" cy="11" r="8"></circle>
+              <path d="m21 21-4.3-4.3"></path>
+            </g>
+          </svg>
+
+          <input
+            id="searchBar"
+            type="search"
+            required
+            placeholder="Search"
+            class="bg-transparent focus:outline-none"
+          />
+        </label>
+
+        <!-- Cutoff Period -->
+        <div class="flex flex-row items-center">
+          <p class="mr-5">Cutoff Period</p>
+
+          <!-- Cutoff Period -->
+          <fieldset class="fieldset">
+            <select id="cutoffSelect" class="select select-accent w-48">
+              <option value="All">All Cutoff</option>
+              <option>Oct 1 - 15</option>
+              <option>Oct 16 - 31</option>
+              <option>Nov 1 - 15</option>
+            </select>
+          </fieldset>
+        </div>
+      </div>
+
+      <!-- AG Grid Div -->
+      <div id="payrollComputationGrid" class="mt-5 h-[470px] w-full"></div>
+
+      <!-- Generate CSV Div -->
+      <div class="flex justify-end mt-5">
+        <button class="btn btn-secondary btn-lg" onclick="genCSV.showModal()">
+          Generate CSV
+        </button>
+      </div>
     </main>
 
+    <!-- Modal to show other computations -->
+    <dialog id="otherComputation" class="modal">
+      <div class="modal-box my-10 max-h-[90vh] overflow-y-auto">
+        <form method="dialog">
+          <button
+            class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2"
+          >
+            ✕
+          </button>
+        </form>
+        <h3 class="text-lg font-bold">Other Computations</h3>
+        <p class="mt-5 mb-5 font-bold">Gross Earnings</p>
+        <div class="flex justify-between items-center">
+          Regular Pay
+          <input
+            type="text"
+            placeholder="You can't touch this"
+            value="5000"
+            class="input ml-5 w-[250px]"
+            readonly
+          />
+        </div>
+
+        <br />
+        <div class="flex justify-between items-center">
+          Overtime
+          <input
+            type="text"
+            placeholder="You can't touch this"
+            value="5000"
+            class="input ml-5 w-[250px]"
+            readonly
+          />
+        </div>
+
+        <br />
+        <div class="flex justify-between items-center">
+          Leave Pay
+          <input
+            type="text"
+            placeholder="You can't touch this"
+            value="5000"
+            class="input ml-5 w-[250px]"
+            readonly
+          />
+        </div>
+
+        <p class="mt-5 mb-5 font-bold">Attendance Summary</p>
+        <div class="flex justify-between items-center">
+          Working Hours
+          <input
+            type="text"
+            placeholder="You can't touch this"
+            value="5000"
+            class="input ml-5 w-[250px]"
+            readonly
+          />
+        </div>
+
+        <br />
+        <div class="flex justify-between items-center">
+          Absences
+          <input
+            type="text"
+            placeholder="You can't touch this"
+            value="5000"
+            class="input ml-5 w-[250px]"
+            readonly
+          />
+        </div>
+
+        <br />
+        <div class="flex justify-between items-center">
+          Tardiness
+          <input
+            type="text"
+            placeholder="You can't touch this"
+            value="5000"
+            class="input ml-5 w-[250px]"
+            readonly
+          />
+        </div>
+
+        <br />
+        <div class="flex justify-between items-center">
+          Undertime
+          <input
+            type="text"
+            placeholder="You can't touch this"
+            value="5000"
+            class="input ml-5 w-[250px]"
+            readonly
+          />
+        </div>
+
+        <p class="mt-5 mb-5 font-bold">Government Contributions</p>
+        <div class="flex justify-between items-center">
+          SSS
+          <input
+            type="text"
+            placeholder="You can't touch this"
+            value="5000"
+            class="input ml-5 w-[250px]"
+            readonly
+          />
+        </div>
+
+        <br />
+        <div class="flex justify-between items-center">
+          Philhealth
+          <input
+            type="text"
+            placeholder="You can't touch this"
+            value="5000"
+            class="input ml-5 w-[250px]"
+            readonly
+          />
+        </div>
+
+        <br />
+        <div class="flex justify-between items-center">
+          Pag-IBIG
+          <input
+            type="text"
+            placeholder="You can't touch this"
+            value="5000"
+            class="input ml-5 w-[250px]"
+            readonly
+          />
+        </div>
+
+        <br />
+        <div class="flex justify-between items-center">
+          Withholding Tax
+          <input
+            type="text"
+            placeholder="You can't touch this"
+            value="5000"
+            class="input ml-5 w-[250px]"
+            readonly
+          />
+        </div>
+      </div>
+
+      <!-- When you click outside the modal will close -->
+      <form method="dialog" class="modal-backdrop">
+        <button>close</button>
+      </form>
+    </dialog>
+
+    <!-- Generate CSV Modal -->
+    <dialog id="genCSV" class="modal">
+      <div class="modal-box">
+        <form method="dialog">
+          <button
+            class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2"
+          >
+            ✕
+          </button>
+        </form>
+        <h3 class="text-lg font-bold">Generate CSV</h3>
+
+        <div class="flex justify-between items-center">
+          Cutoff Period
+          <fieldset class="fieldset">
+            <select class="select select-accent w-48">
+              <option>Oct 1 - 15</option>
+              <option>Oct 16 - 31</option>
+              <option>Nov 1 - 15</option>
+            </select>
+          </fieldset>
+        </div>
+
+        <div class="flex justify-between items-center">
+          Department
+          <fieldset class="fieldset">
+            <select class="select select-accent w-48">
+              <option>All Departments</option>
+              <option>IT</option>
+              <option>Finance</option>
+              <option>HR</option>
+              <option>Marketing</option>
+            </select>
+          </fieldset>
+        </div>
+
+        <div class="flex justify-end mt-5">
+          <button class="btn btn-primary">Generate CSV</button>
+        </div>
+      </div>
+
+      <!-- When you click outside the modal will close -->
+      <form method="dialog" class="modal-backdrop">
+        <button>close</button>
+      </form>
+    </dialog>
+
     <script src="../js/layout/sidebar.js"></script>
+    <script src="../js/libs/ag-grid-community.min.js"></script>
+
+    <script type="module" src="../js/payroll-computation/func.js"></script>
+    <script type="module" src="../js/payroll-computation/grid.js"></script>
+    <script
+      type="module"
+      src="../js/payroll-computation/payroll-data.js"
+    ></script>
   </body>
 </html>
