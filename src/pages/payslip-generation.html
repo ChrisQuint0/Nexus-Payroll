@@ -1,418 +1,492 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Payslip Generation | Nexus Payroll</title>
-  <link rel="stylesheet" href="../output.css" />
-  <link rel="stylesheet" href="../css/ag-grid/ag-theme-quartz.css" />
-  <style>
-    /* --- override framework modal only when preview is active --- */
-    dialog.payslip-preview {
-      position: fixed;
-      inset: 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 1rem;
-      z-index: 9999;
-    }
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Payslip Generation | Nexus Payroll</title>
+    <link rel="stylesheet" href="../output.css" />
+    <link rel="stylesheet" href="../css/ag-grid/ag-theme-quartz.css" />
+    <style>
+      /* --- override framework modal only when preview is active --- */
+      dialog.payslip-preview {
+        position: fixed;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 1rem;
+        z-index: 9999;
+      }
 
-    dialog.payslip-preview::backdrop {
-      background: rgba(15,23,42,0.55);
-      -webkit-backdrop-filter: blur(6px);
-      backdrop-filter: blur(6px);
-    }
+      dialog.payslip-preview::backdrop {
+        background: rgba(15, 23, 42, 0.55);
+        -webkit-backdrop-filter: blur(6px);
+        backdrop-filter: blur(6px);
+      }
 
-    /* ensure modal defaults don't push dialog down */
-    dialog.payslip-preview {
-      margin: 0 !important;
-      padding: 0 !important;
-    }
+      /* ensure modal defaults don't push dialog down */
+      dialog.payslip-preview {
+        margin: 0 !important;
+        padding: 0 !important;
+      }
 
-    /* size modal-box to content (landscape), no internal scroll */
-    dialog.payslip-preview .modal-box {
-      margin: 0 !important;
-      width: auto !important;
-      max-width: 900px !important;
-      min-width: 560px !important;
-      background: #ffffff !important; /* white background to frame header and close */
-      box-shadow: 0 10px 30px rgba(15,23,42,0.25) !important;
-      padding: 16px !important; /* give breathing room around header/card */
-      border-radius: 12px !important;
-      overflow: visible !important;
-    }
+      /* minimize animation when clicking outside */
+      @keyframes payslipMinimize {
+        from {
+          transform: scale(1);
+          opacity: 1;
+        }
+        to {
+          transform: scale(0.96);
+          opacity: 0.92;
+        }
+      }
+      dialog.payslip-preview.minimizing .modal-box {
+        animation: payslipMinimize 160ms ease-in forwards;
+      }
 
-    /* framed card — size to content and remove internal scroll */
-    dialog.payslip-preview .modal-box .payslip-card {
-      width: 100%;
-      background: #fff;
-      border: 1px solid #e6e6e6;
-      border-radius: 8px;
-      padding: 14px;
-      color:#0f172a;
-      font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
-      font-size:13px;
-      line-height:1.12;
-      overflow: visible;
-      height: auto;
-    }
+      /* Two-column layout */
+      .payslip-card .main-panels {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+        align-items: start;
+      }
 
-    /* minimize animation when clicking outside */
-    @keyframes payslipMinimize {
-      from { transform: scale(1); opacity: 1; }
-      to { transform: scale(0.96); opacity: 0.92; }
-    }
-    dialog.payslip-preview.minimizing .modal-box {
-      animation: payslipMinimize 160ms ease-in forwards;
-    }
+      /* Rows and numeric alignment */
+      .payslip-card .row {
+        display: flex;
+        justify-content: space-between;
+        gap: 8px;
+        align-items: center;
+        font-size: 13px;
+      }
 
-    /* Panels and headers */
-    .payslip-card .panel {
-      margin-bottom: 12px;
-      border: 1px solid #e6e6e6; /* subtle grey border */
-      border-radius: 6px;
-      padding: 8px 10px;
-      background: #ffffff;
-    }
-    .payslip-card .panel-header {
-      font-weight: 700;
-      font-size: 13.5px;
-      color: #0b1220;
-      margin-bottom: 6px;
-      letter-spacing: 0.2px;
-    }
-    .payslip-card .panel-body {
-      padding: 4px 0;
-      font-size: 13px;
-      color: #111827;
-    }
+      .payslip-card .val {
+        text-align: right;
+        min-width: 76px;
+        font-weight: 600;
+        font-variant-numeric: tabular-nums;
+        -webkit-font-variant-numeric: tabular-nums;
+      }
 
-    /* Two-column layout */
-    .payslip-card .main-panels {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 20px;
-      align-items: start;
-    }
+      /* Employee info */
+      .payslip-card .emp-info {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px 20px;
+        align-items: center;
+        font-size: 13px;
+      }
 
-    .payslip-card .right-panel { padding-left: 16px; border-left: 1px solid #e6e6e6; }
+      .payslip-card .emp-info .value {
+        font-weight: 600;
+        font-size: 13px;
+      }
 
-    /* Rows and numeric alignment */
-    .payslip-card .row {
-      display: flex;
-      justify-content: space-between;
-      gap: 8px;
-      align-items: center;
-      font-size: 13px;
-    }
+      /* Net pay */
+      .payslip-card .net-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        padding-top: 6px;
+      }
+      .payslip-card .net-amount {
+        font-size: 1.15rem;
+        font-weight: 800;
+        color: #25b170;
+      }
 
-    .payslip-card .val {
-      text-align: right;
-      min-width: 76px;
-      font-weight: 600;
-      font-variant-numeric: tabular-nums;
-      -webkit-font-variant-numeric: tabular-nums;
-    }
+      .payslip-card .muted {
+        font-size: 12px;
+      }
 
-    /* Employee info */
-    .payslip-card .emp-info {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 8px 20px;
-      align-items: center;
-      font-size: 13px;
-    }
-    .payslip-card .emp-info .label { color: #4b5563; font-size: 12px; }
-    .payslip-card .emp-info .value { font-weight: 600; font-size: 13px; }
+      /* Replace existing header/grid styles with a single-row 3-column header */
+      .payslip-card .payslip-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding-bottom: 12px;
+        border-bottom: 1px solid #e6e6e6;
+      }
 
-    /* Net pay */
-    .payslip-card .net-row { display:flex; justify-content:space-between; align-items:center; gap:12px; padding-top:6px; }
-    .payslip-card .net-amount { font-size: 1.15rem; font-weight:800; color:#0f5132; }
+      .payslip-card .payslip-header .col {
+        flex: 1 1 0;
+        display: flex;
+        align-items: center;
+        min-width: 0; /* allow content to truncate instead of wrapping awkwardly */
+      }
 
-    .payslip-card .muted { color: #6b7280; font-size:12px; }
+      .payslip-card .payslip-header .col.center {
+        justify-content: center;
+      }
 
-    
+      .payslip-card .payslip-header .col.right {
+        justify-content: flex-end;
+        text-align: right;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 2px;
+      }
 
-    /* Replace existing header/grid styles with a single-row 3-column header */
-    .payslip-card .payslip-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-      padding-bottom: 12px;
-      border-bottom: 1px solid #e6e6e6;
-    }
+      .payslip-card .payslip-header .col.right .muted {
+        font-size: 11px; /* smaller */
+        line-height: 1; /* tighter lines */
+        margin: 0; /* remove extra spacing */
+      }
+      /* keep the two lines visually grouped and aligned to the right */
+      .payslip-card .payslip-header .col.right {
+        gap: 2px;
+      }
 
-    .payslip-card .payslip-header .col {
-      flex: 1 1 0;
-      display: flex;
-      align-items: center;
-      min-width: 0; /* allow content to truncate instead of wrapping awkwardly */
-    }
+      .payslip-card .company-info {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        white-space: nowrap;
+        overflow: hidden;
+      }
 
-    .payslip-card .payslip-header .col.center {
-      justify-content: center;
-    }
+      .payslip-card .company-info .logo {
+        flex: 0 0 auto;
+        width: 44px;
+        height: 44px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        border: 1px solid #e5e7eb;
+        font-weight: 700;
+      }
 
-    .payslip-card .payslip-header .col.right {
-      justify-content: flex-end;
-      text-align: right;
-      flex-direction: column;
-      align-items: flex-end;
-      gap: 2px;
-    }
+      .payslip-card .company-info .text {
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+        overflow: hidden;
+      }
 
-    .payslip-card .payslip-header .col.right .muted {
-      font-size: 11px;        /* smaller */
-      line-height: 1;         /* tighter lines */
-      color: #374151;
-      margin: 0;              /* remove extra spacing */
-    }
-    /* keep the two lines visually grouped and aligned to the right */
-    .payslip-card .payslip-header .col.right {
-      gap: 2px;
-    }
+      .payslip-card .company-info .text .company-name {
+        font-weight: 600;
+        font-size: 14px;
+        line-height: 1;
+        text-overflow: ellipsis;
+        overflow: hidden;
+        white-space: nowrap;
+      }
 
-    .payslip-card .company-info {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      white-space: nowrap;
-      overflow: hidden;
-    }
+      .payslip-card .company-info .text .company-address {
+        font-size: 12px;
+        text-overflow: ellipsis;
+        overflow: hidden;
+        white-space: nowrap;
+      }
 
-    .payslip-card .company-info .logo {
-      flex: 0 0 auto;
-      width: 44px;
-      height: 44px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      border-radius: 50%;
-      background: #f3f4f6;
-      border: 1px solid #e5e7eb;
-      font-weight: 700;
-    }
+      /* Footer: signatures (left) and net pay (right) side-by-side */
+      .payslip-card .footer-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+        gap: 24px;
+        padding-top: 8px;
+      }
 
-    .payslip-card .company-info .text {
-      display: flex;
-      flex-direction: column;
-      min-width: 0;
-      overflow: hidden;
-    }
+      .payslip-card .footer-left {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
 
-    .payslip-card .company-info .text .company-name {
-      font-weight: 600;
-      font-size: 14px;
-      line-height: 1;
-      text-overflow: ellipsis;
-      overflow: hidden;
-      white-space: nowrap;
-    }
+      .payslip-card .footer-left .muted {
+        margin-bottom: 4px;
+      }
 
-    .payslip-card .company-info .text .company-address {
-      font-size: 12px;
-      color: #6b7280;
-      text-overflow: ellipsis;
-      overflow: hidden;
-      white-space: nowrap;
-    }
+      .payslip-card .footer-right {
+        text-align: right;
+        min-width: 140px;
+      }
 
-    
+      .payslip-card .footer-right .net-amount {
+        font-size: 1.35rem; /* slightly larger */
+        font-weight: 800;
+      }
 
-    /* Footer: signatures (left) and net pay (right) side-by-side */
-    .payslip-card .footer-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-end;
-      gap: 24px;
-      padding-top: 8px;
-    }
+      /* Responsive: stack on small screens */
+      @media (max-width: 900px) {
+        .payslip-card .footer-row {
+          flex-direction: column;
+          align-items: flex-start;
+          gap: 12px;
+        }
+        .payslip-card .footer-right {
+          align-self: flex-end;
+          min-width: auto;
+        }
+      }
+    </style>
+  </head>
+  <body class="flex">
+    <!-- Sidebar placeholder -->
+    <div id="sidebar"></div>
 
-    .payslip-card .footer-left {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
+    <!-- Main content -->
+    <main class="flex-1 p-6">
+      <h1 class="text-3xl font-medium">Payslip Generation</h1>
 
-    .payslip-card .footer-left .muted { margin-bottom: 4px; }
+      <!-- Search and Cutoff Div with enhancements -->
+      <div class="mt-5 flex flex-wrap items-center justify-between gap-4">
+        <!-- Search Bar with placeholder and ARIA label -->
+        <label
+          class="input border border-accent focus-within:border-accent"
+          aria-label="Search employees"
+        >
+          <svg
+            class="h-[1em] opacity-50"
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+          >
+            <g
+              stroke-linejoin="round"
+              stroke-linecap="round"
+              stroke-width="2.5"
+              fill="none"
+              stroke="currentColor"
+            >
+              <circle cx="11" cy="11" r="8"></circle>
+              <path d="m21 21-4.3-4.3"></path>
+            </g>
+          </svg>
+          <input
+            id="searchInput"
+            type="search"
+            placeholder="Search by name or ID"
+            class="bg-transparent focus:outline-none"
+          />
+        </label>
 
-    .payslip-card .footer-right {
-      text-align: right;
-      min-width: 140px;
-    }
-
-    .payslip-card .footer-right .net-amount {
-      font-size: 1.35rem; /* slightly larger */
-      font-weight: 800;
-      color: #0f5132;
-    }
-
-    /* Responsive: stack on small screens */
-    @media (max-width: 900px) {
-      .payslip-card .footer-row { flex-direction: column; align-items: flex-start; gap:12px; }
-      .payslip-card .footer-right { align-self: flex-end; min-width: auto; }
-    }
-  </style>
-</head>
-<body class="flex">
-  <!-- Sidebar placeholder -->
-  <div id="sidebar"></div>
-
-  <!-- Main content -->
-  <main class="flex-1 p-6">
-    <h1 class="text-3xl font-medium">Payslip Generation</h1>
-
-    <!-- Search and Cutoff Div with enhancements -->
-    <div class="mt-5 flex flex-wrap items-center justify-between gap-4">
-      <!-- Search Bar with placeholder and ARIA label -->
-      <label class="input border border-accent focus-within:border-accent" aria-label="Search employees">
-        <svg class="h-[1em] opacity-50" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-          <g stroke-linejoin="round" stroke-linecap="round" stroke-width="2.5" fill="none" stroke="currentColor">
-            <circle cx="11" cy="11" r="8"></circle>
-            <path d="m21 21-4.3-4.3"></path>
-          </g>
-        </svg>
-        <input id="searchInput" type="search" placeholder="Search by name or ID" class="bg-transparent focus:outline-none" />
-      </label>
-
-      <!-- Cutoff Period with ARIA label -->
-      <div class="flex flex-row items-center">
-        <p class="mr-5">Cutoff Period</p>
-        <fieldset class="fieldset">
-          <select id="cutoffPeriod" class="select select-accent w-48" aria-label="Select cutoff period">
-            <option>Sep 1 - 15</option>
-            <option selected>Sep 16 - 30</option>
-            <option>Oct 1 - 15</option>
-            <option>Oct 16 - 31</option>
-          </select>
-        </fieldset>
+        <!-- Cutoff Period with ARIA label -->
+        <div class="flex flex-row items-center">
+          <p class="mr-5">Cutoff Period</p>
+          <fieldset class="fieldset">
+            <select
+              id="cutoffPeriod"
+              class="select select-accent w-48"
+              aria-label="Select cutoff period"
+            >
+              <option>Sep 1 - 15</option>
+              <option selected>Sep 16 - 30</option>
+              <option>Oct 1 - 15</option>
+              <option>Oct 16 - 31</option>
+            </select>
+          </fieldset>
+        </div>
       </div>
-    </div>
 
-    <!-- AG Grid Div with responsive class -->
-    <div id="payslipGrid" class="mt-5 h-[470px] w-full ag-theme-quartz"></div> <!-- Initial theme class -->
+      <!-- AG Grid Div with responsive class -->
+      <div id="payslipGrid" class="mt-5 h-[470px] w-full ag-theme-quartz"></div>
+      <!-- Initial theme class -->
 
-    <!-- Generate PDF Div with confirmation -->
-    <div class="flex justify-end mt-5">
-      <button id="generatePdfBtn" class="btn btn-secondary btn-lg">Generate PDF</button>
-    </div>
-  </main>
+      <!-- Generate PDF Div with confirmation -->
+      <div class="flex justify-end mt-5">
+        <button id="generatePdfBtn" class="btn btn-secondary btn-lg">
+          Generate PDF
+        </button>
+      </div>
+    </main>
 
-  <!-- Preview Modal with structured payslip panels -->
-  <dialog id="previewModal" class="modal payslip-preview" aria-labelledby="previewTitle" role="dialog">
-    <div class="modal-box max-w-none overflow-hidden p-0">
-      <form method="dialog">
-        <button class="btn btn-sm btn-circle btn-ghost absolute right-4 top-4" aria-label="Close modal">✕</button>
-      </form>
-      <header class="p-6">
-        <h3 id="previewTitle" class="text-3xl font-medium">Preview</h3>
-      </header>
+    <!-- Preview Modal with structured payslip panels -->
+    <dialog
+      id="previewModal"
+      class="modal payslip-preview"
+      aria-labelledby="previewTitle"
+      role="dialog"
+    >
+      <div class="modal-box max-w-none overflow-hidden p-0">
+        <form method="dialog">
+          <button
+            class="btn btn-sm btn-circle btn-ghost absolute right-4 top-4"
+            aria-label="Close modal"
+          >
+            ✕
+          </button>
+        </form>
+        <header class="p-6">
+          <h3 id="previewTitle" class="text-3xl font-medium">Preview</h3>
+        </header>
 
-      <div class="payslip-card mx-6 mb-6">
-        <!-- Header row: single-line 3 columns (left / center / right) -->
-        <div class="payslip-header">
-          <div class="col left">
-            <div class="company-info">
-              <div class="logo">CN</div>
-              <div class="text">
-                <div class="company-name">Company Name</div>
-                <div class="company-address">Company Address</div>
+        <div class="payslip-card mx-6 mb-6">
+          <!-- Header row: single-line 3 columns (left / center / right) -->
+          <div class="payslip-header">
+            <div class="col left">
+              <div class="company-info">
+                <div class="logo">CN</div>
+                <div class="text">
+                  <div class="company-name">Company Name</div>
+                  <div class="company-address">Company Address</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="col center">
+              <div class="text-lg font-semibold">Payslip</div>
+            </div>
+
+            <div class="col right">
+              <div class="muted">
+                Salary Statement:
+                <span id="previewPeriod">09/01/25 - 09/15/25</span>
+              </div>
+              <div class="muted">
+                Date Issued: <span id="previewIssued">09/16/25</span>
               </div>
             </div>
           </div>
 
-          <div class="col center">
-            <div class="text-lg font-semibold">Payslip</div>
-          </div>
+          <!-- Employee info row (panel) -->
+          <section class="panel panel-emp mt-5">
+            <div class="panel-body emp-info">
+              <div>
+                <span class="label">Employee ID:</span>
+                <span id="previewEmpId" class="value">010101</span>
+              </div>
+              <div>
+                <span class="label">Department:</span>
+                <span id="previewDept" class="value">IT</span>
+              </div>
+              <div>
+                <span class="label">Employee Name:</span>
+                <span id="previewEmpName" class="value">Dela Cruz, Juan</span>
+              </div>
+              <div>
+                <span class="label">Position:</span>
+                <span id="previewPos" class="value">IT Support</span>
+              </div>
+            </div>
+          </section>
 
-          <div class="col right">
-            <div class="muted">Salary Statement: <span id="previewPeriod">09/01/25 - 09/15/25</span></div>
-            <div class="muted">Date Issued: <span id="previewIssued">09/16/25</span></div>
-          </div>
-        </div>
+          <!-- Main panels: left = earnings/attendance, right = contributions/summary -->
+          <div class="main-panels mt-6">
+            <!-- LEFT PANEL -->
+            <div class="panel left-panel">
+              <div class="panel-header">Gross Earnings</div>
+              <div class="panel-body">
+                <div class="row">
+                  <div>Regular Pay</div>
+                  <div id="previewRegularPay" class="val">0.00</div>
+                </div>
+                <div class="row">
+                  <div>OT</div>
+                  <div id="previewOT" class="val">0.00</div>
+                </div>
+                <div class="row">
+                  <div>Leave Pay</div>
+                  <div id="previewLeavePay" class="val">0.00</div>
+                </div>
+              </div>
 
-        <!-- Employee info row (panel) -->
-        <section class="panel panel-emp mt-5">
-          <div class="panel-body emp-info">
-            <div><span class="label">Employee ID:</span> <span id="previewEmpId" class="value">010101</span></div>
-            <div><span class="label">Department:</span> <span id="previewDept" class="value">IT</span></div>
-            <div><span class="label">Employee Name:</span> <span id="previewEmpName" class="value">Dela Cruz, Juan</span></div>
-            <div><span class="label">Position:</span> <span id="previewPos" class="value">IT Support</span></div>
-          </div>
-        </section>
-
-        <!-- Main panels: left = earnings/attendance, right = contributions/summary -->
-        <div class="main-panels mt-6">
-          <!-- LEFT PANEL -->
-          <div class="panel left-panel">
-            <div class="panel-header">Gross Earnings</div>
-            <div class="panel-body">
-              <div class="row"><div>Regular Pay</div><div id="previewRegularPay" class="val">0.00</div></div>
-              <div class="row"><div>OT</div><div id="previewOT" class="val">0.00</div></div>
-              <div class="row"><div>Leave Pay</div><div id="previewLeavePay" class="val">0.00</div></div>
+              <div class="panel-header mt-4">Attendance Summary</div>
+              <div class="panel-body">
+                <div class="row">
+                  <div>Working Hours</div>
+                  <div id="previewWorkingHours" class="val">0.00</div>
+                </div>
+                <div class="row">
+                  <div>Absences</div>
+                  <div id="previewAbsences" class="val">0.00</div>
+                </div>
+                <div class="row">
+                  <div>Tardiness</div>
+                  <div id="previewTardiness" class="val">0.00</div>
+                </div>
+                <div class="row">
+                  <div>Undertime</div>
+                  <div id="previewUndertime" class="val">0.00</div>
+                </div>
+              </div>
             </div>
 
-            <div class="panel-header mt-4">Attendance Summary</div>
-            <div class="panel-body">
-              <div class="row"><div>Working Hours</div><div id="previewWorkingHours" class="val">0.00</div></div>
-              <div class="row"><div>Absences</div><div id="previewAbsences" class="val">0.00</div></div>
-              <div class="row"><div>Tardiness</div><div id="previewTardiness" class="val">0.00</div></div>
-              <div class="row"><div>Undertime</div><div id="previewUndertime" class="val">0.00</div></div>
+            <!-- RIGHT PANEL -->
+            <div class="panel right-panel">
+              <div class="panel-header">Gov. Contributions</div>
+              <div class="panel-body">
+                <div class="row">
+                  <div>SSS Contribution</div>
+                  <div id="previewSSS" class="val">0.00</div>
+                </div>
+                <div class="row">
+                  <div>PhilHealth</div>
+                  <div id="previewPhilhealth" class="val">0.00</div>
+                </div>
+                <div class="row">
+                  <div>Pag-ibig</div>
+                  <div id="previewPagibig" class="val">0.00</div>
+                </div>
+                <div class="row">
+                  <div>Withholding Tax</div>
+                  <div id="previewTax" class="val">0.00</div>
+                </div>
+              </div>
+
+              <div
+                class="panel-body"
+                style="
+                  margin-top: 12px;
+                  border-top: 1px solid #e6e6e6;
+                  padding-top: 12px;
+                "
+              >
+                <div class="row">
+                  <div>Gross Earnings</div>
+                  <div id="previewGross" class="val">0.00</div>
+                </div>
+                <div class="row">
+                  <div>Total Deductions</div>
+                  <div id="previewDeductions" class="val">0.00</div>
+                </div>
+              </div>
             </div>
           </div>
 
-          <!-- RIGHT PANEL -->
-          <div class="panel right-panel">
-            <div class="panel-header">Gov. Contributions</div>
-            <div class="panel-body">
-              <div class="row"><div>SSS Contribution</div><div id="previewSSS" class="val">0.00</div></div>
-              <div class="row"><div>PhilHealth</div><div id="previewPhilhealth" class="val">0.00</div></div>
-              <div class="row"><div>Pag-ibig</div><div id="previewPagibig" class="val">0.00</div></div>
-              <div class="row"><div>Withholding Tax</div><div id="previewTax" class="val">0.00</div></div>
-            </div>
-
-            <div class="panel-body" style="margin-top:12px; border-top:1px solid #e6e6e6; padding-top:12px;">
-              <div class="row"><div>Gross Earnings</div><div id="previewGross" class="val">0.00</div></div>
-              <div class="row"><div>Total Deductions</div><div id="previewDeductions" class="val">0.00</div></div>
+          <!-- Net pay row -->
+          <div class="panel mt-6">
+            <div
+              class="panel-body net-row"
+              style="background: transparent; padding: 0"
+            >
+              <div class="muted">Net Pay</div>
+              <div id="previewNetPay" class="net-amount">0.00</div>
             </div>
           </div>
-        </div>
 
-        <!-- Net pay row -->
-        <div class="panel mt-6">
-          <div class="panel-body net-row" style="background:transparent;padding:0;">
-            <div class="muted">Net Pay</div>
-            <div id="previewNetPay" class="net-amount">0.00</div>
-          </div>
-        </div>
-
-        <!-- Footer signatures and print -->
-        <div class="panel mt-6">
-          <div class="panel-body grid grid-cols-2 gap-8 text-sm items-end">
-            <div>
-              <div class="muted">Received By:</div>
-              <div class="mt-3 border-b border-gray-300 w-48"></div>
-            </div>
-            <div>
-              <div class="muted">Date Received:</div>
-              <div class="mt-3 border-b border-gray-300 w-48 inline-block"></div>
+          <!-- Footer signatures and print -->
+          <div class="panel mt-6">
+            <div class="panel-body grid grid-cols-2 gap-8 text-sm items-end">
+              <div>
+                <div class="muted">Received By:</div>
+                <div class="mt-3 border-b border-gray-300 w-48"></div>
+              </div>
+              <div>
+                <div class="muted">Date Received:</div>
+                <div
+                  class="mt-3 border-b border-gray-300 w-48 inline-block"
+                ></div>
+              </div>
             </div>
           </div>
         </div>
       </div>
+      <form method="dialog" class="modal-backdrop">
+        <button>close</button>
+      </form>
+    </dialog>
 
-    </div>
-    <form method="dialog" class="modal-backdrop">
-      <button>close</button>
-    </form>
-  </dialog>
-
-  <!-- Scripts -->
-  <script src="../js/layout/sidebar.js"></script>
-  <script src="../js/libs/ag-grid-community.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script> <!-- For PDF generation -->
-  <script src="../js/payslip-generation/main.js"></script>
-</body>
+    <!-- Scripts -->
+    <script src="../js/layout/sidebar.js"></script>
+    <script src="../js/libs/ag-grid-community.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <!-- For PDF generation -->
+    <script src="../js/payslip-generation/main.js"></script>
+  </body>
 </html>
