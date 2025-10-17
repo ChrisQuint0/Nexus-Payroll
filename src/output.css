@@ -1631,55 +1631,6 @@
       grid-auto-columns: max-content auto;
     }
   }
-  .card {
-    @layer daisyui.component {
-      position: relative;
-      display: flex;
-      flex-direction: column;
-      border-radius: var(--radius-box);
-      outline-width: 2px;
-      transition: outline 0.2s ease-in-out;
-      outline: 0 solid #0000;
-      outline-offset: 2px;
-      &:focus {
-        --tw-outline-style: none;
-        outline-style: none;
-        @media (forced-colors: active) {
-          outline: 2px solid transparent;
-          outline-offset: 2px;
-        }
-      }
-      &:focus-visible {
-        outline-color: currentColor;
-      }
-      :where(figure:first-child) {
-        overflow: hidden;
-        border-start-start-radius: inherit;
-        border-start-end-radius: inherit;
-        border-end-start-radius: unset;
-        border-end-end-radius: unset;
-      }
-      :where(figure:last-child) {
-        overflow: hidden;
-        border-start-start-radius: unset;
-        border-start-end-radius: unset;
-        border-end-start-radius: inherit;
-        border-end-end-radius: inherit;
-      }
-      figure {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-      }
-      &:has(> input:is(input[type="checkbox"], input[type="radio"])) {
-        cursor: pointer;
-        user-select: none;
-      }
-      &:has(> :checked) {
-        outline: 2px solid currentColor;
-      }
-    }
-  }
   .absolute {
     position: absolute;
   }
@@ -2205,6 +2156,12 @@
   .justify-end {
     justify-content: flex-end;
   }
+  .gap-2 {
+    gap: calc(var(--spacing) * 2);
+  }
+  .gap-3 {
+    gap: calc(var(--spacing) * 3);
+  }
   .gap-4 {
     gap: calc(var(--spacing) * 4);
   }
@@ -2254,6 +2211,9 @@
   .p-6 {
     padding: calc(var(--spacing) * 6);
   }
+  .px-5 {
+    padding-inline: calc(var(--spacing) * 5);
+  }
   .px-8 {
     padding-inline: calc(var(--spacing) * 8);
   }
@@ -2298,8 +2258,8 @@
     --tw-font-weight: var(--font-weight-semibold);
     font-weight: var(--font-weight-semibold);
   }
-  .text-black {
-    color: var(--color-black);
+  .whitespace-nowrap {
+    white-space: nowrap;
   }
   .text-white {
     color: var(--color-white);
