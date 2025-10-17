@@ -2379,6 +2379,12 @@
       --size: calc(var(--size-field, 0.25rem) * 8);
     }
   }
+  .btn-accent {
+    @layer daisyui.modifier {
+      --btn-color: var(--color-accent);
+      --btn-fg: var(--color-accent-content);
+    }
+  }
   .btn-primary {
     @layer daisyui.modifier {
       --btn-color: var(--color-primary);
@@ -2389,6 +2395,13 @@
     @layer daisyui.modifier {
       --btn-color: var(--color-secondary);
       --btn-fg: var(--color-secondary-content);
+    }
+  }
+  .input-accent {
+    @layer daisyui.modifier {
+      &, &:focus, &:focus-within {
+        --input-color: var(--color-accent);
+      }
     }
   }
   .input-primary {
