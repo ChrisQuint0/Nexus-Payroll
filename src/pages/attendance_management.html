@@ -3,8 +3,14 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Dashboard | Nexus Payroll</title>
+    <title>Attendance Management | Nexus Payroll</title>
     <link rel="stylesheet" href="../output.css" />
+    <link rel="stylesheet" href="../css/ag-grid/ag-theme-quartz.css" />
+    <style>
+      .ag-header-cell[col-id="Actions"] .ag-header-cell-label {
+        justify-content: center !important;
+      }
+    </style>
   </head>
   <body class="flex">
     <!-- Sidebar placeholder -->
@@ -12,9 +18,300 @@
 
     <!-- Main content -->
     <main class="flex-1 p-6">
-      <h1 class="text-2xl font-medium">Attendance Management</h1>
-    </main>
+      <h1 class="text-3xl font-medium">Attendance Management</h1>
 
+      <!-- Controls Row: Tabs on left, Cutoff/Search on right -->
+     <div class="mt-5 flex w-full items-center justify-between">
+        <!-- Tab Selection -->
+        <div class="inline-flex gap-2" role="tablist">
+          <button 
+            id="rawTimeLogsTab"
+            class="px-5 py-2 rounded-lg text-sm font-semibold btn btn-primary" 
+            data-tab="raw" 
+            type="button"
+          >
+            Raw Time Logs
+          </button>
+          <button 
+            id="attendanceSummaryTab"
+            class="px-5 py-2 rounded-lg text-sm font-semibold btn btn-outline" 
+            data-tab="summary" 
+            type="button"
+          >
+            Attendance Summary
+          </button>
+        </div>
+
+        <!-- Right side: Cutoff Period and Search -->
+        <div class="flex flex-row items-center gap-3">
+           <!-- Cutoff Period (hidden for Raw Time Logs) -->
+          <div id="cutoffPeriodContainer" class="flex flex-row items-center hidden">
+            <p class="mr-5 whitespace-nowrap">Cutoff Period</p>
+            <fieldset class="fieldset">
+              <select id="cutoffFilter" class="select select-accent w-48">
+                <option value="">All Cutoff</option>
+                <option value="Oct 1 - 15, 2025">Oct 1 - 15</option>
+                <option value="Oct 16 - 31, 2025">Oct 16 - 31</option>
+                <option value="Nov 1 - 15, 2025">Nov 1 - 15</option>
+              </select>
+            </fieldset>
+          </div>
+          <label
+  class="input border border-accent focus-within:border-accent focus-within:ring-0 focus-within:outline-none shadow-none w-96 flex-none ml-5"
+>
+  <svg
+    class="h-[1em] opacity-50"
+    xmlns="http://www.w3.org/2000/svg"
+    viewBox="0 0 24 24"
+  >
+    <g
+      stroke-linejoin="round"
+      stroke-linecap="round"
+      stroke-width="2.5"
+      fill="none"
+      stroke="currentColor"
+    >
+      <circle cx="11" cy="11" r="8"></circle>
+      <path d="m21 21-4.3-4.3"></path>
+    </g>
+  </svg>
+
+  <input
+    id="search"
+    type="search"
+    required
+    placeholder="Search"
+    class="bg-transparent w-full focus:outline-none"
+  />
+</label>
+
+          <!-- Filter Button -->
+          <button id="filterBtn" class="btn btn-ghost btn-sm" title="Filter">
+            <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M3 5h18M7 12h10M10 19h4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- AG Grid Div -->
+      <!-- Raw Time Logs columns: Date, Employee ID, Name, Time In, Time Out, Late (m), Undertime, Status -->
+      <!-- Attendance Summary columns: Employee ID, Name, Regular Hours, Overtime, Late, Undertime, Leave w/ Pay, Leave w/o Pay, Incomplete (Days), Absences -->
+      <div id="attendanceGrid" class="mt-5 h-[470px] w-full"></div>
+
+      <!-- Generate Buttons Div -->
+<div class="flex justify-end mt-5 gap-3">
+  <!-- Generate DTR button - only for Raw Time Logs -->
+  <button 
+    id="generateDTRBtn"
+    class="btn btn-primary btn-lg" 
+    onclick="generateDTR.showModal()"
+  >
+    Generate DTR
+  </button>
+  <!-- Generate CSV button - for both views -->
+  <button 
+    class="btn btn-secondary btn-lg ml-5" 
+    onclick="generateCSV.showModal()"
+  >
+    Generate CSV
+  </button>
+</div>
+
+
+    <!-- Modal to show attendance details -->
+    <dialog id="otherComputation" class="modal">
+      <div class="modal-box my-10 max-h-[90vh] overflow-y-auto">
+        <form method="dialog">
+          <button
+            class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2"
+          >
+            ✕
+          </button>
+        </form>
+        <h3 class="text-lg font-bold">Attendance Details</h3>
+        
+        <p class="mt-5 mb-5 font-bold">Working Hours</p>
+        <div class="flex justify-between items-center">
+          Total Hours
+          <input
+            type="text"
+            placeholder="You can't touch this"
+            value="80:00"
+            class="input ml-5 w-[250px]"
+            readonly
+          />
+        </div>
+
+        <p class="mt-5 mb-5 font-bold">Absences & Leaves</p>
+        <div class="flex justify-between items-center">
+          Absences
+          <input
+            type="text"
+            placeholder="You can't touch this"
+            value="0"
+            class="input ml-5 w-[250px]"
+            readonly
+          />
+        </div>
+
+        <br />
+        <div class="flex justify-between items-center">
+          Leave with Pay
+          <input
+            type="text"
+            placeholder="You can't touch this"
+            value="0"
+            class="input ml-5 w-[250px]"
+            readonly
+          />
+        </div>
+
+        <br />
+        <div class="flex justify-between items-center">
+          Leave without Pay
+          <input
+            type="text"
+            placeholder="You can't touch this"
+            value="0"
+            class="input ml-5 w-[250px]"
+            readonly
+          />
+        </div>
+
+        <br />
+        <div class="flex justify-between items-center">
+          Official Business
+          <input
+            type="text"
+            placeholder="You can't touch this"
+            value="0"
+            class="input ml-5 w-[250px]"
+            readonly
+          />
+        </div>
+
+        <p class="mt-5 mb-5 font-bold">Time Adjustments</p>
+        <div class="flex justify-between items-center">
+          Tardiness (minutes)
+          <input
+            type="text"
+            placeholder="You can't touch this"
+            value="5"
+            class="input ml-5 w-[250px]"
+            readonly
+          />
+        </div>
+
+        <br />
+        <div class="flex justify-between items-center">
+          Undertime (minutes)
+          <input
+            type="text"
+            placeholder="You can't touch this"
+            value="0"
+            class="input ml-5 w-[250px]"
+            readonly
+          />
+        </div>
+      </div>
+
+      <!-- When you click outside the modal will close -->
+      <form method="dialog" class="modal-backdrop">
+        <button>close</button>
+      </form>
+    </dialog>
+
+    <!-- Generate DTR Modal -->
+    <dialog id="generateDTR" class="modal">
+      <div class="modal-box">
+        <form method="dialog">
+          <button
+            class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2"
+          >
+            ✕
+          </button>
+        </form>
+        <h3 class="text-lg font-bold">Generate DTR</h3>
+
+        <div class="flex justify-between items-center mt-5">
+          Cutoff Period
+          <fieldset class="fieldset">
+            <select class="select select-accent w-48">
+              <option>Oct 1 - 15, 2025</option>
+              <option>Oct 16 - 31, 2025</option>
+              <option>Nov 1 - 15, 2025</option>
+            </select>
+          </fieldset>
+        </div>
+
+        
+        <div class="flex justify-end mt-5">
+          <button class="btn btn-primary">Generate DTR</button>
+        </div>
+      </div>
+
+      <!-- When you click outside the modal will close -->
+      <form method="dialog" class="modal-backdrop">
+        <button>close</button>
+      </form>
+    </dialog>
+
+    <!-- Generate CSV Modal -->
+    <dialog id="generateCSV" class="modal">
+      <div class="modal-box">
+        <form method="dialog">
+          <button
+            class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2"
+          >
+            ✕
+          </button>
+        </form>
+        <h3 class="text-lg font-bold">Generate CSV</h3>
+
+        <div class="flex justify-between items-center mt-5">
+          Cutoff Period
+          <fieldset class="fieldset">
+            <select class="select select-accent w-48">
+              <option>Oct 1 - 15, 2025</option>
+              <option>Oct 16 - 31, 2025</option>
+              <option>Nov 1 - 15, 2025</option>
+            </select>
+          </fieldset>
+        </div>
+
+        <div class="flex justify-between items-center mt-3">
+          Department
+          <fieldset class="fieldset">
+            <select class="select select-accent w-48">
+              <option>All Departments</option>
+              <option>IT</option>
+              <option>Finance</option>
+              <option>HR</option>
+              <option>Marketing</option>
+            </select>
+          </fieldset>
+        </div>
+
+        <div class="flex justify-end mt-5">
+          <button class="btn btn-primary">Generate CSV</button>
+        </div>
+      </div>
+
+      <!-- When you click outside the modal will close -->
+      <form method="dialog" class="modal-backdrop">
+        <button>close</button>
+      </form>
+    </dialog>
+
+    <!-- Import scripts in correct order -->
     <script src="../js/layout/sidebar.js"></script>
+    <script src="../js/libs/ag-grid-community.min.js"></script>
+
+    <!-- Import modules -->
+    <script type="module" src="../js/attendance-management/attendance-data.js"></script>
+    <script type="module" src="../js/attendance-management/dtr-generator.js"></script>
+    <script type="module" src="../js/attendance-management/attendance-grid.js"></script>
+    <script type="module" src="../js/attendance-management/attendance-func.js"></script>
   </body>
 </html>
