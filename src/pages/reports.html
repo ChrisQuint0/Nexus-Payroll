@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Dashboard | Nexus Payroll</title>
     <link rel="stylesheet" href="../output.css" />
+    <link rel="stylesheet" href="../css//ag-grid/ag-theme-quartz.css" />
+    <script src="../js/libs/ag-grid-community.min.js"></script>
+    <script src="../js/reports/main.js"></script>
   </head>
   <body class="flex">
     <!-- Sidebar placeholder -->
@@ -12,9 +15,39 @@
 
     <!-- Main content -->
     <main class="flex-1 p-6">
-      <h1 class="text-2xl font-medium">Reports</h1>
+      <!-- Top Part-->
+      <div id="top-part" class="flex flex-1 flex-row min-h-1/7 p-10">
+        <div class="content-center">
+          <h1 class="text-2xl font-medium">Reports and Audit Trail</h1>
+        </div>
+
+        <div
+          id="quick-stats-div"
+          class="justify-end flex flex-1 flex-row gap-10"
+        >
+          <div
+            id="absences-div"
+            class="content-center outline-1 rounded-box p-8"
+          >
+            <h3 class="font-medium">Absences This Month</h3>
+            <h2 class="text-4xl font-bold" id="absences-value">24</h2>
+          </div>
+          <div
+            id="tardiness-div"
+            class="content-center outline-1 rounded-box p-8"
+          >
+            <h3 class="font-medium">Tardiness This Month</h3>
+            <h2 class="text-4xl font-bold" id="tardiness-value">5</h2>
+          </div>
+        </div>
+      </div>
+      <!--- Table area-->
+      <div id="dataArea" class="max-h-2/5 outline-1 p-4 flex flex-col">
+        <div id="myGrid" class="max-h-max max-w-max"></div>
+      </div>
     </main>
 
     <script src="../js/layout/sidebar.js"></script>
   </body>
+  <script src="../js/reports/main.js"></script>
 </html>
