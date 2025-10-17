@@ -5,19 +5,24 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Dashboard | Nexus Payroll</title>
     <link rel="stylesheet" href="../output.css" />
+    <!--- This is the CDN, please make this local-->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   </head>
   <body class="flex">
     <!-- Sidebar placeholder -->
     <div id="sidebar"></div>
 
     <!-- Main content -->
-    <main class="flex-1 p-6">
-      <h1 class="text-2xl font-bold">Dashboard</h1>
+    <main class="flex-1 p-8">
+      <h1 class="text-5xl font-bold">Dashboard</h1>
       <!--- Top part-->
-      <div class="flex flex-row min-h-1/5 content-center mt-4 justify-between">
-        <div id="dept-div" class="flex-1 flex-col max-w-max max-h-max">
-          <h3 class="w-xs font-medium text-2xl">Department</h3>
-          <select class="select-xl mt-4">
+      <div class="flex flex-row min-h-1/5 mt-4 mb-4 justify-between">
+        <div
+          id="dept-div"
+          class="self-center content-center flex-col max-w-max max-h-max"
+        >
+          <h3 class="w-2xs font-medium text-2xl">Department</h3>
+          <select class="select select-accent select-xl text-2xl mt-4">
             <option disabled selected>Pick a Department</option>
             <option>Accounting</option>
             <option>Human Resources</option>
@@ -28,72 +33,61 @@
         </div>
         <div
           id="quick-stat-1"
-          class="flex flex-row justify-between gap-10 flex-row ml-8 h-full"
+          class="flex flex-row justify-between gap-10 flex-row max-h-max"
         >
-          <div
-            id="total-employees-div"
-            class="flex flex-col w-xs border-1 rounded-md"
-          >
-            <h3 class="text-xl pl-7 pt-5 font-semibold">Total Employees</h3>
-            <h2
-              class="text-5xl font-bold pl-7 mt-2 md:mt-6 mb-2 md:mb-4"
-              id="total-employees-val"
-            >
-              24
-            </h2>
+          <div class="shadow-xl/20 rounded-box">
+            <div id="total-employees-div" class="stat w-xs rounded-box p-8">
+              <h3 class="text-xl font-semibold mb-4 stat-title">
+                Total Employees
+              </h3>
+              <h2
+                class="text-5xl font-bold stat-value"
+                id="total-employees-val"
+              >
+                24
+              </h2>
+            </div>
           </div>
-          <div
-            id="on-leave-div"
-            class="flex flex-col w-xs h-full border-1 rounded-md"
-          >
-            <h3 class="text-xl pl-7 pt-5 font-semibold">On Leave</h3>
-            <h2
-              class="text-5xl font-bold pl-7 mt-2 md:mt-6 mb-2 md:mb-4"
-              id="on-leave-val"
-            >
-              5
-            </h2>
+          <div class="shadow-xl/20 rounded-box">
+            <div id="on-leave-div" class="stat w-xs rounded-box p-8">
+              <h3 class="text-xl font-semibold mb-4 stat-title">On Leave</h3>
+              <h2 class="text-5xl font-bold stat-value" id="on-leave-val">6</h2>
+            </div>
           </div>
-          <div
-            id="promotions-div"
-            class="flex flex-col w-xs h-full border-1 rounded-md"
-          >
-            <h3 class="text-xl pl-7 pt-5 font-semibold">
-              Promotions this Month
-            </h3>
-            <h2
-              class="text-5xl font-bold pl-7 mt-2 md:mt-6 mb-2 md:mb-4"
-              id="promotions-val"
-            >
-              5
-            </h2>
+          <div class="shadow-xl/20 rounded-box">
+            <div id="promotions-div" class="stat w-xs rounded-box p-8">
+              <h3 class="text-xl font-semibold mb-4 stat-title">
+                Promotions This Month
+              </h3>
+              <h2 class="text-5xl font-bold stat-value" id="promotions-val">
+                7
+              </h2>
+            </div>
           </div>
         </div>
       </div>
       <!--- Middle Part-->
       <div class="flex flex-row gap-10 justify-between">
         <!--- Trend analysis-->
+
         <div
-          class="flex flex-1 p-6 flex-col border-1 rounded-md max-w-1/2 mt-4 justify-center"
+          class="flex flex-1 p-6 flex-col shadow-xl/20 rounded-box max-w-1/2 mt-4 justify-center"
         >
-          <h3 class="text-xl font-medium">Punctuality Trend Analysis</h3>
-          <img
-            class="mt-2 justify-self-center self-center"
-            style="max-height: 100%; max-width: 65%"
-            src="https://stackabuse.s3.amazonaws.com/media/matplotlib-line-plot-tutorial-and-examples-2.png"
-            alt="image"
-          />
+          <h3 class="text-2xl p-2 font-medium">Punctuality Trend Analysis</h3>
+          <div>
+            <canvas id="myChart"></canvas>
+          </div>
         </div>
         <!--- Deadlines -->
         <div
-          class="flex flex-1 p-6 flex-col border-1 rounded-md max-w-1/2 mt-4"
+          class="flex flex-1 p-6 flex-col shadow-xl/20 rounded-box max-w-1/2 mt-4"
         >
           <div
             id="deadline-edit-div"
             class="flex w-max-w content-center justify-between"
           >
-            <h3 class="text-xl font-medium">Government Deadlines</h3>
-            <button class="btn">Edit</button>
+            <h3 class="text-2xl p-2 font-medium">Government Deadlines</h3>
+            <button class="btn btn-primary pl-4 pr-4">Edit</button>
           </div>
 
           <div id="deadlines-div" class="mt-4 md:mt-10">
@@ -143,20 +137,29 @@
         id="quick-actions-div"
       >
         <div class="min-h-max min-w-1/6">
-          <button class="btn btn-block">Time IN / Time OUT</button>
+          <button class="btn btn-primary p-8 text-xl btn-block">
+            Time IN / Time OUT
+          </button>
         </div>
         <div class="min-h-max min-w-1/6">
-          <button class="btn btn-block">Add New Employee</button>
+          <button class="btn btn-primary p-8 text-xl btn-block">
+            Add New Employee
+          </button>
         </div>
         <div class="min-h-max min-w-1/6">
-          <button class="btn btn-block">Process Payroll</button>
+          <button class="btn btn-primary p-8 text-xl btn-block">
+            Process Payroll
+          </button>
         </div>
         <div class="min-h-max min-w-1/6">
-          <button class="btn btn-block">Generate Payslips</button>
+          <button class="btn btn-primary p-8 text-xl btn-block">
+            Generate Payslips
+          </button>
         </div>
       </div>
     </main>
 
     <script src="../js/layout/sidebar.js"></script>
+    <script src="../js/dashboard/main.js"></script>
   </body>
 </html>
