@@ -100,24 +100,24 @@
       <div id="attendanceGrid" class="mt-5 h-[470px] w-full"></div>
 
       <!-- Generate Buttons Div -->
-      <div class="flex justify-end mt-5 gap-3">
-        <!-- Generate DTR button - only for Raw Time Logs -->
-        <button 
-          id="generateDTRBtn"
-          class="btn btn-outline btn-lg" 
-          onclick="generateDTR.showModal()"
-        >
-          Generate DTR
-        </button>
-        <!-- Generate CSV button - for both views -->
-        <button 
-          class="btn btn-secondary btn-lg" 
-          onclick="generateCSV.showModal()"
-        >
-          Generate CSV
-        </button>
-      </div>
-    </main>
+<div class="flex justify-end mt-5 gap-3">
+  <!-- Generate DTR button - only for Raw Time Logs -->
+  <button 
+    id="generateDTRBtn"
+    class="btn btn-primary btn-lg" 
+    onclick="generateDTR.showModal()"
+  >
+    Generate DTR
+  </button>
+  <!-- Generate CSV button - for both views -->
+  <button 
+    class="btn btn-secondary btn-lg ml-5" 
+    onclick="generateCSV.showModal()"
+  >
+    Generate CSV
+  </button>
+</div>
+
 
     <!-- Modal to show attendance details -->
     <dialog id="otherComputation" class="modal">
