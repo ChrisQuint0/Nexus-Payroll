@@ -3,8 +3,14 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Dashboard | Nexus Payroll</title>
+    <title>Employee Information | Nexus Payroll</title>
     <link rel="stylesheet" href="../output.css" />
+    <link rel="stylesheet" href="../css//ag-grid/ag-theme-quartz.css" />
+    <style>
+      .ag-header-cell[col-id="Actions"] .ag-header-cell-label {
+        justify-content: center !important;
+      }
+    </style>
   </head>
   <body class="flex">
     <!-- Sidebar placeholder -->
@@ -12,9 +18,287 @@
 
     <!-- Main content -->
     <main class="flex-1 p-6">
-      <h1 class="text-2xl font-medium">Employee Information</h1>
+      <h1 class="text-3xl font-medium">Employee Information</h1>
+
+      <!-- Search and Buttons Div -->
+      <div class="mt-5 flex w-full items-center justify-between">
+        <!-- Search Bar -->
+        <label
+          class="input border border-accent focus-within:border-accent focus-within:ring-0 focus-within:outline-none shadow-none"
+        >
+          <svg
+            class="h-[1em] opacity-50"
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+          >
+            <g
+              stroke-linejoin="round"
+              stroke-linecap="round"
+              stroke-width="2.5"
+              fill="none"
+              stroke="currentColor"
+            >
+              <circle cx="11" cy="11" r="8"></circle>
+              <path d="m21 21-4.3-4.3"></path>
+            </g>
+          </svg>
+
+          <input
+            id="searchBar"
+            type="search"
+            required
+            placeholder="Search"
+            class="bg-transparent focus:outline-none"
+          />
+        </label>
+
+        <!-- Action Buttons -->
+        <div class="flex flex-row items-center gap-2">
+          <div class="m-2">
+          <button id="deleteBtn" class="btn btn-error" disabled>
+            Delete
+          </button>
+          </div>
+          <div class="m-2">
+          <button id="addNewBtn" class="btn btn-primary">
+            Add New
+          </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- AG Grid Div -->
+      <div id="employeeInfoGrid" class="mt-5 h-[470px] w-full"></div>
+
+      <!-- Generate CSV Div -->
+      <div class="flex justify-end mt-5">
+        <button class="btn btn-secondary btn-lg" onclick="genCSV.showModal()">
+          Generate CSV
+        </button>
+      </div>
     </main>
 
+    <!-- Generate CSV Modal -->
+    <dialog id="genCSV" class="modal">
+      <div class="modal-box">
+        <form method="dialog">
+          <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">
+            ✕
+          </button>
+        </form>
+        <h3 class="text-lg font-bold">Generate Employee Data CSV</h3>
+        
+        <div class="space-y-4 mt-4">
+          <!-- Department Filter -->
+          <div class="flex justify-between items-center">
+            <span class="font-medium">Department</span>
+            <select id="csvDepartment" class="select select-bordered w-48">
+              <option value="all">All Departments</option>
+              <option value="IT">IT</option>
+              <option value="Finance">Finance</option>
+              <option value="HR">Human Resources</option>
+              <option value="Sales">Sales</option>
+              <option value="Marketing">Marketing</option>
+            </select>
+          </div>
+
+          <!-- Position Filter -->
+          <div class="flex justify-between items-center">
+            <span class="font-medium">Position</span>
+            <select id="csvPosition" class="select select-bordered w-48">
+              <option value="all">All Positions</option>
+              <option value="Software Engineer">Software Engineer</option>
+              <option value="HR Manager">HR Manager</option>
+              <option value="Sales Executive">Sales Executive</option>
+              <option value="Accountant">Accountant</option>
+              <option value="Marketing Specialist">Marketing Specialist</option>
+            </select>
+          </div>
+
+          <!-- Salary Structure Filter -->
+          <div class="flex justify-between items-center">
+            <span class="font-medium">Salary Structure</span>
+            <select id="csvSalaryStructure" class="select select-bordered w-48">
+              <option value="all">All Structures</option>
+              <option value="Monthly">Monthly</option>
+              <option value="Hourly">Hourly</option>
+            </select>
+          </div>
+
+          <!-- Classification Filter -->
+          <div class="flex justify-between items-center">
+            <span class="font-medium">Classification</span>
+            <select id="csvClassification" class="select select-bordered w-48">
+              <option value="all">All Classifications</option>
+              <option value="Full-Time">Full-Time</option>
+              <option value="Part-Time">Part-Time</option>
+              <option value="Contractual">Contractual</option>
+            </select>
+          </div>
+
+          <!-- Rate Range Filter -->
+          <div class="flex justify-between items-center">
+            <span class="font-medium">Rate Range</span>
+            <select id="csvRateRange" class="select select-bordered w-48">
+              <option value="all">All Rates</option>
+              <option value="0-50000">₱0 - ₱50,000</option>
+              <option value="50001-80000">₱50,001 - ₱80,000</option>
+              <option value="80001-100000">₱80,001 - ₱100,000</option>
+              <option value="100001+">₱100,001 and above</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="flex justify-end gap-2 mt-6">
+          <button type="button" class="btn btn-ghost" onclick="genCSV.close()">Cancel</button>
+          <button id="generateCsvBtn" class="btn btn-primary">Generate CSV</button>
+        </div>
+      </div>
+
+      <!-- When you click outside the modal will close -->
+      <form method="dialog" class="modal-backdrop">
+        <button>close</button>
+      </form>
+    </dialog>
+
+    <!-- View More Modal -->
+    <dialog id="viewMoreModal" class="modal">
+      <div class="modal-box max-w-4xl max-h-[90vh] overflow-y-auto">
+        <form method="dialog">
+          <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">
+            ✕
+          </button>
+        </form>
+        <h3 class="text-2xl font-bold">Employee Details</h3>
+        <div id="employeeDetails" class="mt-4">
+          <!-- Employee details will be populated here -->
+        </div>
+      </div>
+      <form method="dialog" class="modal-backdrop">
+        <button>close</button>
+      </form>
+    </dialog>
+
+    <!-- Add New Employee Modal -->
+    <dialog id="addEmployeeModal" class="modal">
+      <div class="modal-box max-w-4xl max-h-[90vh] overflow-y-auto">
+        <form method="dialog">
+          <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">
+            ✕
+          </button>
+        </form>
+        <h3 class="text-lg font-bold">Add New Employee</h3>
+        <form id="addEmployeeForm" class="mt-4 space-y-6">
+          <!-- Personal Details -->
+          <div>
+            <h4 class="font-bold mb-3">Personal Details</h4>
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <label class="label">Employee ID</label>
+                <input type="text" name="employeeId" class="input input-bordered w-full" required />
+              </div>
+              <div>
+                <label class="label">Name</label>
+                <input type="text" name="name" class="input input-bordered w-full" required />
+              </div>
+              <div>
+                <label class="label">Contact</label>
+                <input type="text" name="contact" class="input input-bordered w-full" required />
+              </div>
+              <div>
+                <label class="label">Address</label>
+                <input type="text" name="address" class="input input-bordered w-full" required />
+              </div>
+            </div>
+          </div>
+
+          <!-- Role Details -->
+          <div>
+            <h4 class="font-bold mb-3">Role Details</h4>
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <label class="label">Position</label>
+                <input type="text" name="position" class="input input-bordered w-full" required />
+              </div>
+              <div>
+                <label class="label">Department</label>
+                <input type="text" name="department" class="input input-bordered w-full" required />
+              </div>
+              <div>
+                <label class="label">Date Hired</label>
+                <input type="date" name="dateHired" class="input input-bordered w-full" required />
+              </div>
+            </div>
+          </div>
+
+          <!-- Salary Details -->
+          <div>
+            <h4 class="font-bold mb-3">Salary Details</h4>
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <label class="label">Salary Structure</label>
+                <select name="salaryStructure" class="select select-bordered w-full" required>
+                  <option value="Monthly">Monthly</option>
+                  <option value="Hourly">Hourly</option>
+                </select>
+              </div>
+              <div>
+                <label class="label">Rate</label>
+                <input type="number" name="rate" class="input input-bordered w-full" required />
+              </div>
+              <div>
+                <label class="label">Classification</label>
+                <select name="classification" class="select select-bordered w-full" required>
+                  <option value="Full-Time">Full-Time</option>
+                  <option value="Part-Time">Part-Time</option>
+                  <option value="Contractual">Contractual</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <!-- Government IDs -->
+          <div>
+            <h4 class="font-bold mb-3">Government IDs</h4>
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <label class="label">SSS ID</label>
+                <input type="text" name="sssId" class="input input-bordered w-full" />
+              </div>
+              <div>
+                <label class="label">Philhealth ID</label>
+                <input type="text" name="philhealthId" class="input input-bordered w-full" />
+              </div>
+              <div>
+                <label class="label">Pag-IBIG ID</label>
+                <input type="text" name="pagibigId" class="input input-bordered w-full" />
+              </div>
+              <div>
+                <label class="label">TIN ID</label>
+                <input type="text" name="tinId" class="input input-bordered w-full" />
+              </div>
+            </div>
+          </div>
+
+          <div class="flex justify-end gap-2">
+            <button type="button" class="btn btn-ghost" onclick="addEmployeeModal.close()">Cancel</button>
+            <button type="submit" class="btn btn-primary">Add Employee</button>
+          </div>
+        </form>
+      </div>
+      <form method="dialog" class="modal-backdrop">
+        <button>close</button>
+      </form>
+    </dialog>
+
     <script src="../js/layout/sidebar.js"></script>
+    <script src="../js/libs/ag-grid-community.min.js"></script>
+
+    <script type="module" src="../js/employee-info/func.js"></script>
+    <script type="module" src="../js/employee-info/grid.js"></script>
+    <script
+      type="module"
+      src="../js/employee-info/employee-data.js"
+    ></script>
   </body>
 </html>
