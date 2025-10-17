@@ -17,7 +17,7 @@
       <!-- Top Part-->
       <div id="top-part" class="flex flex-1 flex-row min-h-1/7 p-10">
         <div class="content-center">
-          <h1 class="text-2xl font-medium">Reports and Audit Trail</h1>
+          <h1 class="text-5xl font-medium">Reports and Audit Trail</h1>
         </div>
         <div
           id="quick-stats-div"
@@ -44,10 +44,10 @@
       <div id="dataArea" class="p-4 flex flex-col gap-4">
         <!-- Toolbar -->
         <div class="flex justify-between items-center gap-4">
-          <div class="flex gap-3 items-center">
+          <div class="flex flex-1 gap-3 items-center">
             <select
               id="filterBtn"
-              class="px-4 py-2 border border-gray-300 rounded bg-white text-sm cursor-pointer hover:border-gray-400 focus:outline-none focus:border-blue-500"
+              class="px-4 py-2 border select select-primary rounded-box min-w-xs"
             >
               <option value="">Filter by actions</option>
               <option value="Edit">Edit</option>
@@ -55,19 +55,38 @@
               <option value="Delete">Delete</option>
               <option value="View">View</option>
             </select>
+            <!--- This button shows modals.-->
             <button
               id="generateCsvBtn"
-              class="px-4 py-2 bg-gray-600 text-white rounded text-sm hover:bg-gray-700 transition-colors"
+              class="px-4 py-2 rounded-box btn btn-primary"
             >
               Generate CSV
             </button>
           </div>
-          <input
-            type="text"
-            id="searchInput"
-            placeholder="Search"
-            class="px-4 py-2 border border-gray-300 rounded text-sm w-64 focus:outline-none focus:border-blue-500"
-          />
+          <label class="input input-primary">
+            <svg
+              class="h-[1em] opacity-50"
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+            >
+              <g
+                stroke-linejoin="round"
+                stroke-linecap="round"
+                stroke-width="2.5"
+                fill="none"
+                stroke="currentColor"
+              >
+                <circle cx="11" cy="11" r="8"></circle>
+                <path d="m21 21-4.3-4.3"></path>
+              </g>
+            </svg>
+            <input
+              type="search"
+              id="searchInput"
+              required
+              placeholder="Search"
+            />
+          </label>
         </div>
 
         <!-- AG Grid -->
