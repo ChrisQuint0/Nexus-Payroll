@@ -24,6 +24,13 @@
         backdrop-filter: blur(6px);
       }
 
+      /* Dark mode backdrop */
+      @media (prefers-color-scheme: dark) {
+        dialog.payslip-preview::backdrop {
+          background: rgba(0, 0, 0, 0.75);
+        }
+      }
+
       /* ensure modal defaults don't push dialog down */
       dialog.payslip-preview {
         margin: 0 !important;
@@ -98,6 +105,13 @@
         color: #25b170;
       }
 
+      /* Dark mode support for payslip card */
+      @media (prefers-color-scheme: dark) {
+        .payslip-card .net-amount {
+          color: #34d399;
+        }
+      }
+
       .payslip-card .muted {
         font-size: 12px;
       }
@@ -110,6 +124,31 @@
         gap: 12px;
         padding-bottom: 12px;
         border-bottom: 1px solid #e6e6e6;
+      }
+
+      /* Dark mode borders and text */
+      @media (prefers-color-scheme: dark) {
+        .payslip-card .payslip-header {
+          border-bottom: 1px solid #374151;
+        }
+        
+        .payslip-card .muted {
+          color: #9ca3af;
+        }
+        
+        .payslip-card .company-info .logo {
+          border: 1px solid #4b5563;
+          background-color: #374151;
+          color: #f9fafb;
+        }
+        
+        .payslip-card .summary-section {
+          border-top: 1px solid #374151 !important;
+        }
+        
+        .payslip-card .border-b {
+          border-color: #374151 !important;
+        }
       }
 
       .payslip-card .payslip-header .col {
@@ -430,7 +469,7 @@
               </div>
 
               <div
-                class="panel-body"
+                class="panel-body summary-section"
                 style="
                   margin-top: 12px;
                   border-top: 1px solid #e6e6e6;
@@ -465,12 +504,12 @@
             <div class="panel-body grid grid-cols-2 gap-8 text-sm items-end">
               <div>
                 <div class="muted">Received By:</div>
-                <div class="mt-3 border-b border-gray-300 w-48"></div>
+                <div class="mt-3 border-b border-gray-300 dark:border-gray-600 w-48"></div>
               </div>
               <div>
                 <div class="muted">Date Received:</div>
                 <div
-                  class="mt-3 border-b border-gray-300 w-48 inline-block"
+                  class="mt-3 border-b border-gray-300 dark:border-gray-600 w-48 inline-block"
                 ></div>
               </div>
             </div>

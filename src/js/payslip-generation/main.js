@@ -287,8 +287,22 @@ try {
     const api = agGrid.createGrid(gridDiv, gridOptions);
     gridApi = api || gridOptions.api || null;
     console.log("[Payslip] AG Grid initialized:", !!gridApi, gridApi);
+    
+    // Verify search functionality is available
+    if (gridApi) {
+      console.log("[Payslip] Available search methods:", {
+        setQuickFilter: typeof gridApi.setQuickFilter === "function",
+        setGridOption: typeof gridApi.setGridOption === "function",
+        setRowData: typeof gridApi.setRowData === "function"
+      });
+    }
   } else {
     console.error("AG Grid library not available or grid container missing.");
+    console.log("Available:", {
+      gridDiv: !!gridDiv,
+      agGrid: !!window.agGrid,
+      createGrid: !!(window.agGrid && agGrid.createGrid)
+    });
   }
 } catch (error) {
   console.error("Error initializing AG Grid:", error);
@@ -297,12 +311,55 @@ try {
   );
 }
 
-// Search functionality (uses grid API correctly)
+// Search functionality (improved with better error handling)
 const searchInput = document.getElementById("searchInput");
 if (searchInput) {
   searchInput.addEventListener("input", (e) => {
-    if (!gridApi) return;
-    gridApi.setQuickFilter(e.target.value);
+    const searchValue = e.target.value;
+    console.log("[Payslip] Search input:", searchValue);
+    
+    if (!gridApi) {
+      console.warn("[Payslip] gridApi not available for search");
+      return;
+    }
+    
+    try {
+      // Try different search methods based on available API
+      if (typeof gridApi.setQuickFilter === "function") {
+        gridApi.setQuickFilter(searchValue);
+        console.log("[Payslip] Search applied using setQuickFilter");
+      } else if (typeof gridApi.setGridOption === "function") {
+        // For newer AG Grid versions
+        gridApi.setGridOption("quickFilterText", searchValue);
+        console.log("[Payslip] Search applied using setGridOption");
+      } else {
+        console.warn("[Payslip] No search method available on gridApi");
+        // Fallback: manually filter the data
+        const filteredData = dummyEmployees.filter(emp => 
+          emp.name.toLowerCase().includes(searchValue.toLowerCase()) ||
+          emp.employeeId.toLowerCase().includes(searchValue.toLowerCase()) ||
+          emp.department.toLowerCase().includes(searchValue.toLowerCase()) ||
+          emp.position.toLowerCase().includes(searchValue.toLowerCase())
+        );
+        
+        if (typeof gridApi.setRowData === "function") {
+          gridApi.setRowData(filteredData);
+        } else if (typeof gridApi.setGridOption === "function") {
+          gridApi.setGridOption("rowData", filteredData);
+        }
+        console.log("[Payslip] Search applied using manual filtering");
+      }
+    } catch (error) {
+      console.error("[Payslip] Error during search:", error);
+    }
+  });
+  
+  // Add a clear search functionality
+  searchInput.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") {
+      searchInput.value = "";
+      searchInput.dispatchEvent(new Event("input"));
+    }
   });
 }
 
