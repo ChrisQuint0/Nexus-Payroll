@@ -5,17 +5,161 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Dashboard | Nexus Payroll</title>
     <link rel="stylesheet" href="../output.css" />
+    <!--- This is the CDN, please make this local-->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   </head>
   <body class="flex">
     <!-- Sidebar placeholder -->
     <div id="sidebar"></div>
 
     <!-- Main content -->
-    <main class="flex-1 p-6">
-      <h1 class="text-2xl font-medium">Dashboard</h1>
-      <p>Welcome to your dashboard!</p>
+    <main class="flex-1 p-8">
+      <h1 class="text-5xl font-bold">Dashboard</h1>
+      <!--- Top part-->
+      <div class="flex flex-row min-h-1/5 mt-4 mb-4 justify-between">
+        <div
+          id="dept-div"
+          class="self-center content-center flex-col max-w-max max-h-max"
+        >
+          <h3 class="w-2xs font-medium text-2xl">Department</h3>
+          <select class="select select-accent select-xl text-2xl mt-4">
+            <option disabled selected>Pick a Department</option>
+            <option>Accounting</option>
+            <option>Human Resources</option>
+            <option>Logistics and Procurement</option>
+            <option>Marketing</option>
+            <option>IT</option>
+          </select>
+        </div>
+        <div
+          id="quick-stat-1"
+          class="flex flex-row justify-between gap-10 flex-row max-h-max"
+        >
+          <div class="shadow-xl/20 rounded-box">
+            <div id="total-employees-div" class="stat w-xs rounded-box p-8">
+              <h3 class="text-xl font-semibold mb-4 stat-title">
+                Total Employees
+              </h3>
+              <h2
+                class="text-5xl font-bold stat-value"
+                id="total-employees-val"
+              >
+                24
+              </h2>
+            </div>
+          </div>
+          <div class="shadow-xl/20 rounded-box">
+            <div id="on-leave-div" class="stat w-xs rounded-box p-8">
+              <h3 class="text-xl font-semibold mb-4 stat-title">On Leave</h3>
+              <h2 class="text-5xl font-bold stat-value" id="on-leave-val">6</h2>
+            </div>
+          </div>
+          <div class="shadow-xl/20 rounded-box">
+            <div id="promotions-div" class="stat w-xs rounded-box p-8">
+              <h3 class="text-xl font-semibold mb-4 stat-title">
+                Promotions This Month
+              </h3>
+              <h2 class="text-5xl font-bold stat-value" id="promotions-val">
+                7
+              </h2>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!--- Middle Part-->
+      <div class="flex flex-row gap-10 justify-between">
+        <!--- Trend analysis-->
+
+        <div
+          class="flex flex-1 p-6 flex-col shadow-xl/20 rounded-box max-w-1/2 mt-4 justify-center"
+        >
+          <h3 class="text-2xl p-2 font-medium">Punctuality Trend Analysis</h3>
+          <div>
+            <canvas id="myChart"></canvas>
+          </div>
+        </div>
+        <!--- Deadlines -->
+        <div
+          class="flex flex-1 p-6 flex-col shadow-xl/20 rounded-box max-w-1/2 mt-4"
+        >
+          <div
+            id="deadline-edit-div"
+            class="flex w-max-w content-center justify-between"
+          >
+            <h3 class="text-2xl p-2 font-medium">Government Deadlines</h3>
+            <button class="btn btn-primary pl-4 pr-4">Edit</button>
+          </div>
+
+          <div id="deadlines-div" class="mt-4 md:mt-10">
+            <ul
+              class="list list bg-base-100 rounded-box shadow-md"
+              id="deadlines-list-values"
+            >
+              <li id="deadline-list-item" class="list-row">
+                <div class="justify-start" id="deadline-type">
+                  <h3>SSS</h3>
+                </div>
+                <div id="deadline-date-value" class="text-end">
+                  <h4>September 28, 2025</h4>
+                </div>
+              </li>
+              <li id="deadline-list-item" class="list-row">
+                <div class="justify-start" id="deadline-type">
+                  <h3>PhilHealth</h3>
+                </div>
+                <div id="deadline-date-value" class="text-end">
+                  <h4>September 29, 2025</h4>
+                </div>
+              </li>
+              <li id="deadline-list-item" class="list-row">
+                <div class="justify-start" id="deadline-type">
+                  <h3>PAG-IBIG</h3>
+                </div>
+                <div id="deadline-date-value" class="text-end">
+                  <h4>September 30, 2025</h4>
+                </div>
+              </li>
+              <li id="deadline-list-item" class="list-row">
+                <div class="justify-start" id="deadline-type">
+                  <h3>Witholding Tax</h3>
+                </div>
+                <div id="deadline-date-value" class="text-end">
+                  <h4>October 5, 2025</h4>
+                </div>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <!-- Bottom Part / Quick Actions-->
+      <div
+        class="flex-1 flex flex-row min-h-max mt-8 justify-between p-4"
+        id="quick-actions-div"
+      >
+        <div class="min-h-max min-w-1/6">
+          <button class="btn btn-primary p-8 text-xl btn-block">
+            Time IN / Time OUT
+          </button>
+        </div>
+        <div class="min-h-max min-w-1/6">
+          <button class="btn btn-primary p-8 text-xl btn-block">
+            Add New Employee
+          </button>
+        </div>
+        <div class="min-h-max min-w-1/6">
+          <button class="btn btn-primary p-8 text-xl btn-block">
+            Process Payroll
+          </button>
+        </div>
+        <div class="min-h-max min-w-1/6">
+          <button class="btn btn-primary p-8 text-xl btn-block">
+            Generate Payslips
+          </button>
+        </div>
+      </div>
     </main>
 
     <script src="../js/layout/sidebar.js"></script>
+    <script src="../js/dashboard/main.js"></script>
   </body>
 </html>
