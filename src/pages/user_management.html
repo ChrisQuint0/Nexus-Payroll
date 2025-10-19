@@ -266,8 +266,20 @@
           filter: false,
         },
 
-        { headerName: "Username", field: "username", sortable: true, flex: 1 },
-        { headerName: "Email", field: "email", sortable: true, flex: 1.5 },
+        {
+          headerName: "Username",
+          field: "username",
+          sortable: true,
+          flex: 1,
+          editable: true,
+        },
+        {
+          headerName: "Email",
+          field: "email",
+          sortable: true,
+          flex: 1.5,
+          editable: true,
+        },
         {
           headerName: "Created At",
           field: "created_at",
@@ -298,28 +310,27 @@
         suppressRowClickSelection: true,
 
         onCellEditingStopped: async (event) => {
-          if (event.colDef.field === "status") {
-            const email = event.data.email;
-            const newStatus = event.value;
-            const oldStatus = event.oldValue;
+          const field = event.colDef.field;
+          const email = event.data.email;
+          const newValue = event.value;
+          const oldValue = event.oldValue;
 
-            if (!email || newStatus === oldStatus) return;
+          if (!email || newValue === oldValue) return;
 
+          if (field === "status") {
             try {
               const { error } = await supabaseAdmin
                 .from("users")
                 .update({
-                  status: newStatus,
+                  status: newValue,
                   updated_at: new Date().toISOString(),
                 })
                 .eq("email", email);
 
               if (error) throw error;
 
-              // Update the updated_at in the data object directly
               event.data.updated_at = new Date().toLocaleString();
 
-              // Refresh only the updated_at cell
               event.api.refreshCells({
                 rowNodes: [event.node],
                 columns: ["updated_at"],
@@ -328,15 +339,13 @@
 
               window.showGlobalAlert(
                 "success",
-                `Status for ${event.data.username} updated to "${newStatus}"`
+                `Status for ${event.data.username} updated to "${newValue}"`
               );
             } catch (err) {
               console.error("Error updating status:", err);
 
-              // Revert the status in the data object
-              event.data.status = oldStatus;
+              event.data.status = oldValue;
 
-              // Refresh the status cell to show the reverted value
               event.api.refreshCells({
                 rowNodes: [event.node],
                 columns: ["status"],
@@ -346,6 +355,87 @@
               window.showGlobalAlert(
                 "error",
                 `Failed to update status: ${err.message}`
+              );
+            }
+          } else if (field === "username") {
+            try {
+              const { error } = await supabaseAdmin
+                .from("users")
+                .update({
+                  username: newValue,
+                  updated_at: new Date().toISOString(),
+                })
+                .eq("email", email);
+
+              if (error) throw error;
+
+              event.data.updated_at = new Date().toLocaleString();
+
+              event.api.refreshCells({
+                rowNodes: [event.node],
+                columns: ["updated_at"],
+                force: true,
+              });
+
+              window.showGlobalAlert(
+                "success",
+                `Username updated to "${newValue}"`
+              );
+            } catch (err) {
+              console.error("Error updating username:", err);
+
+              event.data.username = oldValue;
+
+              event.api.refreshCells({
+                rowNodes: [event.node],
+                columns: ["username"],
+                force: true,
+              });
+
+              window.showGlobalAlert(
+                "error",
+                `Failed to update username: ${err.message}`
+              );
+            }
+          } else if (field === "email") {
+            try {
+              // Update email in the database using the OLD email as the identifier
+              const { error } = await supabaseAdmin
+                .from("users")
+                .update({
+                  email: newValue,
+                  updated_at: new Date().toISOString(),
+                })
+                .eq("email", oldValue);
+
+              if (error) throw error;
+
+              event.data.updated_at = new Date().toLocaleString();
+
+              event.api.refreshCells({
+                rowNodes: [event.node],
+                columns: ["updated_at"],
+                force: true,
+              });
+
+              window.showGlobalAlert(
+                "success",
+                `Email updated to "${newValue}"`
+              );
+            } catch (err) {
+              console.error("Error updating email:", err);
+
+              event.data.email = oldValue;
+
+              event.api.refreshCells({
+                rowNodes: [event.node],
+                columns: ["email"],
+                force: true,
+              });
+
+              window.showGlobalAlert(
+                "error",
+                `Failed to update email: ${err.message}`
               );
             }
           }
