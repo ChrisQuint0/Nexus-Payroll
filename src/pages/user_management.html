@@ -510,6 +510,13 @@
 
       // Make gridApi globally accessible for CSV export
       window.gridApi = gridApi;
+
+      // Search functionality
+      const searchBar = document.getElementById("searchBar");
+      searchBar.addEventListener("input", (e) => {
+        const searchValue = e.target.value.toLowerCase();
+        gridApi.setGridOption("quickFilterText", searchValue);
+      });
     </script>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
