@@ -1,0 +1,136 @@
+<dialog id="addNewModal" class="modal">
+  <div class="modal-box">
+    <form method="dialog">
+      <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">
+        ✕
+      </button>
+    </form>
+    <h3 class="text-lg font-bold">Add New User</h3>
+    <br />
+
+    <div id="dialogAlert" class="mt-5 mb-5"></div>
+
+    <div class="flex justify-between items-center">
+      <p>Username</p>
+      <input id="usernameInput" type="text" class="input" />
+    </div>
+
+    <br />
+    <div class="flex justify-between items-center">
+      <p>Email</p>
+      <input id="emailInput" type="text" class="input" />
+    </div>
+
+    <br />
+    <div class="flex justify-between items-center">
+      <p>Password</p>
+      <input id="passwordInput" type="password" class="input" />
+    </div>
+
+    <br />
+    <div class="flex justify-end">
+      <button id="addUserBtn" class="btn btn-primary">
+        <span class="loading loading-spinner hidden" id="loadingSpinner"></span>
+        <span id="btnText">Add User</span>
+      </button>
+    </div>
+  </div>
+
+  <form method="dialog" class="modal-backdrop">
+    <button>close</button>
+  </form>
+</dialog>
+
+<dialog id="resetModal" class="modal">
+  <div class="modal-box">
+    <form method="dialog">
+      <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">
+        ✕
+      </button>
+    </form>
+    <h3 class="text-lg font-bold">Reset Password</h3>
+    <br />
+
+    <div id="dialogResetAlert" class="mt-5 mb-5"></div>
+
+    <div class="flex justify-between items-center">
+      <p>New Password</p>
+      <input id="newPass" type="text" class="input" />
+    </div>
+
+    <br />
+    <div class="flex justify-between items-center">
+      <p>Confirm Password</p>
+      <input id="confirmPass" type="text" class="input" />
+    </div>
+
+    <br />
+    <div class="flex justify-end">
+      <button id="resetPassBtn" class="btn btn-primary">
+        <span
+          class="loading loading-spinner hidden"
+          id="loadingSpinnerReset"
+        ></span>
+        <span id="btnTextReset">Reset Password</span>
+      </button>
+    </div>
+  </div>
+
+  <form method="dialog" class="modal-backdrop">
+    <button>close</button>
+  </form>
+</dialog>
+
+<dialog id="genCSV" class="modal">
+  <div class="modal-box">
+    <form method="dialog">
+      <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">
+        ✕
+      </button>
+    </form>
+    <h3 class="text-lg font-bold">Generate CSV Export</h3>
+    <p class="py-4">
+      This will export all user data (username, email, status, created date, and
+      updated date) to a CSV file.
+    </p>
+
+    <div id="csvAlert" class="mt-3 mb-3"></div>
+
+    <div class="flex justify-end gap-2">
+      <form method="dialog">
+        <button class="btn">Cancel</button>
+      </form>
+      <button id="downloadCSVBtn" class="btn btn-secondary">
+        <span class="loading loading-spinner hidden" id="csvSpinner"></span>
+        <span id="csvBtnText">Download CSV</span>
+      </button>
+    </div>
+  </div>
+  <form method="dialog" class="modal-backdrop">
+    <button>close</button>
+  </form>
+</dialog>
+
+<dialog id="deleteModal" class="modal">
+  <div class="modal-box">
+    <form method="dialog">
+      <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">
+        ✕
+      </button>
+    </form>
+    <h3 class="text-lg font-bold">Delete User</h3>
+    <p class="py-4">
+      Are you sure you want to delete this user? This action cannot be undone.
+    </p>
+    <div class="flex justify-end">
+      <form method="dialog">
+        <button class="btn">Cancel</button>
+      </form>
+
+      <button class="btn btn-error">Delete</button>
+    </div>
+  </div>
+  <form method="dialog" class="modal-backdrop">
+    <button>close</button>
+  </form>
+</dialog>
