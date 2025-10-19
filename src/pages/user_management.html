@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>User Management | Nexus Payroll</title>
     <link rel="stylesheet" href="../output.css" />
+    <link rel="stylesheet" href="../output.css" />
+    <link rel="stylesheet" href="../css//ag-grid/ag-theme-quartz.css" />
   </head>
   <body class="flex">
     <!-- Sidebar placeholder -->
@@ -13,8 +15,223 @@
     <!-- Main content -->
     <main class="flex-1 p-6">
       <h1 class="text-3xl font-medium">User Management</h1>
+
+      <!-- Search and Add New Button Div -->
+      <div class="mt-5 flex w-full items-center justify-between">
+        <!-- Search Bar -->
+        <label
+          class="input border border-accent focus-within:border-accent focus-within:ring-0 focus-within:outline-none shadow-none"
+        >
+          <svg
+            class="h-[1em] opacity-50"
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+          >
+            <g
+              stroke-linejoin="round"
+              stroke-linecap="round"
+              stroke-width="2.5"
+              fill="none"
+              stroke="currentColor"
+            >
+              <circle cx="11" cy="11" r="8"></circle>
+              <path d="m21 21-4.3-4.3"></path>
+            </g>
+          </svg>
+
+          <input
+            id="searchBar"
+            type="search"
+            required
+            placeholder="Search"
+            class="bg-transparent focus:outline-none"
+          />
+        </label>
+
+        <!-- Add New Button-->
+        <div class="flex flex-row items-center">
+          <button class="btn btn-primary btn-md">Add New</button>
+        </div>
+      </div>
+
+      <!-- AG Grid Div -->
+      <div id="usersGrid" class="mt-5 h-[470px] w-full"></div>
+
+      <!-- Generate CSV Div -->
+      <div class="flex justify-end mt-5">
+        <button class="btn btn-secondary btn-lg" onclick="genCSV.showModal()">
+          Generate CSV
+        </button>
+      </div>
     </main>
 
+    <!-- You can open the modal using ID.showModal() method -->
+    <button class="btn" onclick="my_modal_3.showModal()">open modal</button>
+    <dialog id="my_modal_3" class="modal">
+      <div class="modal-box">
+        <form method="dialog">
+          <button
+            class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2"
+          >
+            ✕
+          </button>
+        </form>
+        <h3 class="text-lg font-bold">Add New User</h3>
+        <br />
+        <div class="flex justify-between items-center">
+          <p>Username</p>
+          <input type="text" class="input" />
+        </div>
+
+        <br />
+        <div class="flex justify-between items-center">
+          <p>Email</p>
+          <input type="text" class="input" />
+        </div>
+
+        <br />
+        <div class="flex justify-between items-center">
+          <p>Password</p>
+          <input type="text" class="input" />
+        </div>
+        <br />
+        <div class="flex justify-end">
+          <button class="btn btn-primary">Add User</button>
+        </div>
+      </div>
+
+      <!-- When you click outside the modal will close -->
+      <form method="dialog" class="modal-backdrop">
+        <button>close</button>
+      </form>
+    </dialog>
+
     <script src="../js/layout/sidebar.js"></script>
+    <script src="../js/libs/ag-grid-community.min.js"></script>
+
+    <script>
+      const gridDiv = document.getElementById("usersGrid");
+
+      //Determine user theme preference, adjust theme of the AG Grid to the user preference
+
+      // Detect system dark mode
+      const isDarkMode = window.matchMedia(
+        "(prefers-color-scheme: dark)"
+      ).matches;
+
+      // Apply the correct AG Grid theme
+      gridDiv.classList.add(
+        isDarkMode ? "ag-theme-quartz-dark" : "ag-theme-quartz"
+      );
+
+      // Listen for system theme changes in real time
+      window
+        .matchMedia("(prefers-color-scheme: dark)")
+        .addEventListener("change", (e) => {
+          gridDiv.classList.toggle("ag-theme-quartz-dark", e.matches);
+          gridDiv.classList.toggle("ag-theme-quartz", !e.matches);
+        });
+
+      // Wait until the DOM is ready
+      document.addEventListener("DOMContentLoaded", function () {
+        const gridDiv = document.querySelector("#usersGrid");
+
+        // Define column definitions
+        const columnDefs = [
+          {
+            headerName: "Status",
+            field: "status",
+            sortable: true,
+            width: 120,
+          },
+          {
+            headerName: "Actions",
+            field: "actions",
+            cellRenderer: function () {
+              return `
+            <button class="btn btn-sm btn-primary">Reset</button>
+            <button class="btn btn-sm btn-error ml-1">Delete</button>
+          `;
+            },
+            width: 200,
+            sortable: false,
+            filter: false,
+          },
+          {
+            headerName: "Username",
+            field: "username",
+            sortable: true,
+            flex: 1,
+          },
+          {
+            headerName: "Email",
+            field: "email",
+            sortable: true,
+            flex: 1.5,
+          },
+          {
+            headerName: "Created At",
+            field: "createdAt",
+            sortable: true,
+            width: 160,
+          },
+          {
+            headerName: "Updated At",
+            field: "updatedAt",
+            sortable: true,
+            width: 160,
+          },
+        ];
+
+        // Dummy data
+        const rowData = [
+          {
+            status: "Active",
+            username: "johndoe",
+            email: "john@example.com",
+            createdAt: "2024-09-10",
+            updatedAt: "2025-03-15",
+          },
+          {
+            status: "Inactive",
+            username: "janedoe",
+            email: "jane@example.com",
+            createdAt: "2023-11-22",
+            updatedAt: "2025-01-08",
+          },
+          {
+            status: "Active",
+            username: "admin",
+            email: "admin@nexuspayroll.com",
+            createdAt: "2022-02-05",
+            updatedAt: "2025-07-30",
+          },
+        ];
+
+        // Grid options
+        const gridOptions = {
+          columnDefs: columnDefs,
+          rowData: rowData,
+          rowSelection: "multiple",
+          animateRows: true,
+          defaultColDef: {
+            filter: true,
+            sortable: true,
+            resizable: true,
+          },
+          rowSelection: {
+            mode: "multiRow", // allows multiple rows to be selected
+            headerCheckbox: true, // enables header checkbox functionality
+            pinned: "left",
+          },
+          pagination: true,
+          paginationPageSize: 5,
+          suppressRowClickSelection: true,
+        };
+
+        // Initialize the grid
+        new agGrid.createGrid(gridDiv, gridOptions);
+      });
+    </script>
   </body>
 </html>
