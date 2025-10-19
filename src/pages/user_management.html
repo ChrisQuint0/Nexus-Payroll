@@ -233,5 +233,23 @@
         new agGrid.createGrid(gridDiv, gridOptions);
       });
     </script>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <script type="module">
+      import { supabaseClient } from "../js/supabase/supabaseClient.js";
+
+      async function testConnection() {
+        const { data, error } = await supabaseClient.from("test").select("*");
+
+        if (error) {
+          console.error("Error connecting to Supabase:", error);
+        } else {
+          console.log("Successfully fetched users:", data);
+        }
+      }
+
+      testConnection();
+    </script>
   </body>
 </html>
