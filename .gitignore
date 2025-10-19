@@ -1,1 +1,6 @@
+# Ignore Supabase credentials
 js/supabase/supabaseClient.js
+js/supabaseClient.js
+supabaseClient.js
+supabaseConfig.js
+*.env
