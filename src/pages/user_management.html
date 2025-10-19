@@ -139,7 +139,7 @@
         <br />
 
         <!-- Alerts -->
-        <div id="dialogAlert" class="mt-5 mb-5"></div>
+        <div id="dialogResetAlert" class="mt-5 mb-5"></div>
 
         <div class="flex justify-between items-center">
           <p>New Password</p>
@@ -157,9 +157,9 @@
           <button id="resetPassBtn" class="btn btn-primary">
             <span
               class="loading loading-spinner hidden"
-              id="loadingSpinner"
+              id="loadingSpinnerReset"
             ></span>
-            <span id="btnText">Reset Password</span>
+            <span id="btnTextReset">Reset Password</span>
           </button>
         </div>
       </div>
@@ -200,7 +200,22 @@
     <script src="../js/layout/sidebar.js"></script>
     <script src="../js/libs/ag-grid-community.min.js"></script>
 
+    <script>
+      // Global alert function
+      window.showGlobalAlert = function (type, message) {
+        const globalAlert = document.getElementById("globalAlert");
+        const colorClass = type === "success" ? "alert-success" : "alert-error";
+        globalAlert.innerHTML = `
+          <div class="alert ${colorClass} shadow-lg animate-fade-down">
+            <span class="font-medium">${message}</span>
+          </div>
+        `;
+        setTimeout(() => (globalAlert.innerHTML = ""), 4000);
+      };
+    </script>
+
     <script type="module">
+      import { supabaseAdmin } from "../js/supabase/adminClient.js";
       import { supabaseClient } from "../js/supabase/supabaseClient.js";
 
       const gridDiv = document.getElementById("usersGrid");
@@ -221,33 +236,49 @@
 
       // Define columns
       const columnDefs = [
-        { headerName: "Status", field: "status", sortable: true, width: 120 },
+        {
+          headerName: "Status",
+          field: "status",
+          sortable: true,
+          width: 150,
+          editable: true,
+          cellEditor: "agSelectCellEditor",
+          cellEditorParams: {
+            values: ["active", "inactive"],
+          },
+          cellStyle: (params) => ({
+            color: params.value === "active" ? "#38B000" : "gray",
+            fontWeight: "500",
+          }),
+        },
+
         {
           headerName: "Actions",
           field: "actions",
-          cellRenderer: function () {
+          cellRenderer: function (params) {
+            const email = params.data.email;
             return `
-          <button class="btn btn-sm btn-primary" onclick="resetModal.showModal()">Reset</button>
-          <button class="btn btn-sm btn-error ml-1" onclick="deleteModal.showModal()">Delete</button>
-        `;
+            <button class="btn btn-sm btn-primary" onclick="openResetModal('${email}')">Reset</button>
+          `;
           },
-          width: 200,
+          width: 100,
           sortable: false,
           filter: false,
         },
+
         { headerName: "Username", field: "username", sortable: true, flex: 1 },
         { headerName: "Email", field: "email", sortable: true, flex: 1.5 },
         {
           headerName: "Created At",
           field: "created_at",
           sortable: true,
-          width: 160,
+          width: 180,
         },
         {
           headerName: "Updated At",
           field: "updated_at",
           sortable: true,
-          width: 160,
+          width: 180,
         },
       ];
 
@@ -265,9 +296,63 @@
         pagination: true,
         paginationPageSize: 5,
         suppressRowClickSelection: true,
+
+        onCellEditingStopped: async (event) => {
+          if (event.colDef.field === "status") {
+            const email = event.data.email;
+            const newStatus = event.value;
+            const oldStatus = event.oldValue;
+
+            if (!email || newStatus === oldStatus) return;
+
+            try {
+              const { error } = await supabaseAdmin
+                .from("users")
+                .update({
+                  status: newStatus,
+                  updated_at: new Date().toISOString(),
+                })
+                .eq("email", email);
+
+              if (error) throw error;
+
+              // Update the updated_at in the data object directly
+              event.data.updated_at = new Date().toLocaleString();
+
+              // Refresh only the updated_at cell
+              event.api.refreshCells({
+                rowNodes: [event.node],
+                columns: ["updated_at"],
+                force: true,
+              });
+
+              window.showGlobalAlert(
+                "success",
+                `Status for ${event.data.username} updated to "${newStatus}"`
+              );
+            } catch (err) {
+              console.error("Error updating status:", err);
+
+              // Revert the status in the data object
+              event.data.status = oldStatus;
+
+              // Refresh the status cell to show the reverted value
+              event.api.refreshCells({
+                rowNodes: [event.node],
+                columns: ["status"],
+                force: true,
+              });
+
+              window.showGlobalAlert(
+                "error",
+                `Failed to update status: ${err.message}`
+              );
+            }
+          }
+        },
       };
 
-      // Initialize AG Grid and keep reference to the grid instance
+      // Initialize AG Grid
       const gridApi = agGrid.createGrid(gridDiv, gridOptions);
 
       // Fetch users from Supabase
@@ -275,17 +360,19 @@
         try {
           const { data, error } = await supabaseClient
             .from("users")
-            .select("username, user_id, status, created_at, updated_at");
+            .select("username, email, status, created_at, updated_at")
+            .order("created_at", { ascending: false });
 
           if (error) throw error;
 
+          // Format and map data
           const users = data.map((user) => ({
             username: user.username,
-            email: "(auth linked)", // placeholder (can be replaced with real email)
-            status: user.status,
-            created_at: new Date(user.created_at).toLocaleDateString(),
+            email: user.email,
+            status: user.status || "inactive",
+            created_at: new Date(user.created_at).toLocaleString(),
             updated_at: user.updated_at
-              ? new Date(user.updated_at).toLocaleDateString()
+              ? new Date(user.updated_at).toLocaleString()
               : "-",
           }));
 
@@ -311,10 +398,8 @@
       const passwordInput = modal.querySelector("#passwordInput");
       const spinner = modal.querySelector("#loadingSpinner");
       const btnText = modal.querySelector("#btnText");
-      const globalAlert = document.getElementById("globalAlert");
       const dialogAlert = document.getElementById("dialogAlert");
 
-      // Show alert inside modal (for errors)
       function showDialogAlert(type, message) {
         const colorClass = type === "success" ? "alert-success" : "alert-error";
         dialogAlert.innerHTML = `
@@ -323,17 +408,6 @@
       </div>
     `;
         setTimeout(() => (dialogAlert.innerHTML = ""), 4000);
-      }
-
-      // Show global alert (for success)
-      function showGlobalAlert(type, message) {
-        const colorClass = type === "success" ? "alert-success" : "alert-error";
-        globalAlert.innerHTML = `
-      <div class="alert ${colorClass} shadow-lg animate-fade-down">
-        <span class="font-medium">${message}</span>
-      </div>
-    `;
-        setTimeout(() => (globalAlert.innerHTML = ""), 4000);
       }
 
       addUserBtn.addEventListener("click", async (e) => {
@@ -353,7 +427,6 @@
         addUserBtn.disabled = true;
 
         try {
-          // 1. Create user in Supabase Auth
           const { data: signUpData, error: signUpError } =
             await supabaseClient.auth.signUp({ email, password });
 
@@ -363,22 +436,18 @@
           if (!userId)
             throw new Error("User creation failed — no user ID returned.");
 
-          // 2. Insert into custom 'users' table with email included
           const { error: insertError } = await supabaseClient
             .from("users")
             .insert([{ user_id: userId, username, email }]);
 
           if (insertError) throw insertError;
 
-          // 3. Success message (global)
-          showGlobalAlert("success", "User successfully added!");
+          window.showGlobalAlert("success", "User successfully added!");
 
-          // 4. Clear fields
           usernameInput.value = "";
           emailInput.value = "";
           passwordInput.value = "";
 
-          // 5. Close modal after short delay
           setTimeout(() => modal.close(), 1500);
         } catch (error) {
           console.error("Error adding user:", error);
@@ -387,6 +456,78 @@
           spinner.classList.add("hidden");
           btnText.textContent = "Add User";
           addUserBtn.disabled = false;
+        }
+      });
+    </script>
+
+    <script type="module">
+      import { supabaseAdmin } from "../js/supabase/adminClient.js";
+
+      const resetModal = document.getElementById("resetModal");
+      const resetPassBtn = resetModal.querySelector("#resetPassBtn");
+      const newPassInput = resetModal.querySelector("#newPass");
+      const confirmPassInput = resetModal.querySelector("#confirmPass");
+      const resetDialogAlert = document.getElementById("dialogResetAlert");
+
+      let currentUserEmail = null;
+
+      window.openResetModal = (email) => {
+        currentUserEmail = email;
+        resetModal.showModal();
+      };
+
+      function showDialogAlert(type, message) {
+        const colorClass = type === "success" ? "alert-success" : "alert-error";
+        resetDialogAlert.innerHTML = `
+    <div class="alert ${colorClass} shadow-lg animate-fade-down">
+      <span class="font-medium">${message}</span>
+    </div>
+  `;
+        setTimeout(() => (resetDialogAlert.innerHTML = ""), 4000);
+      }
+
+      resetPassBtn.addEventListener("click", async (e) => {
+        e.preventDefault();
+
+        const newPass = newPassInput.value.trim();
+        const confirmPass = confirmPassInput.value.trim();
+
+        if (!newPass || !confirmPass) {
+          showDialogAlert("error", "Please fill in both fields.");
+          return;
+        }
+        if (newPass !== confirmPass) {
+          showDialogAlert("error", "Passwords do not match.");
+          return;
+        }
+
+        try {
+          const { data: listData, error: listError } =
+            await supabaseAdmin.auth.admin.listUsers();
+          if (listError) throw listError;
+
+          const user = listData.users.find((u) => u.email === currentUserEmail);
+          if (!user) throw new Error("User not found");
+
+          const { data: updateData, error: updateError } =
+            await supabaseAdmin.auth.admin.updateUserById(user.id, {
+              password: newPass,
+            });
+
+          if (updateError) throw updateError;
+
+          const { error: timeUpdateError } = await supabaseAdmin
+            .from("users")
+            .update({ updated_at: new Date().toISOString() })
+            .eq("email", currentUserEmail);
+
+          if (timeUpdateError) throw timeUpdateError;
+
+          showDialogAlert("success", "Password successfully reset!");
+          setTimeout(() => resetModal.close(), 1500);
+        } catch (err) {
+          console.error("Error resetting password:", err);
+          showDialogAlert("error", err.message);
         }
       });
     </script>
