@@ -9,6 +9,12 @@
     <link rel="stylesheet" href="../css//ag-grid/ag-theme-quartz.css" />
   </head>
   <body class="flex">
+    <!-- Global Alert Container -->
+    <div
+      id="globalAlert"
+      class="fixed top-4 left-1/2 -translate-x-1/2 w-[90%] max-w-md z-[999999] pointer-events-none"
+    ></div>
+
     <!-- Sidebar placeholder -->
     <div id="sidebar"></div>
 
@@ -50,7 +56,12 @@
 
         <!-- Add New Button-->
         <div class="flex flex-row items-center">
-          <button class="btn btn-primary btn-md">Add New</button>
+          <button
+            class="btn btn-primary btn-md"
+            onclick="addNewModal.showModal()"
+          >
+            Add New
+          </button>
         </div>
       </div>
 
@@ -65,9 +76,7 @@
       </div>
     </main>
 
-    <!-- You can open the modal using ID.showModal() method -->
-    <button class="btn" onclick="my_modal_3.showModal()">open modal</button>
-    <dialog id="my_modal_3" class="modal">
+    <dialog id="addNewModal" class="modal">
       <div class="modal-box">
         <form method="dialog">
           <button
@@ -78,29 +87,111 @@
         </form>
         <h3 class="text-lg font-bold">Add New User</h3>
         <br />
+
+        <!-- Alerts -->
+        <div id="dialogAlert" class="mt-5 mb-5"></div>
+
         <div class="flex justify-between items-center">
           <p>Username</p>
-          <input type="text" class="input" />
+          <input id="usernameInput" type="text" class="input" />
         </div>
 
         <br />
         <div class="flex justify-between items-center">
           <p>Email</p>
-          <input type="text" class="input" />
+          <input id="emailInput" type="text" class="input" />
         </div>
 
         <br />
         <div class="flex justify-between items-center">
           <p>Password</p>
-          <input type="text" class="input" />
+          <input id="passwordInput" type="password" class="input" />
         </div>
+
         <br />
         <div class="flex justify-end">
-          <button class="btn btn-primary">Add User</button>
+          <button id="addUserBtn" class="btn btn-primary">
+            <span
+              class="loading loading-spinner hidden"
+              id="loadingSpinner"
+            ></span>
+            <span id="btnText">Add User</span>
+          </button>
         </div>
       </div>
 
-      <!-- When you click outside the modal will close -->
+      <form method="dialog" class="modal-backdrop">
+        <button>close</button>
+      </form>
+    </dialog>
+
+    <!-- Reset Dialog -->
+    <dialog id="resetModal" class="modal">
+      <div class="modal-box">
+        <form method="dialog">
+          <button
+            class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2"
+          >
+            ✕
+          </button>
+        </form>
+        <h3 class="text-lg font-bold">Reset Password</h3>
+        <br />
+
+        <!-- Alerts -->
+        <div id="dialogAlert" class="mt-5 mb-5"></div>
+
+        <div class="flex justify-between items-center">
+          <p>New Password</p>
+          <input id="newPass" type="text" class="input" />
+        </div>
+
+        <br />
+        <div class="flex justify-between items-center">
+          <p>Confirm Password</p>
+          <input id="confirmPass" type="text" class="input" />
+        </div>
+
+        <br />
+        <div class="flex justify-end">
+          <button id="resetPassBtn" class="btn btn-primary">
+            <span
+              class="loading loading-spinner hidden"
+              id="loadingSpinner"
+            ></span>
+            <span id="btnText">Reset Password</span>
+          </button>
+        </div>
+      </div>
+
+      <form method="dialog" class="modal-backdrop">
+        <button>close</button>
+      </form>
+    </dialog>
+
+    <!-- Delete Modal -->
+    <dialog id="deleteModal" class="modal">
+      <div class="modal-box">
+        <form method="dialog">
+          <button
+            class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2"
+          >
+            ✕
+          </button>
+        </form>
+        <h3 class="text-lg font-bold">Delete User</h3>
+        <p class="py-4">
+          Are you sure you want to delete this user? This action cannot be
+          undone.
+        </p>
+        <div class="flex justify-end">
+          <form method="dialog">
+            <button class="btn">Cancel</button>
+          </form>
+
+          <button class="btn btn-error">Delete</button>
+        </div>
+      </div>
       <form method="dialog" class="modal-backdrop">
         <button>close</button>
       </form>
@@ -109,22 +200,18 @@
     <script src="../js/layout/sidebar.js"></script>
     <script src="../js/libs/ag-grid-community.min.js"></script>
 
-    <script>
+    <script type="module">
+      import { supabaseClient } from "../js/supabase/supabaseClient.js";
+
       const gridDiv = document.getElementById("usersGrid");
 
-      //Determine user theme preference, adjust theme of the AG Grid to the user preference
-
-      // Detect system dark mode
+      // Determine user theme preference
       const isDarkMode = window.matchMedia(
         "(prefers-color-scheme: dark)"
       ).matches;
-
-      // Apply the correct AG Grid theme
       gridDiv.classList.add(
         isDarkMode ? "ag-theme-quartz-dark" : "ag-theme-quartz"
       );
-
-      // Listen for system theme changes in real time
       window
         .matchMedia("(prefers-color-scheme: dark)")
         .addEventListener("change", (e) => {
@@ -132,106 +219,84 @@
           gridDiv.classList.toggle("ag-theme-quartz", !e.matches);
         });
 
-      // Wait until the DOM is ready
-      document.addEventListener("DOMContentLoaded", function () {
-        const gridDiv = document.querySelector("#usersGrid");
+      // Define columns
+      const columnDefs = [
+        { headerName: "Status", field: "status", sortable: true, width: 120 },
+        {
+          headerName: "Actions",
+          field: "actions",
+          cellRenderer: function () {
+            return `
+          <button class="btn btn-sm btn-primary" onclick="resetModal.showModal()">Reset</button>
+          <button class="btn btn-sm btn-error ml-1" onclick="deleteModal.showModal()">Delete</button>
+        `;
+          },
+          width: 200,
+          sortable: false,
+          filter: false,
+        },
+        { headerName: "Username", field: "username", sortable: true, flex: 1 },
+        { headerName: "Email", field: "email", sortable: true, flex: 1.5 },
+        {
+          headerName: "Created At",
+          field: "created_at",
+          sortable: true,
+          width: 160,
+        },
+        {
+          headerName: "Updated At",
+          field: "updated_at",
+          sortable: true,
+          width: 160,
+        },
+      ];
 
-        // Define column definitions
-        const columnDefs = [
-          {
-            headerName: "Status",
-            field: "status",
-            sortable: true,
-            width: 120,
-          },
-          {
-            headerName: "Actions",
-            field: "actions",
-            cellRenderer: function () {
-              return `
-            <button class="btn btn-sm btn-primary">Reset</button>
-            <button class="btn btn-sm btn-error ml-1">Delete</button>
-          `;
-            },
-            width: 200,
-            sortable: false,
-            filter: false,
-          },
-          {
-            headerName: "Username",
-            field: "username",
-            sortable: true,
-            flex: 1,
-          },
-          {
-            headerName: "Email",
-            field: "email",
-            sortable: true,
-            flex: 1.5,
-          },
-          {
-            headerName: "Created At",
-            field: "createdAt",
-            sortable: true,
-            width: 160,
-          },
-          {
-            headerName: "Updated At",
-            field: "updatedAt",
-            sortable: true,
-            width: 160,
-          },
-        ];
+      // Grid options
+      const gridOptions = {
+        columnDefs,
+        rowData: [],
+        rowSelection: "multiple",
+        animateRows: true,
+        defaultColDef: {
+          filter: true,
+          sortable: true,
+          resizable: true,
+        },
+        pagination: true,
+        paginationPageSize: 5,
+        suppressRowClickSelection: true,
+      };
 
-        // Dummy data
-        const rowData = [
-          {
-            status: "Active",
-            username: "johndoe",
-            email: "john@example.com",
-            createdAt: "2024-09-10",
-            updatedAt: "2025-03-15",
-          },
-          {
-            status: "Inactive",
-            username: "janedoe",
-            email: "jane@example.com",
-            createdAt: "2023-11-22",
-            updatedAt: "2025-01-08",
-          },
-          {
-            status: "Active",
-            username: "admin",
-            email: "admin@nexuspayroll.com",
-            createdAt: "2022-02-05",
-            updatedAt: "2025-07-30",
-          },
-        ];
+      // Initialize AG Grid and keep reference to the grid instance
+      const gridApi = agGrid.createGrid(gridDiv, gridOptions);
 
-        // Grid options
-        const gridOptions = {
-          columnDefs: columnDefs,
-          rowData: rowData,
-          rowSelection: "multiple",
-          animateRows: true,
-          defaultColDef: {
-            filter: true,
-            sortable: true,
-            resizable: true,
-          },
-          rowSelection: {
-            mode: "multiRow", // allows multiple rows to be selected
-            headerCheckbox: true, // enables header checkbox functionality
-            pinned: "left",
-          },
-          pagination: true,
-          paginationPageSize: 5,
-          suppressRowClickSelection: true,
-        };
+      // Fetch users from Supabase
+      async function fetchUsers() {
+        try {
+          const { data, error } = await supabaseClient
+            .from("users")
+            .select("username, user_id, status, created_at, updated_at");
 
-        // Initialize the grid
-        new agGrid.createGrid(gridDiv, gridOptions);
-      });
+          if (error) throw error;
+
+          const users = data.map((user) => ({
+            username: user.username,
+            email: "(auth linked)", // placeholder (can be replaced with real email)
+            status: user.status,
+            created_at: new Date(user.created_at).toLocaleDateString(),
+            updated_at: user.updated_at
+              ? new Date(user.updated_at).toLocaleDateString()
+              : "-",
+          }));
+
+          gridApi.setGridOption("rowData", users);
+        } catch (err) {
+          console.error("Error fetching users:", err);
+          alert("Failed to load users");
+        }
+      }
+
+      document.addEventListener("DOMContentLoaded", fetchUsers);
     </script>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -239,17 +304,101 @@
     <script type="module">
       import { supabaseClient } from "../js/supabase/supabaseClient.js";
 
-      async function testConnection() {
-        const { data, error } = await supabaseClient.from("test").select("*");
+      const modal = document.getElementById("addNewModal");
+      const addUserBtn = modal.querySelector("#addUserBtn");
+      const usernameInput = modal.querySelector("#usernameInput");
+      const emailInput = modal.querySelector("#emailInput");
+      const passwordInput = modal.querySelector("#passwordInput");
+      const spinner = modal.querySelector("#loadingSpinner");
+      const btnText = modal.querySelector("#btnText");
+      const globalAlert = document.getElementById("globalAlert");
+      const dialogAlert = document.getElementById("dialogAlert");
 
-        if (error) {
-          console.error("Error connecting to Supabase:", error);
-        } else {
-          console.log("Successfully fetched users:", data);
-        }
+      // Show alert inside the modal (for errors)
+      function showDialogAlert(type, message) {
+        const colorClass = type === "success" ? "alert-success" : "alert-error";
+
+        dialogAlert.innerHTML = `
+      <div class="alert ${colorClass} shadow-lg animate-fade-down">
+        <span class="font-medium">${message}</span>
+      </div>
+    `;
+
+        // Auto-clear after 4 seconds
+        setTimeout(() => {
+          dialogAlert.innerHTML = "";
+        }, 4000);
       }
 
-      testConnection();
+      // Show global alert (for success)
+      function showGlobalAlert(type, message) {
+        const colorClass = type === "success" ? "alert-success" : "alert-error";
+
+        globalAlert.innerHTML = `
+      <div class="alert ${colorClass} shadow-lg animate-fade-down">
+        <span class="font-medium">${message}</span>
+      </div>
+    `;
+
+        setTimeout(() => {
+          globalAlert.innerHTML = "";
+        }, 4000);
+      }
+
+      addUserBtn.addEventListener("click", async (e) => {
+        e.preventDefault();
+
+        const username = usernameInput.value.trim();
+        const email = emailInput.value.trim();
+        const password = passwordInput.value.trim();
+
+        // Validation
+        if (!username || !email || !password) {
+          showDialogAlert("error", "Please fill out all fields.");
+          return;
+        }
+
+        spinner.classList.remove("hidden");
+        btnText.textContent = "Creating...";
+        addUserBtn.disabled = true;
+
+        try {
+          // 1. Create user in Supabase Auth
+          const { data: signUpData, error: signUpError } =
+            await supabaseClient.auth.signUp({ email, password });
+
+          if (signUpError) throw signUpError;
+
+          const userId = signUpData.user?.id;
+          if (!userId)
+            throw new Error("User creation failed — no user ID returned.");
+
+          // 2. Insert into 'users' table
+          const { error: insertError } = await supabaseClient
+            .from("users")
+            .insert([{ user_id: userId, username }]);
+
+          if (insertError) throw insertError;
+
+          // Success message (global)
+          showGlobalAlert("success", "User successfully added!");
+
+          // Reset fields
+          usernameInput.value = "";
+          emailInput.value = "";
+          passwordInput.value = "";
+
+          // Close modal after short delay
+          setTimeout(() => modal.close(), 1500);
+        } catch (error) {
+          console.error("Error adding user:", error);
+          showDialogAlert("error", error.message);
+        } finally {
+          spinner.classList.add("hidden");
+          btnText.textContent = "Add User";
+          addUserBtn.disabled = false;
+        }
+      });
     </script>
   </body>
 </html>
