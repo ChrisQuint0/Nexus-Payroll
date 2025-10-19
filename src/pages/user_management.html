@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>User Management | Nexus Payroll</title>
+    <link rel="stylesheet" href="../output.css" />
+    <link rel="stylesheet" href="../css//ag-grid/ag-theme-quartz.css" />
+  </head>
+  <body class="flex">
+    <div
+      id="globalAlert"
+      class="fixed top-4 left-1/2 -translate-x-1/2 w-[90%] max-w-md z-[999999] pointer-events-none"
+    ></div>
+
+    <div id="sidebar"></div>
+
+    <main class="flex-1 p-6">
+      <h1 class="text-3xl font-medium">User Management</h1>
+
+      <div class="mt-5 flex w-full items-center justify-between">
+        <label
+          class="input border border-accent focus-within:border-accent focus-within:ring-0 focus-within:outline-none shadow-none"
+        >
+          <svg
+            class="h-[1em] opacity-50"
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+          >
+            <g
+              stroke-linejoin="round"
+              stroke-linecap="round"
+              stroke-width="2.5"
+              fill="none"
+              stroke="currentColor"
+            >
+              <circle cx="11" cy="11" r="8"></circle>
+              <path d="m21 21-4.3-4.3"></path>
+            </g>
+          </svg>
+
+          <input
+            id="searchBar"
+            type="search"
+            required
+            placeholder="Search"
+            class="bg-transparent focus:outline-none"
+          />
+        </label>
+
+        <div class="flex flex-row items-center">
+          <button
+            class="btn btn-primary btn-md"
+            onclick="addNewModal.showModal()"
+          >
+            Add New
+          </button>
+        </div>
+      </div>
+
+      <div id="usersGrid" class="mt-5 h-[470px] w-full"></div>
+
+      <div class="flex justify-end mt-5">
+        <button class="btn btn-secondary btn-lg" onclick="genCSV.showModal()">
+          Generate CSV
+        </button>
+      </div>
+    </main>
+
+    <div id="modalsContainer"></div>
+
+    <script src="../js/libs/ag-grid-community.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <script src="../js/layout/sidebar.js"></script>
+    <script type="module" src="../js/utils/alerts.js"></script>
+
+    <script type="module" src="../js/user-management/grid.js"></script>
+    <script type="module" src="../js/user-management/add-user.js"></script>
+    <script
+      type="module"
+      src="../js/user-management/reset-password.js"
+    ></script>
+    <script type="module" src="../js/user-management/csv-export.js"></script>
+
+    <script>
+      // Function to dynamically load the modals from the component file
+      document.addEventListener("DOMContentLoaded", async () => {
+        try {
+          const response = await fetch("../components/user_modals.html");
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+          const modalHtml = await response.text();
+          document.getElementById("modalsContainer").innerHTML = modalHtml;
+        } catch (error) {
+          console.error("Failed to load user modals:", error);
+          // Optional: Display an error on the page if loading fails
+        }
+      });
+    </script>
+  </body>
+</html>
