@@ -314,35 +314,26 @@
       const globalAlert = document.getElementById("globalAlert");
       const dialogAlert = document.getElementById("dialogAlert");
 
-      // Show alert inside the modal (for errors)
+      // Show alert inside modal (for errors)
       function showDialogAlert(type, message) {
         const colorClass = type === "success" ? "alert-success" : "alert-error";
-
         dialogAlert.innerHTML = `
       <div class="alert ${colorClass} shadow-lg animate-fade-down">
         <span class="font-medium">${message}</span>
       </div>
     `;
-
-        // Auto-clear after 4 seconds
-        setTimeout(() => {
-          dialogAlert.innerHTML = "";
-        }, 4000);
+        setTimeout(() => (dialogAlert.innerHTML = ""), 4000);
       }
 
       // Show global alert (for success)
       function showGlobalAlert(type, message) {
         const colorClass = type === "success" ? "alert-success" : "alert-error";
-
         globalAlert.innerHTML = `
       <div class="alert ${colorClass} shadow-lg animate-fade-down">
         <span class="font-medium">${message}</span>
       </div>
     `;
-
-        setTimeout(() => {
-          globalAlert.innerHTML = "";
-        }, 4000);
+        setTimeout(() => (globalAlert.innerHTML = ""), 4000);
       }
 
       addUserBtn.addEventListener("click", async (e) => {
@@ -352,7 +343,6 @@
         const email = emailInput.value.trim();
         const password = passwordInput.value.trim();
 
-        // Validation
         if (!username || !email || !password) {
           showDialogAlert("error", "Please fill out all fields.");
           return;
@@ -373,22 +363,22 @@
           if (!userId)
             throw new Error("User creation failed — no user ID returned.");
 
-          // 2. Insert into 'users' table
+          // 2. Insert into custom 'users' table with email included
           const { error: insertError } = await supabaseClient
             .from("users")
-            .insert([{ user_id: userId, username }]);
+            .insert([{ user_id: userId, username, email }]);
 
           if (insertError) throw insertError;
 
-          // Success message (global)
+          // 3. Success message (global)
           showGlobalAlert("success", "User successfully added!");
 
-          // Reset fields
+          // 4. Clear fields
           usernameInput.value = "";
           emailInput.value = "";
           passwordInput.value = "";
 
-          // Close modal after short delay
+          // 5. Close modal after short delay
           setTimeout(() => modal.close(), 1500);
         } catch (error) {
           console.error("Error adding user:", error);
