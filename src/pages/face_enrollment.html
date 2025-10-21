@@ -6,20 +6,17 @@
     <title>Face Enrollment | Nexus Payroll</title>
     <link rel="stylesheet" href="../output.css" />
   </head>
+
   <body class="flex min-h-screen">
-    <!-- Sidebar placeholder -->
     <div id="sidebar"></div>
 
-    <!-- Main content -->
     <main class="flex-1 p-6">
-      <h1 class="text-2xl font-medium mb-6">Face Enrollment</h1>
+      <h1 class="text-3xl font-medium mb-6">Face Enrollment</h1>
 
-      <!-- Center the camera + form horizontally and vertically -->
       <div class="flex justify-center items-center min-h-[70vh]">
         <div
           class="flex flex-col md:flex-row items-center md:items-start gap-10"
         >
-          <!-- Camera Section -->
           <div class="flex flex-col items-center">
             <div
               class="relative w-120 h-100 border rounded-lg bg-gray-100 flex items-center justify-center overflow-hidden"
@@ -31,10 +28,12 @@
                 playsinline
                 class="absolute w-full h-full object-cover rounded-lg"
               ></video>
+
               <canvas
                 id="overlay"
                 class="absolute pointer-events-none w-full h-full"
               ></canvas>
+
               <div
                 id="placeholder"
                 class="flex flex-col items-center justify-center text-gray-400"
@@ -63,7 +62,6 @@
             </div>
           </div>
 
-          <!-- Right Side Form -->
           <div class="flex flex-col w-72 gap-4">
             <div>
               <label class="block text-sm font-medium mb-1">Employee ID</label>
@@ -96,98 +94,13 @@
     </main>
 
     <script src="../js/layout/sidebar.js"></script>
+
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-    <script type="module">
-      import * as faceapi from "https://cdn.jsdelivr.net/npm/@vladmandic/face-api@1.5.7/dist/face-api.esm.js";
-      import { supabaseClient } from "../js/supabase/supabaseClient.js";
-
-      const video = document.getElementById("video");
-      const overlay = document.getElementById("overlay");
-      const placeholder = document.getElementById("placeholder");
-      const captureBtn = document.getElementById("captureBtn");
-      const stopBtn = document.getElementById("stopBtn");
-      const empIdInput = document.getElementById("empId");
-      const statusEl = document.getElementById("status");
-
-      let stream = null;
-
-      async function loadModels() {
-        statusEl.textContent = "Loading face detection models...";
-        const MODEL_URL =
-          "https://cdn.jsdelivr.net/npm/@vladmandic/face-api@1.5.7/model/";
-        await faceapi.tf.setBackend("webgl");
-        await faceapi.nets.ssdMobilenetv1.loadFromUri(MODEL_URL);
-        await faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL);
-        await faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL);
-        statusEl.textContent = "Models loaded.";
-      }
-
-      async function startCamera() {
-        try {
-          stream = await navigator.mediaDevices.getUserMedia({
-            video: { width: 320, height: 240 },
-            audio: false,
-          });
-          video.srcObject = stream;
-          await video.play();
-          overlay.width = video.videoWidth;
-          overlay.height = video.videoHeight;
-          placeholder.style.display = "none";
-          statusEl.textContent = "Camera ready. Click 'Capture Face'.";
-        } catch (err) {
-          console.error(err);
-          statusEl.textContent = "Error accessing camera.";
-        }
-      }
-
-      async function captureFace() {
-        const empId = empIdInput.value.trim();
-        if (!empId) {
-          statusEl.textContent = "Please enter an Employee ID.";
-          return;
-        }
-
-        statusEl.textContent = "Detecting face...";
-        const detection = await faceapi
-          .detectSingleFace(video)
-          .withFaceLandmarks()
-          .withFaceDescriptor();
-
-        if (!detection) {
-          statusEl.textContent = "No face detected. Try again.";
-          return;
-        }
-
-        const descriptor = Array.from(detection.descriptor);
-        statusEl.textContent = "Face captured. Saving...";
-
-        const { error } = await supabaseClient
-          .from("employees")
-          .update({ face_embedding: descriptor })
-          .eq("emp_id", empId);
-
-        if (error) {
-          console.error(error);
-          statusEl.textContent = "Error saving to database.";
-        } else {
-          statusEl.textContent = `✅ Face enrolled for Employee ID ${empId}.`;
-        }
-      }
-
-      function stopCamera() {
-        if (stream) {
-          stream.getTracks().forEach((t) => t.stop());
-          stream = null;
-        }
-        placeholder.style.display = "flex";
-        statusEl.textContent = "Camera stopped.";
-      }
-
-      captureBtn.addEventListener("click", captureFace);
-      stopBtn.addEventListener("click", stopCamera);
-
-      loadModels().then(startCamera);
-    </script>
+    <script
+      src="../js/time-in-out/face-enrollment.js"
+      type="module"
+      defer
+    ></script>
   </body>
 </html>
