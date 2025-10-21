@@ -3,18 +3,103 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Dashboard | Nexus Payroll</title>
+    <title>Time In/Out | Nexus Payroll</title>
     <link rel="stylesheet" href="../output.css" />
   </head>
-  <body class="flex">
-    <!-- Sidebar placeholder -->
+  <body class="flex min-h-screen">
     <div id="sidebar"></div>
 
-    <!-- Main content -->
     <main class="flex-1 p-6">
-      <h1 class="text-2xl font-medium">Time In / Out</h1>
+      <div class="flex items-center justify-center">
+        <img src="../assets/npayroll_logo.png" alt="" class="w-20 h-20 mr-5" />
+        <h3 class="text-3xl">Nexus Payroll</h3>
+      </div>
+
+      <div class="flex items-center justify-center mt-60">
+        <button
+          class="btn btn-outline btn-primary text-3xl w-150 h-20 rounded-4xl"
+          onclick="cameraModal.showModal()"
+        >
+          Time In/Out
+        </button>
+      </div>
+
+      <div id="cameraModalContainer"></div>
     </main>
 
     <script src="../js/layout/sidebar.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <script src="../js/time-in-out/main.js" type="module" defer></script>
+
+    <dialog id="cameraModal" class="modal">
+      <div class="modal-box max-w-3xl">
+        <form method="dialog">
+          <button
+            class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2"
+          >
+            ✕
+          </button>
+        </form>
+
+        <h3 class="text-lg font-bold mb-3">Facial Recognition Time In/Out</h3>
+
+        <div class="flex flex-col md:flex-row gap-4">
+          <div class="flex-1 relative">
+            <video
+              id="video"
+              autoplay
+              muted
+              playsinline
+              class="w-full rounded-md border"
+            ></video>
+
+            <canvas
+              id="overlay"
+              class="absolute inset-0 pointer-events-none"
+            ></canvas>
+          </div>
+
+          <div class="w-full md:w-80">
+            <div id="status" class="mb-4 p-3 rounded-md bg-base-200">
+              Initializing...
+            </div>
+
+            <button id="startBtn" class="btn btn-primary w-full mb-2">
+              Start Scanning
+            </button>
+            <button id="stopBtn" class="btn btn-outline w-full mb-2">
+              Stop
+            </button>
+
+            <div class="mt-4 text-sm text-muted">
+              <p>
+                Tip: Position your face inside the camera view. The system will
+                attempt to match your face and record time in/out automatically.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </dialog>
+
+    <div
+      id="confirmationOverlay"
+      class="hidden fixed inset-0 bg-base-300 flex flex-col items-center justify-center text-center"
+    >
+      <div class="flex flex-col items-center space-y-2">
+        <h3 id="confirmName" class="text-5xl font-semibold mt-4">
+          Juan Dela Cruz
+        </h3>
+        <p id="confirmEmpId" class="text-2xl">0101010011011</p>
+        <p
+          id="confirmAction"
+          class="text-5xl font-bold mt-6 mb-2 text-green-600"
+        >
+          IN
+        </p>
+        <p id="confirmTime" class="text-2xl">8:43 AM</p>
+      </div>
+    </div>
   </body>
 </html>

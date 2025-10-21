@@ -7,3 +7,14 @@ supabaseClient.js
 adminClient.js
 supabaseConfig.js
 *.env
+
+# Ignore Supabase credentials anywhere in the project
+**/supabaseClient.js
+**/adminClient.js
+**/supabaseConfig.js
+
+# Ignore environment variable files
+*.env
+*.env.local
+*.env.production
+*.env.development
