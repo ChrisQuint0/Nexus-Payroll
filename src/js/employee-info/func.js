@@ -1,21 +1,105 @@
 import { gridApi, rowData } from './grid.js';
+import { officialTimeSchedules } from './employee-data.js'; // Add this import
 
 // Global variables
 let currentEmployeeData = [...rowData];
+let currentView = 'active'; // 'active' or 'inactive'
 
 // Initialize functionality
 document.addEventListener('DOMContentLoaded', function() {
     initializeEventListeners();
     initializeSearch();
-    initializeCSVGeneration(); // Add this line
+    initializeCSVGeneration();
+    populateOfficialTimeDropdown();
+    initializeTabSwitching(); // Add this line
 });
+
+// Initialize tab switching
+function initializeTabSwitching() {
+    const activeTab = document.getElementById('activeEmployeesTab');
+    const inactiveTab = document.getElementById('inactiveEmployeesTab');
+
+    if (activeTab) {
+        activeTab.addEventListener('click', () => switchTab('active'));
+    }
+
+    if (inactiveTab) {
+        inactiveTab.addEventListener('click', () => switchTab('inactive'));
+    }
+
+    // Set initial view
+    switchTab('active');
+}
+
+// Switch between Active and Inactive tabs
+function switchTab(tab) {
+    currentView = tab;
+    
+    // Update tab styles
+    const activeTab = document.getElementById('activeEmployeesTab');
+    const inactiveTab = document.getElementById('inactiveEmployeesTab');
+    
+    if (activeTab && inactiveTab) {
+        if (tab === 'active') {
+            activeTab.classList.remove('btn-outline');
+            activeTab.classList.add('btn-primary');
+            inactiveTab.classList.remove('btn-primary');
+            inactiveTab.classList.add('btn-outline');
+        } else {
+            inactiveTab.classList.remove('btn-outline');
+            inactiveTab.classList.add('btn-primary');
+            activeTab.classList.remove('btn-primary');
+            activeTab.classList.add('btn-outline');
+        }
+    }
+    
+    // Update button text based on current view
+    const archiveBtn = document.getElementById('archiveBtn');
+    if (archiveBtn) {
+        archiveBtn.textContent = tab === 'active' ? 'Archive' : 'Restore';
+    }
+    
+    // Filter and display data
+    filterAndDisplayData();
+    
+    // Clear selection
+    gridApi.deselectAll();
+    handleSelectionChange();
+}
+
+// Filter and display data based on current view
+function filterAndDisplayData() {
+    const filteredData = currentEmployeeData.filter(employee => {
+        if (currentView === 'active') {
+            return employee.Status === 'Active';
+        } else {
+            return employee.Status === 'Inactive';
+        }
+    });
+    
+    gridApi.setGridOption('rowData', filteredData);
+}
+
+// Populate official time dropdown
+function populateOfficialTimeDropdown() {
+    const officialTimeSelect = document.getElementById('officialTime');
+    if (officialTimeSelect) {
+        officialTimeSelect.innerHTML = '<option value="">Select Official Time</option>';
+        officialTimeSchedules.forEach(schedule => {
+            const option = document.createElement('option');
+            option.value = schedule.official_time_id;
+            option.textContent = schedule.schedule_name;
+            officialTimeSelect.appendChild(option);
+        });
+    }
+}
 
 // Event listeners setup
 function initializeEventListeners() {
-    // Delete button
-    const deleteBtn = document.getElementById('deleteBtn');
-    if (deleteBtn) {
-        deleteBtn.addEventListener('click', handleDeleteSelected);
+    // Archive button
+    const archiveBtn = document.getElementById('archiveBtn');
+    if (archiveBtn) {
+        archiveBtn.addEventListener('click', handleArchiveSelected);
     }
     
     // Add new button
@@ -43,6 +127,9 @@ function initializeEventListeners() {
             showEmployeeDetails(employeeId);
         }
     });
+
+    // Initialize position change events
+    initializePositionChange();
 }
 
 // Search functionality
@@ -51,41 +138,64 @@ function initializeSearch() {
     if (searchBar) {
         searchBar.addEventListener('input', function(e) {
             const searchTerm = e.target.value.toLowerCase();
-            const filteredData = currentEmployeeData.filter(employee => 
-                Object.values(employee).some(value => 
+            const filteredData = currentEmployeeData.filter(employee => {
+                // First filter by status based on current view
+                const statusMatch = currentView === 'active' ? 
+                    employee.Status === 'Active' : employee.Status === 'Inactive';
+                
+                // Then filter by search term
+                const searchMatch = Object.values(employee).some(value => 
                     value.toString().toLowerCase().includes(searchTerm)
-                )
-            );
+                );
+                
+                return statusMatch && searchMatch;
+            });
             gridApi.setGridOption('rowData', filteredData);
         });
     }
 }
 
-// Handle selection change for delete button
+// Handle selection change for archive button
 window.handleSelectionChange = function() {
     const selectedRows = gridApi.getSelectedRows();
-    const deleteBtn = document.getElementById('deleteBtn');
-    if (deleteBtn) {
-        deleteBtn.disabled = selectedRows.length === 0;
+    const archiveBtn = document.getElementById('archiveBtn');
+    if (archiveBtn) {
+        archiveBtn.disabled = selectedRows.length === 0;
     }
 };
 
-// Delete selected rows
-function handleDeleteSelected() {
+// Archive/Restore selected rows
+function handleArchiveSelected() {
     const selectedRows = gridApi.getSelectedRows();
     if (selectedRows.length === 0) return;
     
-    if (confirm(`Are you sure you want to delete ${selectedRows.length} employee(s)?`)) {
+    const action = currentView === 'active' ? 'archive' : 'restore';
+    const actionText = currentView === 'active' ? 'Archive' : 'Restore';
+    
+    if (confirm(`Are you sure you want to ${actionText.toLowerCase()} ${selectedRows.length} employee(s)?`)) {
         const selectedIds = selectedRows.map(row => row['Employee ID']);
-        currentEmployeeData = currentEmployeeData.filter(
-            employee => !selectedIds.includes(employee['Employee ID'])
-        );
         
-        gridApi.setGridOption('rowData', currentEmployeeData);
-        const deleteBtn = document.getElementById('deleteBtn');
-        if (deleteBtn) {
-            deleteBtn.disabled = true;
+        // Update employee status
+        currentEmployeeData = currentEmployeeData.map(employee => {
+            if (selectedIds.includes(employee['Employee ID'])) {
+                return {
+                    ...employee,
+                    Status: action === 'archive' ? 'Inactive' : 'Active'
+                };
+            }
+            return employee;
+        });
+        
+        // Refresh grid
+        filterAndDisplayData();
+        
+        // Disable button after action
+        const archiveBtn = document.getElementById('archiveBtn');
+        if (archiveBtn) {
+            archiveBtn.disabled = true;
         }
+        
+        alert(`${selectedRows.length} employee(s) ${actionText.toLowerCase()}d successfully!`);
     }
 }
 
@@ -106,8 +216,20 @@ function showEmployeeDetails(employeeId) {
                         <span>${employee['Employee ID']}</span>
                     </div>
                     <div class="flex justify-between">
-                        <span class="font-medium">Name:</span>
-                        <span>${employee.Name}</span>
+                        <span class="font-medium">Last Name:</span>
+                        <span>${employee['Last Name']}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="font-medium">First Name:</span>
+                        <span>${employee['First Name']}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="font-medium">Middle Initial:</span>
+                        <span>${employee['Middle Initial'] || 'N/A'}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="font-medium">Status:</span>
+                        <span class="px-2 py-1 rounded ${employee.Status === 'Active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}">${employee.Status}</span>
                     </div>
                     <div class="flex justify-between">
                         <span class="font-medium">Contact:</span>
@@ -136,6 +258,18 @@ function showEmployeeDetails(employeeId) {
                         <span class="font-medium">Date Hired:</span>
                         <span>${employee.DateHired ? new Date(employee.DateHired).toLocaleDateString() : 'N/A'}</span>
                     </div>
+                    <div class="flex justify-between">
+                        <span class="font-medium">Official Time:</span>
+                        <span>${employee.ScheduleName || 'N/A'}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="font-medium">Start Time:</span>
+                        <span>${employee.StartTime ? formatTime(employee.StartTime) : 'N/A'}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="font-medium">End Time:</span>
+                        <span>${employee.EndTime ? formatTime(employee.EndTime) : 'N/A'}</span>
+                    </div>
                 </div>
             </div>
             
@@ -144,16 +278,8 @@ function showEmployeeDetails(employeeId) {
                 <h4 class="font-bold text-lg border-b pb-2">Salary Information</h4>
                 <div class="space-y-2">
                     <div class="flex justify-between">
-                        <span class="font-medium">Salary Structure:</span>
-                        <span>${employee.SalaryStructure}</span>
-                    </div>
-                    <div class="flex justify-between">
                         <span class="font-medium">Rate:</span>
                         <span>₱${parseInt(employee.Rate).toLocaleString()}</span>
-                    </div>
-                    <div class="flex justify-between">
-                        <span class="font-medium">Classification:</span>
-                        <span>${employee.Classification || 'N/A'}</span>
                     </div>
                 </div>
             </div>
@@ -192,6 +318,37 @@ function showEmployeeDetails(employeeId) {
     document.getElementById('viewMoreModal').showModal();
 }
 
+// Initialize position change events
+function initializePositionChange() {
+    const positionSelect = document.querySelector('select[name="position"]');
+    const rateInput = document.querySelector('input[name="rate"]');
+    
+    if (positionSelect && rateInput) {
+        positionSelect.addEventListener('change', function() {
+            const selectedOption = this.options[this.selectedIndex];
+            const salary = selectedOption.getAttribute('data-salary');
+            
+            if (salary) {
+                rateInput.value = salary;
+            } else {
+                rateInput.value = '';
+            }
+        });
+    }
+}
+
+// Format time from HH:MM:SS to HH:MM AM/PM
+function formatTime(timeString) {
+    if (!timeString) return 'N/A';
+    
+    const [hours, minutes] = timeString.split(':');
+    const hour = parseInt(hours);
+    const ampm = hour >= 12 ? 'PM' : 'AM';
+    const formattedHour = hour % 12 || 12;
+    
+    return `${formattedHour}:${minutes} ${ampm}`;
+}
+
 // Edit employee - opens the same form as Add New but pre-filled
 window.editEmployee = function(employeeId) {
     const employee = currentEmployeeData.find(emp => emp['Employee ID'] === employeeId);
@@ -206,19 +363,37 @@ window.editEmployee = function(employeeId) {
     
     // Pre-fill all fields
     form.querySelector('[name="employeeId"]').value = employee['Employee ID'];
-    form.querySelector('[name="name"]').value = employee.Name;
+    form.querySelector('[name="firstName"]').value = employee['First Name'] || '';
+    form.querySelector('[name="lastName"]').value = employee['Last Name'] || '';
+    form.querySelector('[name="middleInitial"]').value = employee['Middle Initial'] || '';
     form.querySelector('[name="contact"]').value = employee.Contact || '';
     form.querySelector('[name="address"]').value = employee.Address || '';
-    form.querySelector('[name="position"]').value = employee.Position;
-    form.querySelector('[name="department"]').value = employee.Department;
+    
+    // Set position and department dropdowns
+    const positionSelect = form.querySelector('[name="position"]');
+    if (positionSelect) {
+        positionSelect.value = employee.Position;
+        // Trigger change event to update salary
+        positionSelect.dispatchEvent(new Event('change'));
+    }
+    
+    const departmentSelect = form.querySelector('[name="department"]');
+    if (departmentSelect) {
+        departmentSelect.value = employee.Department;
+    }
+    
     form.querySelector('[name="dateHired"]').value = employee.DateHired || '';
-    form.querySelector('[name="salaryStructure"]').value = employee.SalaryStructure;
     form.querySelector('[name="rate"]').value = employee.Rate;
-    form.querySelector('[name="classification"]').value = employee.Classification || 'Full-Time';
     form.querySelector('[name="sssId"]').value = employee.SSSID || '';
     form.querySelector('[name="philhealthId"]').value = employee.PhilhealthID || '';
     form.querySelector('[name="pagibigId"]').value = employee.PagIBIGID || '';
     form.querySelector('[name="tinId"]').value = employee.TINID || '';
+    
+    // Set official time
+    const officialTimeSelect = document.getElementById('officialTime');
+    if (officialTimeSelect && employee.OfficialTimeID) {
+        officialTimeSelect.value = employee.OfficialTimeID;
+    }
     
     // Make Employee ID read-only during edit
     form.querySelector('[name="employeeId"]').readOnly = true;
@@ -240,22 +415,33 @@ function handleAddEmployee(e) {
     
     const formData = new FormData(e.target);
     const isEditing = e.target.dataset.editingEmployeeId;
+    const officialTimeId = formData.get('officialTime');
+    
+    // Find the selected official time schedule
+    const selectedSchedule = officialTimeSchedules.find(
+        schedule => schedule.official_time_id === officialTimeId
+    );
     
     const employeeData = {
         "Employee ID": formData.get('employeeId'),
-        Name: formData.get('name'),
+        "First Name": formData.get('firstName'),
+        "Last Name": formData.get('lastName'),
+        "Middle Initial": formData.get('middleInitial') || '',
         Position: formData.get('position'),
         Department: formData.get('department'),
-        SalaryStructure: formData.get('salaryStructure'),
         Rate: formData.get('rate'),
-        Classification: formData.get('classification'),
-        SSSID: formData.get('sssId') || '',  // Ensure empty strings instead of null
+        SSSID: formData.get('sssId') || '',
         PhilhealthID: formData.get('philhealthId') || '',
         PagIBIGID: formData.get('pagibigId') || '',
         TINID: formData.get('tinId') || '',
         DateHired: formData.get('dateHired') || '',
         Contact: formData.get('contact') || '',
-        Address: formData.get('address') || ''
+        Address: formData.get('address') || '',
+        OfficialTimeID: officialTimeId || '',
+        ScheduleName: selectedSchedule ? selectedSchedule.schedule_name : '',
+        StartTime: selectedSchedule ? selectedSchedule.start_time : '',
+        EndTime: selectedSchedule ? selectedSchedule.end_time : '',
+        Status: isEditing ? currentEmployeeData.find(emp => emp['Employee ID'] === isEditing)?.Status || 'Active' : 'Active' // Set status for new employees
     };
     
     if (isEditing) {
@@ -266,7 +452,7 @@ function handleAddEmployee(e) {
         
         if (employeeIndex !== -1) {
             currentEmployeeData[employeeIndex] = employeeData;
-            gridApi.setGridOption('rowData', currentEmployeeData);
+            filterAndDisplayData();
             
             alert('Employee updated successfully!');
         }
@@ -279,7 +465,7 @@ function handleAddEmployee(e) {
         }
         
         currentEmployeeData.push(employeeData);
-        gridApi.setGridOption('rowData', currentEmployeeData);
+        filterAndDisplayData();
         alert('Employee added successfully!');
     }
     
@@ -316,23 +502,18 @@ function initializeCSVGeneration() {
 function handleGenerateCSV() {
     const department = document.getElementById('csvDepartment').value;
     const position = document.getElementById('csvPosition').value;
-    const salaryStructure = document.getElementById('csvSalaryStructure').value;
-    const classification = document.getElementById('csvClassification').value;
     const rateRange = document.getElementById('csvRateRange').value;
 
     // Filter data based on selections
     let filteredData = currentEmployeeData.filter(employee => {
+        // Status filter - only include active employees for CSV
+        if (employee.Status !== 'Active') return false;
+        
         // Department filter
         if (department !== 'all' && employee.Department !== department) return false;
         
         // Position filter
         if (position !== 'all' && employee.Position !== position) return false;
-        
-        // Salary Structure filter
-        if (salaryStructure !== 'all' && employee.SalaryStructure !== salaryStructure) return false;
-        
-        // Classification filter
-        if (classification !== 'all' && employee.Classification !== classification) return false;
         
         // Rate Range filter
         if (rateRange !== 'all') {
@@ -357,7 +538,7 @@ function handleGenerateCSV() {
     });
 
     if (filteredData.length === 0) {
-        alert('No employees match the selected filters.');
+        alert('No active employees match the selected filters.');
         return;
     }
 
@@ -367,24 +548,31 @@ function handleGenerateCSV() {
 
 // Generate and download CSV file
 function generateCSVFile(data) {
-    console.log('Generating CSV from data:', data); // Debug log
+    console.log('Generating CSV from data:', data);
     
-    // Define CSV headers - MUST MATCH the exact field names from employee-data.js
+    // Define CSV headers - include new official time fields
     const headers = [
         'Employee ID',
-        'Name',
+        'First Name',
+        'Last Name',
+        'Middle Initial',
         'Position',
         'Department',
         'SalaryStructure',
         'Rate',
         'Classification',
-        'SSSID',           // Changed from 'SSS ID'
-        'PhilhealthID',    // Changed from 'Philhealth ID'
-        'PagIBIGID',       // Changed from 'Pag-IBIG ID'
-        'TINID',           // Changed from 'TIN ID'
-        'DateHired',       // Changed from 'Date Hired'
+        'SSSID',
+        'PhilhealthID',
+        'PagIBIGID',
+        'TINID',
+        'DateHired',
         'Contact',
-        'Address'
+        'Address',
+        'OfficialTimeID',
+        'ScheduleName',
+        'StartTime',
+        'EndTime',
+        'Status'
     ];
 
     // Convert data to CSV format
@@ -393,7 +581,7 @@ function generateCSVFile(data) {
     data.forEach(employee => {
         const row = headers.map(header => {
             let value = employee[header] || '';
-            console.log(`Field: ${header}, Value:`, value); // Debug log
+            console.log(`Field: ${header}, Value:`, value);
             
             // Convert to string and handle empty values
             value = String(value);
@@ -407,7 +595,7 @@ function generateCSVFile(data) {
         csvContent += row.join(',') + '\n';
     });
 
-    console.log('Final CSV content:', csvContent); // Debug log
+    console.log('Final CSV content:', csvContent);
 
     // Create and download the file
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });

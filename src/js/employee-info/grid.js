@@ -18,14 +18,24 @@ window
     gridDiv.classList.toggle("ag-theme-quartz", !e.matches);
   });
 
-//Column Definition of the Grid
 const columnDefs = [
   { field: "Employee ID" },
-  { field: "Name" },
+  { field: "Last Name" },
+  { field: "First Name" },
+  { field: "Middle Initial" },
   { field: "Position" },
   { field: "Department" },
-  { field: "SalaryStructure" },
   { field: "Rate" },
+  { 
+    field: "Status",
+    cellStyle: (params) => {
+      if (params.value === 'Active') {
+        return { color: 'green', fontWeight: 'bold' };
+      } else {
+        return { color: 'red', fontWeight: 'bold' };
+      }
+    }
+  },
   {
     field: "Actions",
     cellRenderer: (params) => {

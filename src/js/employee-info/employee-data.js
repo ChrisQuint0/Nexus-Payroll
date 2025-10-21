@@ -1,8 +1,9 @@
-// Extended employee data with additional fields
 export const rowData = [
   {
     "Employee ID": "1000123",
-    Name: "Christopher Quinto",
+    "First Name": "Christopher",
+    "Last Name": "Quinto",
+    "Middle Initial": "M",
     Position: "Software Engineer",
     Department: "IT",
     SalaryStructure: "Monthly",
@@ -14,11 +15,18 @@ export const rowData = [
     TINID: "000-123-456-000",
     DateHired: "2024-01-15",
     Contact: "09171234567",
-    Address: "123 Main St, Manila"
+    Address: "123 Main St, Manila",
+    OfficialTimeID: "1",
+    ScheduleName: "Standard 8-Hour Shift",
+    StartTime: "09:00:00",
+    EndTime: "18:00:00",
+    Status: "Active"
   },
   {
     "Employee ID": "1000124",
-    Name: "Ipei Goto",
+    "First Name": "Ipei",
+    "Last Name": "Goto",
+    "Middle Initial": "B",
     Position: "HR Manager",
     Department: "Human Resources",
     SalaryStructure: "Monthly",
@@ -30,11 +38,18 @@ export const rowData = [
     TINID: "000-123-456-001",
     DateHired: "2024-02-01",
     Contact: "09171234568",
-    Address: "456 Oak St, Quezon City"
+    Address: "456 Oak St, Quezon City",
+    OfficialTimeID: "2",
+    ScheduleName: "Flex 9-Hour Shift",
+    StartTime: "10:00:00",
+    EndTime: "19:00:00",
+    Status: "Active"
   },
   {
     "Employee ID": "1000125",
-    Name: "Chrisha Balbacal",
+    "First Name": "Chrisha",
+    "Last Name": "Balbacal",
+    "Middle Initial": "A",
     Position: "Sales Executive",
     Department: "Sales",
     SalaryStructure: "Monthly",
@@ -46,11 +61,18 @@ export const rowData = [
     TINID: "000-123-456-002",
     DateHired: "2024-01-20",
     Contact: "09171234569",
-    Address: "789 Pine St, Makati"
+    Address: "789 Pine St, Makati",
+    OfficialTimeID: "3",
+    ScheduleName: "Early 8-Hour Shift",
+    StartTime: "07:00:00",
+    EndTime: "16:00:00",
+    Status: "Active"
   },
   {
     "Employee ID": "1000126",
-    Name: "Sofia Manuel",
+    "First Name": "Sofia",
+    "Last Name": "Manuel",
+    "Middle Initial": "F",
     Position: "Accountant",
     Department: "Finance",
     SalaryStructure: "Monthly",
@@ -62,11 +84,18 @@ export const rowData = [
     TINID: "000-123-456-003",
     DateHired: "2024-03-10",
     Contact: "09171234570",
-    Address: "321 Elm St, Taguig"
+    Address: "321 Elm St, Taguig",
+    OfficialTimeID: "1",
+    ScheduleName: "Standard 8-Hour Shift",
+    StartTime: "09:00:00",
+    EndTime: "18:00:00",
+    Status: "Active"
   },
   {
     "Employee ID": "1000127",
-    Name: "Keith Tornea",
+    "First Name": "Keith",
+    "Last Name": "Tornea",
+    "Middle Initial": "M",
     Position: "Marketing Specialist",
     Department: "Marketing",
     SalaryStructure: "Monthly",
@@ -78,6 +107,33 @@ export const rowData = [
     TINID: "000-123-456-004",
     DateHired: "2024-02-15",
     Contact: "09171234571",
-    Address: "654 Maple St, Pasig"
+    Address: "654 Maple St, Pasig",
+    OfficialTimeID: "2",
+    ScheduleName: "Flex 9-Hour Shift",
+    StartTime: "10:00:00",
+    EndTime: "19:00:00",
+    Status: "Active"
+  }
+];
+
+// Official time schedules data
+export const officialTimeSchedules = [
+  {
+    official_time_id: "1",
+    schedule_name: "Standard 8-Hour Shift",
+    start_time: "09:00:00",
+    end_time: "18:00:00"
+  },
+  {
+    official_time_id: "2",
+    schedule_name: "Flex 9-Hour Shift",
+    start_time: "10:00:00",
+    end_time: "19:00:00"
+  },
+  {
+    official_time_id: "3",
+    schedule_name: "Early 8-Hour Shift",
+    start_time: "07:00:00",
+    end_time: "16:00:00"
   }
 ];
