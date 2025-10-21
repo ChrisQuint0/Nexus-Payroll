@@ -1,139 +1,145 @@
-export const rowData = [
-  {
-    "Employee ID": "1000123",
-    "First Name": "Christopher",
-    "Last Name": "Quinto",
-    "Middle Initial": "M",
-    Position: "Software Engineer",
-    Department: "IT",
-    SalaryStructure: "Monthly",
-    Rate: "120000",
-    Classification: "Full-Time",
-    SSSID: "34-0123456-7",
-    PhilhealthID: "07-123456789-1",
-    PagIBIGID: "000012345678",
-    TINID: "000-123-456-000",
-    DateHired: "2024-01-15",
-    Contact: "09171234567",
-    Address: "123 Main St, Manila",
-    OfficialTimeID: "1",
-    ScheduleName: "Standard 8-Hour Shift",
-    StartTime: "09:00:00",
-    EndTime: "18:00:00",
-    Status: "Active"
-  },
-  {
-    "Employee ID": "1000124",
-    "First Name": "Ipei",
-    "Last Name": "Goto",
-    "Middle Initial": "B",
-    Position: "HR Manager",
-    Department: "Human Resources",
-    SalaryStructure: "Monthly",
-    Rate: "100000",
-    Classification: "Full-Time",
-    SSSID: "34-0123456-8",
-    PhilhealthID: "07-123456789-2",
-    PagIBIGID: "000012345679",
-    TINID: "000-123-456-001",
-    DateHired: "2024-02-01",
-    Contact: "09171234568",
-    Address: "456 Oak St, Quezon City",
-    OfficialTimeID: "2",
-    ScheduleName: "Flex 9-Hour Shift",
-    StartTime: "10:00:00",
-    EndTime: "19:00:00",
-    Status: "Active"
-  },
-  {
-    "Employee ID": "1000125",
-    "First Name": "Chrisha",
-    "Last Name": "Balbacal",
-    "Middle Initial": "A",
-    Position: "Sales Executive",
-    Department: "Sales",
-    SalaryStructure: "Monthly",
-    Rate: "80000",
-    Classification: "Full-Time",
-    SSSID: "34-0123456-9",
-    PhilhealthID: "07-123456789-3",
-    PagIBIGID: "000012345680",
-    TINID: "000-123-456-002",
-    DateHired: "2024-01-20",
-    Contact: "09171234569",
-    Address: "789 Pine St, Makati",
-    OfficialTimeID: "3",
-    ScheduleName: "Early 8-Hour Shift",
-    StartTime: "07:00:00",
-    EndTime: "16:00:00",
-    Status: "Active"
-  },
-  {
-    "Employee ID": "1000126",
-    "First Name": "Sofia",
-    "Last Name": "Manuel",
-    "Middle Initial": "F",
-    Position: "Accountant",
-    Department: "Finance",
-    SalaryStructure: "Monthly",
-    Rate: "95000",
-    Classification: "Full-Time",
-    SSSID: "34-0123456-0",
-    PhilhealthID: "07-123456789-4",
-    PagIBIGID: "000012345681",
-    TINID: "000-123-456-003",
-    DateHired: "2024-03-10",
-    Contact: "09171234570",
-    Address: "321 Elm St, Taguig",
-    OfficialTimeID: "1",
-    ScheduleName: "Standard 8-Hour Shift",
-    StartTime: "09:00:00",
-    EndTime: "18:00:00",
-    Status: "Active"
-  },
-  {
-    "Employee ID": "1000127",
-    "First Name": "Keith",
-    "Last Name": "Tornea",
-    "Middle Initial": "M",
-    Position: "Marketing Specialist",
-    Department: "Marketing",
-    SalaryStructure: "Monthly",
-    Rate: "90000",
-    Classification: "Full-Time",
-    SSSID: "34-0123456-1",
-    PhilhealthID: "07-123456789-5",
-    PagIBIGID: "000012345682",
-    TINID: "000-123-456-004",
-    DateHired: "2024-02-15",
-    Contact: "09171234571",
-    Address: "654 Maple St, Pasig",
-    OfficialTimeID: "2",
-    ScheduleName: "Flex 9-Hour Shift",
-    StartTime: "10:00:00",
-    EndTime: "19:00:00",
-    Status: "Active"
-  }
-];
+// employee-data.js
+import { supabaseClient } from '../supabase/supabaseClient.js'; // Fixed path
 
-// Official time schedules data
-export const officialTimeSchedules = [
-  {
-    official_time_id: "1",
-    schedule_name: "Standard 8-Hour Shift",
-    start_time: "09:00:00",
-    end_time: "18:00:00"
-  },
-  {
-    official_time_id: "2",
-    schedule_name: "Flex 9-Hour Shift",
-    start_time: "10:00:00",
-    end_time: "19:00:00"
-  },
-  {
-    official_time_id: "3",
-    schedule_name: "Early 8-Hour Shift",
-    start_time: "07:00:00",
-    end_time: "16:00:00"
+// Function to fetch all employee data with joins
+export async function fetchEmployeeData() {
+  try {
+    // Fetch employees with all related data using multiple queries
+    const { data: employees, error: employeesError } = await supabaseClient
+      .from('employees')
+      .select(`
+        *,
+        departments (department_name),
+        positions (position_name, base_salary),
+        gov_info (sss_number, philhealth_number, pagibig_number, tin_number),
+        official_time (schedule_name, start_time, end_time),
+        employee_status (status_name)
+      `);
+
+    if (employeesError) {
+      console.error('Error fetching employee data:', employeesError);
+      return [];
+    }
+
+    // Transform the data to match your existing structure
+    const transformedData = employees.map(emp => ({
+      // Map to your existing field names
+      "Employee ID": emp.emp_id.toString(),
+      "First Name": emp.first_name,
+      "Last Name": emp.last_name,
+      "Middle Initial": emp.middle_name || '',
+      "Position": emp.positions?.position_name || '',
+      "Department": emp.departments?.department_name || '',
+      "Rate": emp.positions?.base_salary?.toString() || '0',
+      "SSSID": emp.gov_info?.sss_number || '',
+      "PhilhealthID": emp.gov_info?.philhealth_number || '',
+      "PagIBIGID": emp.gov_info?.pagibig_number || '',
+      "TINID": emp.gov_info?.tin_number || '',
+      "DateHired": emp.date_hired,
+      "Contact": emp.phone_number || '',
+      "Address": emp.address || '',
+      "OfficialTimeID": emp.official_time_id?.toString() || '',
+      "ScheduleName": emp.official_time?.schedule_name || '',
+      "StartTime": emp.official_time?.start_time || '',
+      "EndTime": emp.official_time?.end_time || '',
+      "Status": emp.employee_status?.status_name || 'Active'
+    }));
+
+    console.log('Employee data fetched and transformed successfully:', transformedData);
+    return transformedData;
+  } catch (error) {
+    console.error('Error in fetchEmployeeData:', error);
+    return [];
   }
-];
+}
+
+// Function to fetch official time schedules
+export async function fetchOfficialTimeSchedules() {
+  try {
+    const { data, error } = await supabaseClient
+      .from('official_time')
+      .select('*')
+      .order('official_time_id');
+
+    if (error) {
+      console.error('Error fetching official time schedules:', error);
+      return [];
+    }
+
+    // Transform to match your existing structure
+    const transformedSchedules = data.map(schedule => ({
+      official_time_id: schedule.official_time_id.toString(),
+      schedule_name: schedule.schedule_name,
+      start_time: schedule.start_time,
+      end_time: schedule.end_time
+    }));
+
+    return transformedSchedules;
+  } catch (error) {
+    console.error('Error in fetchOfficialTimeSchedules:', error);
+    return [];
+  }
+}
+
+// Function to fetch departments for dropdowns
+export async function fetchDepartments() {
+  try {
+    const { data, error } = await supabaseClient
+      .from('departments')
+      .select('*')
+      .order('department_id');
+
+    if (error) {
+      console.error('Error fetching departments:', error);
+      return [];
+    }
+
+    return data;
+  } catch (error) {
+    console.error('Error in fetchDepartments:', error);
+    return [];
+  }
+}
+
+// Function to fetch positions for dropdowns
+export async function fetchPositions() {
+  try {
+    const { data, error } = await supabaseClient
+      .from('positions')
+      .select('*')
+      .order('position_id');
+
+    if (error) {
+      console.error('Error fetching positions:', error);
+      return [];
+    }
+
+    return data;
+  } catch (error) {
+    console.error('Error in fetchPositions:', error);
+    return [];
+  }
+}
+
+// Initialize with empty arrays - will be populated after fetch
+export let rowData = [];
+export let officialTimeSchedules = [];
+
+// Function to initialize all data
+export async function initializeEmployeeData() {
+  try {
+    const [employees, schedules] = await Promise.all([
+      fetchEmployeeData(),
+      fetchOfficialTimeSchedules()
+    ]);
+    
+    rowData = employees;
+    officialTimeSchedules = schedules;
+    
+    console.log('Data initialized:', { employees, schedules });
+    return { employees, schedules };
+  } catch (error) {
+    console.error('Error initializing employee data:', error);
+    return { employees: [], schedules: [] };
+  }
+}

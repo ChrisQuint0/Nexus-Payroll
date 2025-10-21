@@ -1,90 +1,124 @@
-import { rowData } from "./employee-data.js";
+// grid.js
+let gridApi = null;
 
-const gridDiv = document.getElementById("employeeInfoGrid");
+// Initialize grid when DOM is ready
+function initializeGrid() {
+  const gridDiv = document.getElementById("employeeInfoGrid");
+  
+  if (!gridDiv) {
+    console.error("Grid container element not found!");
+    return null;
+  }
 
-//Determine user theme preference, adjust theme of the AG Grid to the user preference
+  // Determine user theme preference
+  const isDarkMode = window.matchMedia("(prefers-color-scheme: dark)").matches;
+  gridDiv.classList.add(isDarkMode ? "ag-theme-quartz-dark" : "ag-theme-quartz");
 
-// Detect system dark mode
-const isDarkMode = window.matchMedia("(prefers-color-scheme: dark)").matches;
+  // Listen for system theme changes
+  window.matchMedia("(prefers-color-scheme: dark)")
+    .addEventListener("change", (e) => {
+      gridDiv.classList.toggle("ag-theme-quartz-dark", e.matches);
+      gridDiv.classList.toggle("ag-theme-quartz", !e.matches);
+    });
 
-// Apply the correct AG Grid theme
-gridDiv.classList.add(isDarkMode ? "ag-theme-quartz-dark" : "ag-theme-quartz");
-
-// Listen for system theme changes in real time
-window
-  .matchMedia("(prefers-color-scheme: dark)")
-  .addEventListener("change", (e) => {
-    gridDiv.classList.toggle("ag-theme-quartz-dark", e.matches);
-    gridDiv.classList.toggle("ag-theme-quartz", !e.matches);
-  });
-
-const columnDefs = [
-  { field: "Employee ID" },
-  { field: "Last Name" },
-  { field: "First Name" },
-  { field: "Middle Initial" },
-  { field: "Position" },
-  { field: "Department" },
-  { field: "Rate" },
-  { 
-    field: "Status",
-    cellStyle: (params) => {
-      if (params.value === 'Active') {
-        return { color: 'green', fontWeight: 'bold' };
-      } else {
-        return { color: 'red', fontWeight: 'bold' };
+  const columnDefs = [
+    { field: "Employee ID" },
+    { field: "Last Name" },
+    { field: "First Name" },
+    { field: "Middle Initial" },
+    { field: "Position" },
+    { field: "Department" },
+      { field: "Rate" },
+    { 
+      field: "Status",
+      cellStyle: (params) => {
+        if (params.value && params.value.toLowerCase() === 'active') {
+          return { color: 'green', fontWeight: 'bold' };
+        } else {
+          return { color: 'red', fontWeight: 'bold' };
+        }
       }
-    }
-  },
-  {
-    field: "Actions",
-    cellRenderer: (params) => {
-      return `
-          <button
-            class="btn btn-primary btn-sm view-more-btn"
-            data-employee="${params.data["Employee ID"]}"
-          >
-            View More
-          </button>`;
     },
-    cellStyle: {
-      display: "flex",
-      justifyContent: "center",
-      alignItems: "center",
+    {
+      field: "Actions",
+      cellRenderer: (params) => {
+        return `
+            <button
+              class="btn btn-primary btn-sm view-more-btn"
+              data-employee="${params.data["Employee ID"]}"
+            >
+              View More
+            </button>`;
+      },
+      cellStyle: {
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+      },
     },
-  },
-];
+  ];
 
-//Configurations
-const gridOptions = {
-  columnDefs,
-  rowData,
-  domLayout: "normal", // allows flexible resizing
-  autoSizeStrategy: {
-    type: "fitGridWidth",
-  },
-  rowSelection: {
-    mode: "multiRow", // allows multiple rows to be selected
-    headerCheckbox: true, // enables header checkbox functionality
-    pinned: "left",
-  },
-  defaultColDef: {
-    filter: true, // enables filter icon and filter input
-    sortable: true, // optional: enables sorting too
-  },
-  onSelectionChanged: function() {
-    // This will be handled in func.js
-    if (window.handleSelectionChange) {
-      window.handleSelectionChange();
-    }
-  },
-};
+  // Grid configurations
+  const gridOptions = {
+    columnDefs,
+    rowData: [], // Start with empty array
+    domLayout: "normal",
+    autoSizeStrategy: {
+      type: "fitGridWidth",
+    },
+    rowSelection: {
+      mode: "multiRow",
+      headerCheckbox: true,
+      pinned: "left",
+    },
+    defaultColDef: {
+      filter: true,
+      sortable: true,
+    },
+    onSelectionChanged: function() {
+      if (window.handleSelectionChange) {
+        window.handleSelectionChange();
+      }
+    },
+  };
 
-// Create grid
-export const gridApi = agGrid.createGrid(
-  document.getElementById("employeeInfoGrid"),
-  gridOptions
-);
+  // Create grid
+  gridApi = agGrid.createGrid(gridDiv, gridOptions);
+  console.log("Grid initialized successfully");
+  return gridApi;
+}
 
-// Export rowData for external access
-export { rowData };
+// Initialize the grid when DOM is ready
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initializeGrid);
+} else {
+  initializeGrid();
+}
+
+// Export function to set grid data
+export function setGridData(data) {
+  if (!gridApi) {
+    console.error("Grid not initialized yet!");
+    return;
+  }
+  console.log("Setting grid data:", data);
+  gridApi.setGridOption('rowData', data);
+}
+
+// Export function to get selected rows
+export function getSelectedRows() {
+  if (!gridApi) {
+    console.error("Grid not initialized yet!");
+    return [];
+  }
+  return gridApi.getSelectedRows();
+}
+
+// Export function to deselect all
+export function deselectAll() {
+  if (!gridApi) {
+    console.error("Grid not initialized yet!");
+    return;
+  }
+  gridApi.deselectAll();
+}
