@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Face Enrollment | Nexus Payroll</title>
+    <link rel="stylesheet" href="../output.css" />
+  </head>
+  <body class="flex min-h-screen">
+    <!-- Sidebar placeholder -->
+    <div id="sidebar"></div>
+
+    <!-- Main content -->
+    <main class="flex-1 p-6">
+      <h1 class="text-2xl font-medium mb-6">Face Enrollment</h1>
+
+      <!-- Center the camera + form horizontally and vertically -->
+      <div class="flex justify-center items-center min-h-[70vh]">
+        <div
+          class="flex flex-col md:flex-row items-center md:items-start gap-10"
+        >
+          <!-- Camera Section -->
+          <div class="flex flex-col items-center">
+            <div
+              class="relative w-120 h-100 border rounded-lg bg-gray-100 flex items-center justify-center overflow-hidden"
+            >
+              <video
+                id="video"
+                autoplay
+                muted
+                playsinline
+                class="absolute w-full h-full object-cover rounded-lg"
+              ></video>
+              <canvas
+                id="overlay"
+                class="absolute pointer-events-none w-full h-full"
+              ></canvas>
+              <div
+                id="placeholder"
+                class="flex flex-col items-center justify-center text-gray-400"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  class="h-20 w-20 mb-2"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    d="M12 14a4 4 0 100-8 4 4 0 000 8z"
+                  />
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    d="M12 14v7m0 0h-3m3 0h3m-9-3h.01M18 18h.01"
+                  />
+                </svg>
+                <p class="text-sm">Camera Preview</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right Side Form -->
+          <div class="flex flex-col w-72 gap-4">
+            <div>
+              <label class="block text-sm font-medium mb-1">Employee ID</label>
+              <input
+                type="number"
+                id="empId"
+                class="input input-bordered w-full"
+                placeholder="Enter Employee ID"
+              />
+            </div>
+
+            <div class="flex gap-3">
+              <button id="captureBtn" class="btn btn-primary w-1/2">
+                Capture Face
+              </button>
+              <button id="stopBtn" class="btn btn-outline w-1/2">
+                Stop Camera
+              </button>
+            </div>
+
+            <div
+              id="status"
+              class="p-3 bg-base-200 rounded-md text-sm min-h-[3rem]"
+            >
+              Waiting for camera...
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <script src="../js/layout/sidebar.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <script type="module">
+      import * as faceapi from "https://cdn.jsdelivr.net/npm/@vladmandic/face-api@1.5.7/dist/face-api.esm.js";
+      import { supabaseClient } from "../js/supabase/supabaseClient.js";
+
+      const video = document.getElementById("video");
+      const overlay = document.getElementById("overlay");
+      const placeholder = document.getElementById("placeholder");
+      const captureBtn = document.getElementById("captureBtn");
+      const stopBtn = document.getElementById("stopBtn");
+      const empIdInput = document.getElementById("empId");
+      const statusEl = document.getElementById("status");
+
+      let stream = null;
+
+      async function loadModels() {
+        statusEl.textContent = "Loading face detection models...";
+        const MODEL_URL =
+          "https://cdn.jsdelivr.net/npm/@vladmandic/face-api@1.5.7/model/";
+        await faceapi.tf.setBackend("webgl");
+        await faceapi.nets.ssdMobilenetv1.loadFromUri(MODEL_URL);
+        await faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL);
+        await faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL);
+        statusEl.textContent = "Models loaded.";
+      }
+
+      async function startCamera() {
+        try {
+          stream = await navigator.mediaDevices.getUserMedia({
+            video: { width: 320, height: 240 },
+            audio: false,
+          });
+          video.srcObject = stream;
+          await video.play();
+          overlay.width = video.videoWidth;
+          overlay.height = video.videoHeight;
+          placeholder.style.display = "none";
+          statusEl.textContent = "Camera ready. Click 'Capture Face'.";
+        } catch (err) {
+          console.error(err);
+          statusEl.textContent = "Error accessing camera.";
+        }
+      }
+
+      async function captureFace() {
+        const empId = empIdInput.value.trim();
+        if (!empId) {
+          statusEl.textContent = "Please enter an Employee ID.";
+          return;
+        }
+
+        statusEl.textContent = "Detecting face...";
+        const detection = await faceapi
+          .detectSingleFace(video)
+          .withFaceLandmarks()
+          .withFaceDescriptor();
+
+        if (!detection) {
+          statusEl.textContent = "No face detected. Try again.";
+          return;
+        }
+
+        const descriptor = Array.from(detection.descriptor);
+        statusEl.textContent = "Face captured. Saving...";
+
+        const { error } = await supabaseClient
+          .from("employees")
+          .update({ face_embedding: descriptor })
+          .eq("emp_id", empId);
+
+        if (error) {
+          console.error(error);
+          statusEl.textContent = "Error saving to database.";
+        } else {
+          statusEl.textContent = `✅ Face enrolled for Employee ID ${empId}.`;
+        }
+      }
+
+      function stopCamera() {
+        if (stream) {
+          stream.getTracks().forEach((t) => t.stop());
+          stream = null;
+        }
+        placeholder.style.display = "flex";
+        statusEl.textContent = "Camera stopped.";
+      }
+
+      captureBtn.addEventListener("click", captureFace);
+      stopBtn.addEventListener("click", stopCamera);
+
+      loadModels().then(startCamera);
+    </script>
+  </body>
+</html>
