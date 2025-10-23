@@ -22,41 +22,64 @@
 
       <!-- Search and Buttons Div -->
       <div class="mt-5 flex w-full items-center justify-between">
-        <!-- Search Bar -->
-        <label
-          class="input border border-accent focus-within:border-accent focus-within:ring-0 focus-within:outline-none shadow-none"
-        >
-          <svg
-            class="h-[1em] opacity-50"
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 24 24"
-          >
-            <g
-              stroke-linejoin="round"
-              stroke-linecap="round"
-              stroke-width="2.5"
-              fill="none"
-              stroke="currentColor"
+        <!-- Left side: Tabs and Search -->
+        <div class="flex flex-row items-center gap-3">
+          <!-- Tab Selection -->
+          <div class="inline-flex gap-2" role="tablist">
+            <button 
+              id="activeEmployeesTab"
+              class="px-5 py-2 rounded-lg text-sm font-semibold btn btn-primary" 
+              data-tab="active" 
+              type="button"
             >
-              <circle cx="11" cy="11" r="8"></circle>
-              <path d="m21 21-4.3-4.3"></path>
-            </g>
-          </svg>
+              Active
+            </button>
+            <button 
+              id="inactiveEmployeesTab"
+              class="px-5 py-2 rounded-lg text-sm font-semibold btn btn-outline" 
+              data-tab="inactive" 
+              type="button"
+            >
+              Inactive
+            </button>
+          </div>
 
-          <input
-            id="searchBar"
-            type="search"
-            required
-            placeholder="Search"
-            class="bg-transparent focus:outline-none"
-          />
-        </label>
+          <!-- Search Bar -->
+          <label
+            class="input border border-accent focus-within:border-accent focus-within:ring-0 focus-within:outline-none shadow-none"
+          >
+            <svg
+              class="h-[1em] opacity-50"
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+            >
+              <g
+                stroke-linejoin="round"
+                stroke-linecap="round"
+                stroke-width="2.5"
+                fill="none"
+                stroke="currentColor"
+              >
+                <circle cx="11" cy="11" r="8"></circle>
+                <path d="m21 21-4.3-4.3"></path>
+              </g>
+            </svg>
+
+            <input
+              id="searchBar"
+              type="search"
+              required
+              placeholder="Search"
+              class="bg-transparent focus:outline-none"
+            />
+          </label>
+        </div>
 
         <!-- Action Buttons -->
         <div class="flex flex-row items-center gap-2">
           <div class="m-2">
-          <button id="deleteBtn" class="btn btn-error" disabled>
-            Delete
+          <button id="archiveBtn" class="btn btn-error" disabled>
+            Archive
           </button>
           </div>
           <div class="m-2">
@@ -91,49 +114,27 @@
         <div class="space-y-4 mt-4">
           <!-- Department Filter -->
           <div class="flex justify-between items-center">
-            <span class="font-medium">Department</span>
-            <select id="csvDepartment" class="select select-bordered w-48">
-              <option value="all">All Departments</option>
-              <option value="IT">IT</option>
-              <option value="Finance">Finance</option>
-              <option value="HR">Human Resources</option>
-              <option value="Sales">Sales</option>
-              <option value="Marketing">Marketing</option>
-            </select>
+              <span class="font-medium">Department</span>
+              <select id="csvDepartment" class="select select-bordered w-48">
+                  <option value="all">All Departments</option>
+                  <option value="Information Technology">Information Technology</option>
+                  <option value="Human Resources">Human Resources</option>
+                  <option value="Accounting">Accounting</option>
+                  <option value="Sales">Sales</option>
+              </select>
           </div>
 
           <!-- Position Filter -->
           <div class="flex justify-between items-center">
-            <span class="font-medium">Position</span>
-            <select id="csvPosition" class="select select-bordered w-48">
-              <option value="all">All Positions</option>
-              <option value="Software Engineer">Software Engineer</option>
-              <option value="HR Manager">HR Manager</option>
-              <option value="Sales Executive">Sales Executive</option>
-              <option value="Accountant">Accountant</option>
-              <option value="Marketing Specialist">Marketing Specialist</option>
-            </select>
-          </div>
-
-          <!-- Salary Structure Filter -->
-          <div class="flex justify-between items-center">
-            <span class="font-medium">Salary Structure</span>
-            <select id="csvSalaryStructure" class="select select-bordered w-48">
-              <option value="all">All Structures</option>
-              <option value="Monthly">Monthly</option>
-              <option value="Hourly">Hourly</option>
-            </select>
-          </div>
-
-          <!-- Classification Filter -->
-          <div class="flex justify-between items-center">
-            <span class="font-medium">Classification</span>
-            <select id="csvClassification" class="select select-bordered w-48">
-              <option value="all">All Classifications</option>
-              <option value="Full-Time">Full-Time</option>
-              <option value="Part-Time">Part-Time</option>
-              <option value="Contractual">Contractual</option>
-            </select>
+              <span class="font-medium">Position</span>
+              <select id="csvPosition" class="select select-bordered w-48">
+                  <option value="all">All Positions</option>
+                  <option value="Senior Developer">Senior Developer</option>
+                  <option value="HR Specialist">HR Specialist</option>
+                  <option value="Staff Accountant">Staff Accountant</option>
+                  <option value="Sales Manager">Sales Manager</option>
+                  <option value="Junior Developer">Junior Developer</option>
+              </select>
           </div>
 
           <!-- Rate Range Filter -->
@@ -198,8 +199,16 @@
                 <input type="text" name="employeeId" class="input input-bordered w-full" required />
               </div>
               <div>
-                <label class="label">Name</label>
-                <input type="text" name="name" class="input input-bordered w-full" required />
+                <label class="label">First Name</label>
+                <input type="text" name="firstName" class="input input-bordered w-full" required />
+              </div>
+              <div>
+                <label class="label">Last Name</label>
+                <input type="text" name="lastName" class="input input-bordered w-full" required />
+              </div>
+              <div>
+                <label class="label">Middle Initial</label>
+                <input type="text" name="middleInitial" class="input input-bordered w-full" maxlength="1" />
               </div>
               <div>
                 <label class="label">Contact</label>
@@ -216,45 +225,49 @@
           <div>
             <h4 class="font-bold mb-3">Role Details</h4>
             <div class="grid grid-cols-2 gap-4">
-              <div>
-                <label class="label">Position</label>
-                <input type="text" name="position" class="input input-bordered w-full" required />
-              </div>
-              <div>
-                <label class="label">Department</label>
-                <input type="text" name="department" class="input input-bordered w-full" required />
-              </div>
-              <div>
-                <label class="label">Date Hired</label>
-                <input type="date" name="dateHired" class="input input-bordered w-full" required />
-              </div>
+                <div>
+                    <label class="label">Position</label>
+                    <select name="position" class="select select-bordered w-full" required>
+                        <option value="">Select Position</option>
+                        <option value="Senior Developer" data-salary="60000">Senior Developer</option>
+                        <option value="HR Specialist" data-salary="40000">HR Specialist</option>
+                        <option value="Staff Accountant" data-salary="45000">Staff Accountant</option>
+                        <option value="Sales Manager" data-salary="50000">Sales Manager</option>
+                        <option value="Junior Developer" data-salary="40000">Junior Developer</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="label">Department</label>
+                    <select name="department" class="select select-bordered w-full" required>
+                        <option value="">Select Department</option>
+                        <option value="Information Technology">Information Technology</option>
+                        <option value="Human Resources">Human Resources</option>
+                        <option value="Accounting">Accounting</option>
+                        <option value="Sales">Sales</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="label">Date Hired</label>
+                    <input type="date" name="dateHired" class="input input-bordered w-full" required />
+                </div>
+                <div>
+                    <label class="label">Official Time</label>
+                    <select id="officialTime" name="officialTime" class="select select-bordered w-full" required>
+                        <option value="">Select Official Time</option>
+                    </select>
+                </div>
             </div>
-          </div>
+        </div>
 
           <!-- Salary Details -->
           <div>
-            <h4 class="font-bold mb-3">Salary Details</h4>
-            <div class="grid grid-cols-2 gap-4">
-              <div>
-                <label class="label">Salary Structure</label>
-                <select name="salaryStructure" class="select select-bordered w-full" required>
-                  <option value="Monthly">Monthly</option>
-                  <option value="Hourly">Hourly</option>
-                </select>
+              <h4 class="font-bold mb-3">Salary Details</h4>
+              <div class="grid grid-cols-2 gap-4">
+                  <div>
+                      <label class="label">Rate</label>
+                      <input type="number" name="rate" class="input input-bordered w-full" required />
+                  </div>
               </div>
-              <div>
-                <label class="label">Rate</label>
-                <input type="number" name="rate" class="input input-bordered w-full" required />
-              </div>
-              <div>
-                <label class="label">Classification</label>
-                <select name="classification" class="select select-bordered w-full" required>
-                  <option value="Full-Time">Full-Time</option>
-                  <option value="Part-Time">Part-Time</option>
-                  <option value="Contractual">Contractual</option>
-                </select>
-              </div>
-            </div>
           </div>
 
           <!-- Government IDs -->
@@ -293,12 +306,11 @@
 
     <script src="../js/layout/sidebar.js"></script>
     <script src="../js/libs/ag-grid-community.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-    <script type="module" src="../js/employee-info/func.js"></script>
+    <script type="module" src="../js/supabase/supabaseClient.js"></script>
+    <script type="module" src="../js/employee-info/employee-data.js"></script>
     <script type="module" src="../js/employee-info/grid.js"></script>
-    <script
-      type="module"
-      src="../js/employee-info/employee-data.js"
-    ></script>
+    <script type="module" src="../js/employee-info/func.js"></script>
   </body>
 </html>
