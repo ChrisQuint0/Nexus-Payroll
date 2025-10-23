@@ -1,4 +1,3 @@
-// employee-data.js
 import { supabaseClient } from '../supabase/supabaseClient.js'; // Fixed path
 
 // Function to fetch all employee data with joins

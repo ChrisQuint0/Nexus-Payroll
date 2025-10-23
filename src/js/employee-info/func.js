@@ -1,13 +1,21 @@
-// func.js
+// ============================================================================
+// Imports
+// ============================================================================
 import { setGridData, getSelectedRows, deselectAll } from './grid.js';
 import { initializeEmployeeData, fetchOfficialTimeSchedules, fetchDepartments, fetchPositions } from './employee-data.js';
 import { supabaseClient } from '../supabase/supabaseClient.js';
 
-// Global variables
+// ============================================================================
+// Global Variables
+// ============================================================================
 let currentEmployeeData = [];
 let currentView = 'active';
 
-// Initialize functionality
+// ============================================================================
+// Initialization
+// ============================================================================
+
+// Main initialization on page load
 document.addEventListener('DOMContentLoaded', async function() {
   await initializeData();
   initializeEventListeners();
@@ -23,16 +31,255 @@ async function initializeData() {
   try {
     const { employees, schedules } = await initializeEmployeeData();
     currentEmployeeData = employees;
-    
-    // Set initial grid data
     filterAndDisplayData();
-    
     console.log('Data initialization complete');
   } catch (error) {
     console.error('Error initializing data:', error);
     alert('Error loading employee data. Please refresh the page.');
   }
 }
+
+// Refresh all data from Supabase
+async function refreshData() {
+  const { employees } = await initializeEmployeeData();
+  currentEmployeeData = employees;
+  filterAndDisplayData();
+}
+
+// ============================================================================
+// Event Listeners
+// ============================================================================
+
+// Initialize all event listeners
+function initializeEventListeners() {
+  // Archive button
+  const archiveBtn = document.getElementById('archiveBtn');
+  if (archiveBtn) {
+    archiveBtn.addEventListener('click', handleArchiveSelected);
+  }
+  
+  // Add new button
+  const addNewBtn = document.getElementById('addNewBtn');
+  if (addNewBtn) {
+    addNewBtn.addEventListener('click', () => {
+      document.getElementById('addEmployeeModal').showModal();
+      document.getElementById('addEmployeeForm').reset();
+      
+      const employeeIdInput = document.querySelector('[name="employeeId"]');
+      employeeIdInput.readOnly = false;
+      employeeIdInput.style.display = 'block';
+      employeeIdInput.previousElementSibling.style.display = 'block';
+      
+      document.querySelector('#addEmployeeModal h3').textContent = 'Add New Employee';
+      document.querySelector('#addEmployeeModal button[type="submit"]').textContent = 'Add Employee';
+    });
+  }
+  
+  // Add employee form
+  const addEmployeeForm = document.getElementById('addEmployeeForm');
+  if (addEmployeeForm) {
+    addEmployeeForm.addEventListener('submit', handleAddEmployee);
+  }
+  
+  // View more buttons (delegated event handling)
+  document.addEventListener('click', function(e) {
+    if (e.target.classList.contains('view-more-btn')) {
+      const employeeId = e.target.getAttribute('data-employee');
+      showEmployeeDetails(employeeId);
+    }
+  });
+
+  initializePositionChange();
+}
+
+// Handle selection change for archive button
+window.handleSelectionChange = function() {
+  const selectedRows = getSelectedRows();
+  const archiveBtn = document.getElementById('archiveBtn');
+  if (archiveBtn) {
+    archiveBtn.disabled = selectedRows.length === 0;
+  }
+};
+
+// Reset form when modal is closed
+document.getElementById('addEmployeeModal').addEventListener('close', function() {
+  const form = document.getElementById('addEmployeeForm');
+  form.reset();
+  delete form.dataset.editingEmployeeId;
+  
+  const employeeIdInput = form.querySelector('[name="employeeId"]');
+  employeeIdInput.readOnly = false;
+  employeeIdInput.style.display = 'block';
+  employeeIdInput.previousElementSibling.style.display = 'block';
+  
+  document.querySelector('#addEmployeeModal h3').textContent = 'Add New Employee';
+  document.querySelector('#addEmployeeModal button[type="submit"]').textContent = 'Add Employee';
+});
+
+// Initialize position change events
+function initializePositionChange() {
+  const positionSelect = document.querySelector('select[name="position"]');
+  const rateInput = document.querySelector('input[name="rate"]');
+  
+  if (positionSelect && rateInput) {
+    positionSelect.addEventListener('change', function() {
+      const selectedOption = this.options[this.selectedIndex];
+      const salary = selectedOption.getAttribute('data-salary');
+      
+      if (salary) {
+        rateInput.value = salary;
+      } else {
+        rateInput.value = '';
+      }
+    });
+  }
+}
+
+// ============================================================================
+// Tab Management
+// ============================================================================
+
+// Initialize tab switching
+function initializeTabSwitching() {
+  const activeTab = document.getElementById('activeEmployeesTab');
+  const inactiveTab = document.getElementById('inactiveEmployeesTab');
+
+  if (activeTab) {
+    activeTab.addEventListener('click', () => switchTab('active'));
+  }
+
+  if (inactiveTab) {
+    inactiveTab.addEventListener('click', () => switchTab('inactive'));
+  }
+
+  switchTab('active');
+}
+
+// Switch between Active and Inactive tabs
+function switchTab(tab) {
+  currentView = tab;
+  
+  // Update tab styles
+  const activeTab = document.getElementById('activeEmployeesTab');
+  const inactiveTab = document.getElementById('inactiveEmployeesTab');
+  
+  if (activeTab && inactiveTab) {
+    if (tab === 'active') {
+      activeTab.classList.remove('btn-outline');
+      activeTab.classList.add('btn-primary');
+      inactiveTab.classList.remove('btn-primary');
+      inactiveTab.classList.add('btn-outline');
+    } else {
+      inactiveTab.classList.remove('btn-outline');
+      inactiveTab.classList.add('btn-primary');
+      activeTab.classList.remove('btn-primary');
+      activeTab.classList.add('btn-outline');
+    }
+  }
+  
+  // Update button text based on current view
+  const archiveBtn = document.getElementById('archiveBtn');
+  if (archiveBtn) {
+    archiveBtn.textContent = tab === 'active' ? 'Archive' : 'Restore';
+  }
+  
+  filterAndDisplayData();
+  deselectAll();
+  handleSelectionChange();
+}
+
+// ============================================================================
+// Data Filtering and Display
+// ============================================================================
+
+// Filter and display data based on current view
+function filterAndDisplayData() {
+  const filteredData = currentEmployeeData.filter(employee => {
+    if (currentView === 'active') {
+      return !employee.Status || employee.Status.toLowerCase() === 'active';
+    } else {
+      return employee.Status && employee.Status.toLowerCase() === 'inactive';
+    }
+  });
+  
+  setGridData(filteredData);
+}
+
+// ============================================================================
+// Search Functionality
+// ============================================================================
+
+// Initialize search functionality
+function initializeSearch() {
+  const searchBar = document.getElementById('searchBar');
+  if (searchBar) {
+    searchBar.addEventListener('input', function(e) {
+      const searchTerm = e.target.value.toLowerCase();
+      
+      if (searchTerm === '') {
+        filterAndDisplayData();
+        return;
+      }
+      
+      const filteredData = currentEmployeeData.filter(employee => {
+        const statusMatch = currentView === 'active' ? 
+          employee.Status && employee.Status.toLowerCase() === 'active' : 
+          employee.Status && employee.Status.toLowerCase() === 'inactive';
+        
+        const searchMatch = Object.values(employee).some(value => 
+          value && value.toString().toLowerCase().includes(searchTerm)
+        );
+        
+        return statusMatch && searchMatch;
+      });
+      
+      setGridData(filteredData);
+    });
+  }
+}
+
+// ============================================================================
+// Archive/Restore Functionality
+// ============================================================================
+
+// Archive/Restore selected employees
+async function handleArchiveSelected() {
+  const selectedRows = getSelectedRows();
+  if (selectedRows.length === 0) return;
+  
+  const action = currentView === 'active' ? 'archive' : 'restore';
+  const actionText = currentView === 'active' ? 'Archive' : 'Restore';
+  const newStatusId = action === 'archive' ? 2 : 1;
+  
+  if (confirm(`Are you sure you want to ${actionText.toLowerCase()} ${selectedRows.length} employee(s)?`)) {
+    try {
+      const selectedIds = selectedRows.map(row => parseInt(row['Employee ID']));
+      
+      const { error } = await supabaseClient
+        .from('employees')
+        .update({ status_id: newStatusId })
+        .in('emp_id', selectedIds);
+      
+      if (error) throw error;
+      
+      await refreshData();
+      
+      const archiveBtn = document.getElementById('archiveBtn');
+      if (archiveBtn) {
+        archiveBtn.disabled = true;
+      }
+      
+      alert(`${selectedRows.length} employee(s) ${actionText.toLowerCase()}d successfully!`);
+    } catch (error) {
+      console.error('Error updating employee status:', error);
+      alert('Error updating employee status. Please try again.');
+    }
+  }
+}
+
+// ============================================================================
+// Dropdown Population
+// ============================================================================
 
 // Populate form dropdowns
 async function populateFormDropdowns() {
@@ -77,7 +324,6 @@ async function populateOfficialTimeDropdown() {
   if (officialTimeSelect) {
     officialTimeSelect.innerHTML = '<option value="">Select Official Time</option>';
     
-    // Ensure we have the latest schedules
     const schedules = await fetchOfficialTimeSchedules();
     
     schedules.forEach(schedule => {
@@ -89,202 +335,29 @@ async function populateOfficialTimeDropdown() {
   }
 }
 
-// Initialize tab switching
-function initializeTabSwitching() {
-  const activeTab = document.getElementById('activeEmployeesTab');
-  const inactiveTab = document.getElementById('inactiveEmployeesTab');
-
-  if (activeTab) {
-    activeTab.addEventListener('click', () => switchTab('active'));
-  }
-
-  if (inactiveTab) {
-    inactiveTab.addEventListener('click', () => switchTab('inactive'));
-  }
-
-  // Set initial view
-  switchTab('active');
-}
-
-// Switch between Active and Inactive tabs
-function switchTab(tab) {
-  currentView = tab;
-  
-  // Update tab styles
-  const activeTab = document.getElementById('activeEmployeesTab');
-  const inactiveTab = document.getElementById('inactiveEmployeesTab');
-  
-  if (activeTab && inactiveTab) {
-    if (tab === 'active') {
-      activeTab.classList.remove('btn-outline');
-      activeTab.classList.add('btn-primary');
-      inactiveTab.classList.remove('btn-primary');
-      inactiveTab.classList.add('btn-outline');
-    } else {
-      inactiveTab.classList.remove('btn-outline');
-      inactiveTab.classList.add('btn-primary');
-      activeTab.classList.remove('btn-primary');
-      activeTab.classList.add('btn-outline');
-    }
-  }
-  
-  // Update button text based on current view
-  const archiveBtn = document.getElementById('archiveBtn');
-  if (archiveBtn) {
-    archiveBtn.textContent = tab === 'active' ? 'Archive' : 'Restore';
-  }
-  
-  // Filter and display data
-  filterAndDisplayData();
-  
-  // Clear selection
-  deselectAll();
-  handleSelectionChange();
-}
-
-// Filter and display data based on current view
-function filterAndDisplayData() {
-  const filteredData = currentEmployeeData.filter(employee => {
-    if (currentView === 'active') {
-      // Show employees with active status (case-insensitive)
-      return !employee.Status || employee.Status.toLowerCase() === 'active';
-    } else {
-      // Show employees with inactive status (case-insensitive)
-      return employee.Status && employee.Status.toLowerCase() === 'inactive';
-    }
-  });
-  
-  setGridData(filteredData);
-}
-
-// Event listeners setup
-function initializeEventListeners() {
-  // Archive button
-  const archiveBtn = document.getElementById('archiveBtn');
-  if (archiveBtn) {
-    archiveBtn.addEventListener('click', handleArchiveSelected);
-  }
-  
-  // Add new button
-  const addNewBtn = document.getElementById('addNewBtn');
-  if (addNewBtn) {
-    addNewBtn.addEventListener('click', () => {
-      document.getElementById('addEmployeeModal').showModal();
-      // Reset form for new employee
-      document.getElementById('addEmployeeForm').reset();
-      // Show employee ID field for new entries
-      const employeeIdInput = document.querySelector('[name="employeeId"]');
-      employeeIdInput.readOnly = false;
-      employeeIdInput.style.display = 'block';
-      employeeIdInput.previousElementSibling.style.display = 'block';
-      
-      document.querySelector('#addEmployeeModal h3').textContent = 'Add New Employee';
-      document.querySelector('#addEmployeeModal button[type="submit"]').textContent = 'Add Employee';
-    });
-  }
-  
-  // Add employee form
-  const addEmployeeForm = document.getElementById('addEmployeeForm');
-  if (addEmployeeForm) {
-    addEmployeeForm.addEventListener('submit', handleAddEmployee);
-  }
-  
-  // View more buttons (delegated event handling)
-  document.addEventListener('click', function(e) {
-    if (e.target.classList.contains('view-more-btn')) {
-      const employeeId = e.target.getAttribute('data-employee');
-      showEmployeeDetails(employeeId);
-    }
-  });
-
-  // Initialize position change events
-  initializePositionChange();
-}
-
-// Search functionality
-function initializeSearch() {
-  const searchBar = document.getElementById('searchBar');
-  if (searchBar) {
-    searchBar.addEventListener('input', function(e) {
-      const searchTerm = e.target.value.toLowerCase();
-      const filteredData = currentEmployeeData.filter(employee => {
-        // First filter by status based on current view
-        const statusMatch = currentView === 'active' ? 
-          employee.Status === 'Active' : employee.Status === 'Inactive';
-        
-        // Then filter by search term
-        const searchMatch = Object.values(employee).some(value => 
-          value.toString().toLowerCase().includes(searchTerm)
-        );
-        
-        return statusMatch && searchMatch;
-      });
-      setGridData(filteredData);
-    });
-  }
-}
-
-// Handle selection change for archive button
-window.handleSelectionChange = function() {
-  const selectedRows = getSelectedRows();
-  const archiveBtn = document.getElementById('archiveBtn');
-  if (archiveBtn) {
-    archiveBtn.disabled = selectedRows.length === 0;
-  }
-};
-
-// Archive/Restore selected rows
-async function handleArchiveSelected() {
-  const selectedRows = getSelectedRows();
-  if (selectedRows.length === 0) return;
-  
-  const action = currentView === 'active' ? 'archive' : 'restore';
-  const actionText = currentView === 'active' ? 'Archive' : 'Restore';
-  const newStatusId = action === 'archive' ? 2 : 1; // Assuming 1=Active, 2=Inactive
-  
-  if (confirm(`Are you sure you want to ${actionText.toLowerCase()} ${selectedRows.length} employee(s)?`)) {
-    try {
-      const selectedIds = selectedRows.map(row => parseInt(row['Employee ID']));
-      
-      // Update employee status in Supabase
-      const { error } = await supabaseClient
-        .from('employees')
-        .update({ status_id: newStatusId })
-        .in('emp_id', selectedIds);
-      
-      if (error) throw error;
-      
-      // Refresh data from Supabase
-      await refreshData();
-      
-      // Disable button after action
-      const archiveBtn = document.getElementById('archiveBtn');
-      if (archiveBtn) {
-        archiveBtn.disabled = true;
-      }
-      
-      alert(`${selectedRows.length} employee(s) ${actionText.toLowerCase()}d successfully!`);
-      
-    } catch (error) {
-      console.error('Error updating employee status:', error);
-      alert('Error updating employee status. Please try again.');
-    }
-  }
-}
+// ============================================================================
+// Employee Details Modal
+// ============================================================================
 
 // Show employee details in modal
 function showEmployeeDetails(employeeId) {
   const employee = currentEmployeeData.find(emp => emp['Employee ID'] === employeeId);
   if (!employee) return;
   
-  const statusClass = employee.Status && employee.Status.toLowerCase() === 'active' 
-    ? 'bg-green-100 text-green-800 border-green-200' 
-    : 'bg-red-100 text-red-800 border-red-200';
+  console.log('Employee Status:', employee.Status);
+  
+  const statusColor = employee.Status && employee.Status.toLowerCase() === 'active' 
+    ? '#16a34a' 
+    : '#dc2626';
+  
+  const statusText = employee.Status 
+    ? employee.Status.charAt(0).toUpperCase() + employee.Status.slice(1).toLowerCase()
+    : 'Active';
   
   const detailsContainer = document.getElementById('employeeDetails');
   detailsContainer.innerHTML = `
     <!-- Employee Header Card -->
-    <div class="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-6 mb-6 border border-blue-200">
+    <div class="shadow-xl/20 rounded-box p-8 mb-6">
       <div class="flex items-start justify-between">
         <div>
           <h3 class="text-2xl font-bold text-gray-800 mb-2">
@@ -293,8 +366,8 @@ function showEmployeeDetails(employeeId) {
           <div class="flex items-center gap-3 text-gray-600">
             <span class="text-sm font-medium">ID: ${employee['Employee ID']}</span>
             <span class="text-gray-400">•</span>
-            <span class="px-3 py-1 text-sm font-semibold rounded-full border ${statusClass}">
-              ${employee.Status || 'Active'}
+            <span class="font-semibold" style="color: ${statusColor};">
+              ${statusText}
             </span>
           </div>
         </div>
@@ -303,13 +376,8 @@ function showEmployeeDetails(employeeId) {
 
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
       <!-- Personal Information Card -->
-      <div class="bg-white rounded-lg border border-gray-200 p-6 hover:shadow-md transition-shadow">
-        <h4 class="font-bold text-lg text-gray-800 mb-4 flex items-center gap-3">
-          <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
-          </svg>
-          Personal Information
-        </h4>
+      <div class="shadow-xl/20 rounded-box p-8">
+        <h4 class="text-xl font-semibold mb-4">Personal Information</h4>
         <div class="space-y-3">
           <div class="flex justify-between items-center py-3 border-b border-gray-100">
             <span class="text-gray-600 text-sm">Contact:</span>
@@ -323,13 +391,8 @@ function showEmployeeDetails(employeeId) {
       </div>
       
       <!-- Role Information Card -->
-      <div class="bg-white rounded-lg border border-gray-200 p-6 hover:shadow-md transition-shadow">
-        <h4 class="font-bold text-lg text-gray-800 mb-4 flex items-center gap-3">
-          <svg class="w-4 h-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
-          </svg>
-          Role Information
-        </h4>
+      <div class="shadow-xl/20 rounded-box p-8">
+        <h4 class="text-xl font-semibold mb-4">Role Information</h4>
         <div class="space-y-3">
           <div class="flex justify-between items-center py-3 border-b border-gray-100">
             <span class="text-gray-600 text-sm">Position:</span>
@@ -347,13 +410,8 @@ function showEmployeeDetails(employeeId) {
       </div>
       
       <!-- Schedule Information Card -->
-      <div class="bg-white rounded-lg border border-gray-200 p-6 hover:shadow-md transition-shadow">
-        <h4 class="font-bold text-lg text-gray-800 mb-4 flex items-center gap-3">
-          <svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
-          </svg>
-          Schedule
-        </h4>
+      <div class="shadow-xl/20 rounded-box p-8">
+        <h4 class="text-xl font-semibold mb-4">Schedule</h4>
         <div class="space-y-3">
           <div class="flex justify-between items-center py-3 border-b border-gray-100">
             <span class="text-gray-600 text-sm">Official Time:</span>
@@ -371,13 +429,8 @@ function showEmployeeDetails(employeeId) {
       </div>
       
       <!-- Government IDs Card -->
-      <div class="bg-white rounded-lg border border-gray-200 p-6 hover:shadow-md transition-shadow md:col-span-2">
-        <h4 class="font-bold text-lg text-gray-800 mb-4 flex items-center gap-3">
-          <svg class="w-4 h-4 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-2.83 2M15 11h3m-3 4h2"/>
-          </svg>
-          Government IDs
-        </h4>
+      <div class="shadow-xl/20 rounded-box p-8 md:col-span-2">
+        <h4 class="text-xl font-semibold mb-4">Government IDs</h4>
         <div class="space-y-3">
           <div class="flex justify-between items-center py-3 border-b border-gray-100">
             <span class="text-gray-600 text-sm">SSS ID:</span>
@@ -400,49 +453,22 @@ function showEmployeeDetails(employeeId) {
     </div>
     
     <!-- Salary Information Card - Standalone -->
-    <div class="bg-gradient-to-br from-emerald-50 to-teal-50 rounded-lg border border-emerald-200 p-6 mt-6 hover:shadow-md transition-shadow">
-      <h4 class="font-bold text-lg text-gray-800 mb-4 flex items-center gap-3">
-        <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-        </svg>
-        Salary Information
-      </h4>
+    <div class="shadow-xl/20 rounded-box p-8 mt-6">
+      <h4 class="text-xl font-semibold mb-4">Salary Information</h4>
       <div class="flex justify-between items-center py-3">
         <span class="text-gray-600 text-sm">Base Rate:</span>
-        <span class="text-2xl font-bold text-emerald-700">₱${parseInt(employee.Rate).toLocaleString()}</span>
+        <span class="text-2xl font-bold text-gray-800">₱${parseInt(employee.Rate).toLocaleString()}</span>
       </div>
     </div>
     
-    <div class="flex justify-end gap-3 mt-6 pt-4 border-t">
-      <button class="btn btn-primary flex items-center gap-3" onclick="editEmployee('${employee['Employee ID']}')">
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
-        </svg>
+    <div class="flex justify-end gap-3 mt-6 pt-4">
+      <button class="btn btn-primary" onclick="editEmployee('${employee['Employee ID']}')">
         Edit Employee
       </button>
     </div>
   `;
   
   document.getElementById('viewMoreModal').showModal();
-}
-
-// Initialize position change events
-function initializePositionChange() {
-  const positionSelect = document.querySelector('select[name="position"]');
-  const rateInput = document.querySelector('input[name="rate"]');
-  
-  if (positionSelect && rateInput) {
-    positionSelect.addEventListener('change', function() {
-      const selectedOption = this.options[this.selectedIndex];
-      const salary = selectedOption.getAttribute('data-salary');
-      
-      if (salary) {
-        rateInput.value = salary;
-      } else {
-        rateInput.value = '';
-      }
-    });
-  }
 }
 
 // Format time from HH:MM:SS to HH:MM AM/PM
@@ -457,15 +483,17 @@ function formatTime(timeString) {
   return `${formattedHour}:${minutes} ${ampm}`;
 }
 
+// ============================================================================
+// Employee Form Management
+// ============================================================================
+
 // Edit employee - opens the same form as Add New but pre-filled
 window.editEmployee = function(employeeId) {
   const employee = currentEmployeeData.find(emp => emp['Employee ID'] === employeeId);
   if (!employee) return;
   
-  // Close view more modal
   document.getElementById('viewMoreModal').close();
   
-  // Fill the form with employee data
   const form = document.getElementById('addEmployeeForm');
   form.reset();
   
@@ -481,7 +509,6 @@ window.editEmployee = function(employeeId) {
   const positionSelect = form.querySelector('[name="position"]');
   if (positionSelect) {
     positionSelect.value = employee.Position;
-    // Trigger change event to update salary
     positionSelect.dispatchEvent(new Event('change'));
   }
   
@@ -503,11 +530,11 @@ window.editEmployee = function(employeeId) {
     officialTimeSelect.value = employee.OfficialTimeID;
   }
   
-  // Make Employee ID read-only during edit (but keep it visible)
+  // Make Employee ID read-only during edit
   const employeeIdInput = form.querySelector('[name="employeeId"]');
   employeeIdInput.readOnly = true;
   employeeIdInput.style.display = 'block';
-  employeeIdInput.previousElementSibling.style.display = 'block'; // Show label
+  employeeIdInput.previousElementSibling.style.display = 'block';
   
   // Change modal title and button text
   document.querySelector('#addEmployeeModal h3').textContent = 'Edit Employee';
@@ -516,7 +543,6 @@ window.editEmployee = function(employeeId) {
   // Store the employee ID for update handling
   form.dataset.editingEmployeeId = employeeId;
   
-  // Show the modal
   document.getElementById('addEmployeeModal').showModal();
 };
 
@@ -535,10 +561,8 @@ async function handleAddEmployee(e) {
       await addEmployeeToSupabase(formData, officialTimeId);
     }
 
-    // Refresh data from Supabase
     await refreshData();
     
-    // Reset form and close modal
     e.target.reset();
     document.getElementById('addEmployeeModal').close();
     
@@ -553,12 +577,15 @@ async function handleAddEmployee(e) {
     document.querySelector('#addEmployeeModal button[type="submit"]').textContent = 'Add Employee';
     
     alert(`Employee ${isEditing ? 'updated' : 'added'} successfully!`);
-    
   } catch (error) {
     console.error('Error saving employee:', error);
     alert('Error saving employee data. Please try again.');
   }
 }
+
+// ============================================================================
+// Supabase Operations
+// ============================================================================
 
 // Add employee to Supabase
 async function addEmployeeToSupabase(formData, officialTimeId) {
@@ -608,7 +635,7 @@ async function addEmployeeToSupabase(formData, officialTimeId) {
       position_id: position.position_id,
       gov_info_id: govInfo.gov_info_id,
       official_time_id: parseInt(officialTimeId),
-      status_id: 1 // Active status
+      status_id: 1
     });
 
   if (empError) throw empError;
@@ -675,20 +702,11 @@ async function updateEmployeeInSupabase(formData, employeeId, officialTimeId) {
   if (empError) throw empError;
 }
 
-// Reset form when modal is closed
-document.getElementById('addEmployeeModal').addEventListener('close', function() {
-  const form = document.getElementById('addEmployeeForm');
-  form.reset();
-  delete form.dataset.editingEmployeeId;
-  const employeeIdInput = form.querySelector('[name="employeeId"]');
-  employeeIdInput.readOnly = false;
-  employeeIdInput.style.display = 'block';
-  employeeIdInput.previousElementSibling.style.display = 'block';
-  document.querySelector('#addEmployeeModal h3').textContent = 'Add New Employee';
-  document.querySelector('#addEmployeeModal button[type="submit"]').textContent = 'Add Employee';
-});
+// ============================================================================
+// CSV Export Functionality
+// ============================================================================
 
-// Generate CSV functionality
+// Initialize CSV generation functionality
 function initializeCSVGeneration() {
   const generateCsvBtn = document.getElementById('generateCsvBtn');
   if (generateCsvBtn) {
@@ -704,7 +722,7 @@ function handleGenerateCSV() {
 
   // Filter data based on selections
   let filteredData = currentEmployeeData.filter(employee => {
-    // Status filter - only include active employees for CSV (case-insensitive)
+    // Status filter - only include active employees for CSV
     if (!employee.Status || employee.Status.toLowerCase() !== 'active') return false;
     
     // Department filter
@@ -810,13 +828,5 @@ function generateCSVFile(data) {
   link.click();
   document.body.removeChild(link);
   
-  // Show success message
   alert(`CSV file "${filename}" generated successfully with ${data.length} employee(s)!`);
-}
-
-// Refresh all data from Supabase
-async function refreshData() {
-  const { employees } = await initializeEmployeeData();
-  currentEmployeeData = employees;
-  filterAndDisplayData();
 }

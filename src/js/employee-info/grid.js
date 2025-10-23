@@ -31,6 +31,13 @@ function initializeGrid() {
       { field: "Rate" },
     { 
       field: "Status",
+      valueFormatter: (params) => {
+        // Capitalize the status text
+        if (params.value) {
+          return params.value.charAt(0).toUpperCase() + params.value.slice(1).toLowerCase();
+        }
+        return params.value;
+      },
       cellStyle: (params) => {
         if (params.value && params.value.toLowerCase() === 'active') {
           return { color: 'green', fontWeight: 'bold' };
