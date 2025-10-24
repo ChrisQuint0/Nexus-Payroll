@@ -1,158 +1,17 @@
-// Dummy data for payslip generation
-const dummyEmployees = [
-  {
-    employeeId: "010101",
-    name: "Dela Cruz, Juan",
-    position: "IT Support",
-    department: "IT",
-    cutoffPeriod: "Sep 1 - 15",
-    regularPay: 15000.0,
-    overtimePay: 1500.0,
-    leavePay: 0.0,
-    workingHours: 168.0,
-    absences: 12.0,
-    tardiness: 0.0,
-    undertime: 0.0,
-    sss: 1125.0,
-    philhealth: 450.0,
-    pagibig: 100.0,
-    withholdingTax: 1250.0,
-  },
-  {
-    employeeId: "010102",
-    name: "Santos, Maria",
-    position: "HR Manager",
-    department: "HR",
-    cutoffPeriod: "Sep 1 - 15",
-    regularPay: 25000.0,
-    overtimePay: 0.0,
-    leavePay: 0.0,
-    workingHours: 168.0,
-    absences: 0.0,
-    tardiness: 0.0,
-    undertime: 0.0,
-    sss: 1125.0,
-    philhealth: 750.0,
-    pagibig: 100.0,
-    withholdingTax: 2500.0,
-  },
-  {
-    employeeId: "010103",
-    name: "Reyes, Pedro",
-    position: "Software Developer",
-    department: "IT",
-    cutoffPeriod: "Sep 1 - 15",
-    regularPay: 30000.0,
-    overtimePay: 3000.0,
-    leavePay: 0.0,
-    workingHours: 168.0,
-    absences: 0.0,
-    tardiness: 0.0,
-    undertime: 0.0,
-    sss: 1125.0,
-    philhealth: 900.0,
-    pagibig: 100.0,
-    withholdingTax: 3200.0,
-  },
-  {
-    employeeId: "010104",
-    name: "Garcia, Ana",
-    position: "Accountant",
-    department: "Finance",
-    cutoffPeriod: "Sep 1 - 15",
-    regularPay: 22000.0,
-    overtimePay: 1000.0,
-    leavePay: 0.0,
-    workingHours: 168.0,
-    absences: 0.0,
-    tardiness: 0.0,
-    undertime: 0.0,
-    sss: 1125.0,
-    philhealth: 660.0,
-    pagibig: 100.0,
-    withholdingTax: 2100.0,
-  },
-  {
-    employeeId: "010105",
-    name: "Mendoza, Jose",
-    position: "Marketing Specialist",
-    department: "Marketing",
-    cutoffPeriod: "Sep 1 - 15",
-    regularPay: 18000.0,
-    overtimePay: 500.0,
-    leavePay: 0.0,
-    workingHours: 168.0,
-    absences: 0.0,
-    tardiness: 0.0,
-    undertime: 0.0,
-    sss: 1125.0,
-    philhealth: 540.0,
-    pagibig: 100.0,
-    withholdingTax: 1600.0,
-  },
-  {
-    employeeId: "010106",
-    name: "Torres, Carmen",
-    position: "Sales Executive",
-    department: "Sales",
-    cutoffPeriod: "Sep 1 - 15",
-    regularPay: 20000.0,
-    overtimePay: 2000.0,
-    leavePay: 0.0,
-    workingHours: 168.0,
-    absences: 0.0,
-    tardiness: 0.0,
-    undertime: 0.0,
-    sss: 1125.0,
-    philhealth: 600.0,
-    pagibig: 100.0,
-    withholdingTax: 1900.0,
-  },
-  {
-    employeeId: "010107",
-    name: "Ramos, Roberto",
-    position: "Operations Manager",
-    department: "Operations",
-    cutoffPeriod: "Sep 1 - 15",
-    regularPay: 28000.0,
-    overtimePay: 0.0,
-    leavePay: 0.0,
-    workingHours: 168.0,
-    absences: 0.0,
-    tardiness: 0.0,
-    undertime: 0.0,
-    sss: 1125.0,
-    philhealth: 840.0,
-    pagibig: 100.0,
-    withholdingTax: 2900.0,
-  },
-  {
-    employeeId: "010108",
-    name: "Cruz, Linda",
-    position: "Customer Service",
-    department: "Support",
-    cutoffPeriod: "Sep 1 - 15",
-    regularPay: 16000.0,
-    overtimePay: 800.0,
-    leavePay: 0.0,
-    workingHours: 168.0,
-    absences: 0.0,
-    tardiness: 0.0,
-    undertime: 0.0,
-    sss: 1125.0,
-    philhealth: 480.0,
-    pagibig: 100.0,
-    withholdingTax: 1400.0,
-  },
-];
+// Payslip Generation with Supabase Integration
+// Get Supabase client
+const supabase = window.supabaseClient;
 
-// Calculate gross, deductions, and net pay for each employee
-dummyEmployees.forEach((emp) => {
-  emp.grossEarnings = emp.regularPay + emp.overtimePay + emp.leavePay;
-  emp.totalDeductions =
-    emp.sss + emp.philhealth + emp.pagibig + emp.withholdingTax;
-  emp.netPay = emp.grossEarnings - emp.totalDeductions;
-});
+// State management
+let allEmployeesData = [];
+let filteredData = [];
+let gridApi = null;
+
+// Helper function to get full name
+function getFullName(emp) {
+  const parts = [emp.first_name, emp.middle_name, emp.last_name].filter(Boolean);
+  return parts.join(' ');
+}
 
 // Get grid div
 const gridDiv = document.getElementById("payslipGrid");
@@ -179,11 +38,21 @@ window
     gridDiv.classList.toggle("ag-theme-quartz", !e.matches);
   });
 
-// Column definitions for AG Grid (selection column is configured via rowSelection)
+// Format currency helper
+function formatCurrency(value) {
+  const number = Number(value);
+  if (!Number.isFinite(number)) return "0.00";
+  return new Intl.NumberFormat("en-PH", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(number);
+}
+
+// Column definitions for AG Grid
 const columnDefs = [
   {
     headerName: "Employee ID",
-    field: "employeeId",
+    field: "employee_id",
     sortable: true,
     filter: true,
     width: 140,
@@ -191,12 +60,13 @@ const columnDefs = [
   },
   {
     headerName: "Name",
-    field: "name",
+    field: "full_name",
     sortable: true,
     filter: true,
     width: 200,
     minWidth: 180,
     cellStyle: { fontWeight: "500" },
+    valueGetter: (params) => getFullName(params.data),
   },
   {
     headerName: "Position",
@@ -215,7 +85,7 @@ const columnDefs = [
   },
   {
     headerName: "Cutoff Period",
-    field: "cutoffPeriod",
+    field: "cutoff_period",
     sortable: true,
     filter: true,
     width: 140,
@@ -240,7 +110,7 @@ const columnDefs = [
       button.textContent = "Preview";
 
       button.addEventListener("click", () => {
-        openPreviewModal(params.data.employeeId);
+        openPreviewModal(params.data.employee_id);
       });
 
       return button;
@@ -251,15 +121,15 @@ const columnDefs = [
 // Grid options
 const gridOptions = {
   columnDefs: columnDefs,
-  rowData: dummyEmployees,
+  rowData: [],
   domLayout: "normal",
   autoSizeStrategy: {
     type: "fitGridWidth",
   },
   rowSelection: {
     mode: "multiRow",
-    checkboxes: true, // replaces colDef.checkboxSelection
-    headerCheckbox: true, // replaces colDef.headerCheckboxSelection
+    checkboxes: true,
+    headerCheckbox: true,
     selectionColumnDef: {
       width: 50,
       pinned: "left",
@@ -275,48 +145,102 @@ const gridOptions = {
   },
   rowHeight: 50,
   headerHeight: 50,
+  overlayLoadingTemplate: '<span class="ag-overlay-loading-center">Loading payslip data...</span>',
+  overlayNoRowsTemplate: '<span class="ag-overlay-no-rows-center">No payslip data available</span>',
 };
-
-// Store grid API globally
-let gridApi = null;
 
 // Initialize AG Grid
 try {
   if (gridDiv && window.agGrid && agGrid.createGrid) {
-    // In recent AG Grid versions, createGrid returns the grid API instance
     const api = agGrid.createGrid(gridDiv, gridOptions);
     gridApi = api || gridOptions.api || null;
-    console.log("[Payslip] AG Grid initialized:", !!gridApi, gridApi);
-    
-    // Verify search functionality is available
-    if (gridApi) {
-      console.log("[Payslip] Available search methods:", {
-        setQuickFilter: typeof gridApi.setQuickFilter === "function",
-        setGridOption: typeof gridApi.setGridOption === "function",
-        setRowData: typeof gridApi.setRowData === "function"
-      });
-    }
+    console.log("[Payslip] AG Grid initialized:", !!gridApi);
   } else {
     console.error("AG Grid library not available or grid container missing.");
-    console.log("Available:", {
-      gridDiv: !!gridDiv,
-      agGrid: !!window.agGrid,
-      createGrid: !!(window.agGrid && agGrid.createGrid)
-    });
   }
 } catch (error) {
   console.error("Error initializing AG Grid:", error);
-  alert(
-    "Error loading the grid. Please make sure AG Grid library is loaded correctly."
-  );
+  alert("Error loading the grid. Please check the console for details.");
 }
 
-// Search functionality (improved with better error handling)
+// Fetch payslip data from Supabase
+async function fetchPayslipData() {
+  try {
+    if (!supabase) {
+      throw new Error("Supabase client not initialized");
+    }
+
+    // Show loading overlay
+    if (gridApi) {
+      gridApi.setGridOption("loading", true);
+    }
+
+    console.log("[Payslip] Fetching data from Supabase...");
+    
+    const { data, error } = await supabase
+      .from("payslip_generation_report")
+      .select("*")
+      .order("employee_id", { ascending: true });
+
+    if (error) {
+      throw error;
+    }
+
+    console.log("[Payslip] Data fetched successfully:", data?.length || 0, "records");
+    
+    // Store the data
+    allEmployeesData = data || [];
+    filteredData = [...allEmployeesData];
+
+    // Update grid
+    if (gridApi) {
+      if (typeof gridApi.setGridOption === "function") {
+        gridApi.setGridOption("rowData", filteredData);
+        gridApi.setGridOption("loading", false);
+      } else if (typeof gridApi.setRowData === "function") {
+        gridApi.setRowData(filteredData);
+      }
+    }
+
+    // Update cutoff dropdown if needed
+    updateCutoffDropdown();
+
+  } catch (error) {
+    console.error("[Payslip] Error fetching payslip data:", error);
+    alert("Failed to load payslip data. Please check your connection and try again.");
+    
+    // Show no rows overlay
+    if (gridApi) {
+      gridApi.setGridOption("loading", false);
+    }
+  }
+}
+
+// Update cutoff dropdown with available periods
+function updateCutoffDropdown() {
+  const cutoffPeriod = document.getElementById("cutoffPeriod");
+  if (!cutoffPeriod || allEmployeesData.length === 0) return;
+
+  // Get unique cutoff periods from data
+  const uniquePeriods = [...new Set(allEmployeesData.map(emp => emp.cutoff_period))];
+  
+  // Clear existing options except "All Cutoff"
+  cutoffPeriod.innerHTML = '<option value="all">All Cutoff</option>';
+  
+  // Add unique periods
+  uniquePeriods.forEach(period => {
+    const option = document.createElement("option");
+    option.value = period;
+    option.textContent = period;
+    cutoffPeriod.appendChild(option);
+  });
+}
+
+// Search functionality
 const searchInput = document.getElementById("searchInput");
 if (searchInput) {
   searchInput.addEventListener("input", (e) => {
-    const searchValue = e.target.value;
-    console.log("[Payslip] Search input:", searchValue);
+    const searchValue = e.target.value.toLowerCase();
     
     if (!gridApi) {
       console.warn("[Payslip] gridApi not available for search");
@@ -324,37 +248,39 @@ if (searchInput) {
     }
     
     try {
-      // Try different search methods based on available API
-      if (typeof gridApi.setQuickFilter === "function") {
-        gridApi.setQuickFilter(searchValue);
-        console.log("[Payslip] Search applied using setQuickFilter");
-      } else if (typeof gridApi.setGridOption === "function") {
-        // For newer AG Grid versions
-        gridApi.setGridOption("quickFilterText", searchValue);
-        console.log("[Payslip] Search applied using setGridOption");
+      // Apply cutoff filter first
+      const cutoffPeriod = document.getElementById("cutoffPeriod");
+      const selectedPeriod = cutoffPeriod ? cutoffPeriod.value : "all";
+      
+      let dataToSearch = allEmployeesData;
+      if (selectedPeriod !== "all") {
+        dataToSearch = allEmployeesData.filter(emp => emp.cutoff_period === selectedPeriod);
+      }
+
+      // Then apply search filter
+      if (searchValue) {
+        filteredData = dataToSearch.filter(emp => {
+          const fullName = getFullName(emp).toLowerCase();
+          return fullName.includes(searchValue) ||
+            emp.employee_id?.toString().toLowerCase().includes(searchValue) ||
+            emp.department?.toLowerCase().includes(searchValue) ||
+            emp.position?.toLowerCase().includes(searchValue);
+        });
       } else {
-        console.warn("[Payslip] No search method available on gridApi");
-        // Fallback: manually filter the data
-        const filteredData = dummyEmployees.filter(emp => 
-          emp.name.toLowerCase().includes(searchValue.toLowerCase()) ||
-          emp.employeeId.toLowerCase().includes(searchValue.toLowerCase()) ||
-          emp.department.toLowerCase().includes(searchValue.toLowerCase()) ||
-          emp.position.toLowerCase().includes(searchValue.toLowerCase())
-        );
-        
-        if (typeof gridApi.setRowData === "function") {
-          gridApi.setRowData(filteredData);
-        } else if (typeof gridApi.setGridOption === "function") {
-          gridApi.setGridOption("rowData", filteredData);
-        }
-        console.log("[Payslip] Search applied using manual filtering");
+        filteredData = [...dataToSearch];
+      }
+      
+      // Update grid
+      if (typeof gridApi.setGridOption === "function") {
+        gridApi.setGridOption("rowData", filteredData);
+      } else if (typeof gridApi.setRowData === "function") {
+        gridApi.setRowData(filteredData);
       }
     } catch (error) {
       console.error("[Payslip] Error during search:", error);
     }
   });
   
-  // Add a clear search functionality
   searchInput.addEventListener("keydown", (e) => {
     if (e.key === "Escape") {
       searchInput.value = "";
@@ -363,327 +289,58 @@ if (searchInput) {
   });
 }
 
-// Cutoff period change + initial sync
+// Cutoff period change
 const cutoffPeriod = document.getElementById("cutoffPeriod");
-function applyCutoffToGrid(selectedPeriod) {
-  if (!gridApi) {
-    console.warn("[Payslip] applyCutoffToGrid: gridApi not ready");
-    return;
-  }
-  const updatedData = dummyEmployees.map((emp) => ({
-    ...emp,
-    cutoffPeriod: selectedPeriod,
-  }));
-  // AG Grid modern API: setGridOption; fallback to legacy setRowData if present
-  try {
-    if (typeof gridApi.setGridOption === "function") {
-      gridApi.setGridOption("rowData", updatedData);
-    } else if (typeof gridApi.setRowData === "function") {
-      gridApi.setRowData(updatedData);
-    } else {
-      console.warn("[Payslip] No supported API to update rowData");
-    }
-  } catch (e) {
-    console.error("[Payslip] Failed updating rowData:", e);
-  }
-}
 if (cutoffPeriod) {
-  // Initial sync on load to match selected option in UI
-  applyCutoffToGrid(cutoffPeriod.value);
   cutoffPeriod.addEventListener("change", (e) => {
-    applyCutoffToGrid(e.target.value);
-  });
-}
-
-// Generate PDF — renders a simple summary panel for each employee
-function generateEmployeesPdf(employees) {
-  console.log(
-    "[Payslip] generateEmployeesPdf called. Count:",
-    employees ? employees.length : "n/a"
-  );
-  if (!window.jspdf || !window.jspdf.jsPDF) {
-    console.error("[Payslip] jsPDF not available.", { jspdf: !!window.jspdf });
-    alert("PDF library not loaded. Please check your network connection.");
-    return;
-  }
-  const { jsPDF } = window.jspdf;
-  let doc;
-  try {
-    doc = new jsPDF({ unit: "pt", format: "a4" }); // 595x842 pt canvas
-  } catch (e) {
-    console.error("[Payslip] Failed to construct jsPDF:", e);
-    alert("Unable to start PDF rendering. See console for details.");
-    return;
-  }
-
-  const margin = 40;
-  let y = margin + 12;
-
-  // Title
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(18);
-  doc.text("Payslip Summary", margin, y);
-  y += 18;
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(10);
-  const generatedOn = new Date().toLocaleString();
-  doc.text(`Generated on ${generatedOn}`, margin, y);
-  y += 14;
-
-  const pageHeight = doc.internal.pageSize.getHeight();
-  const panelGap = 14;
-
-  function ensureSpace(requiredHeight) {
-    if (y + requiredHeight > pageHeight - margin) {
-      doc.addPage();
-      y = margin;
-    }
-  }
-
-  function drawLabelValue(label, value, x, yy, width) {
-    doc.setFont("helvetica", "normal");
-    doc.setTextColor(60, 60, 60);
-    doc.text(label, x, yy);
-    doc.setFont("helvetica", "bold");
-    doc.setTextColor(15, 23, 42);
-    doc.text(String(value), x + width, yy, { align: "right" });
-  }
-
-  employees.forEach((emp, index) => {
-    console.log(
-      "[Payslip] Rendering panel for employee:",
-      emp && emp.employeeId,
-      emp && emp.name
-    );
-    // Estimate height of one panel
-    const estimatedPanelHeight = 160; // safe estimate for our rows
-    ensureSpace(estimatedPanelHeight);
-
-    // Panel wrapper
-    const panelTop = y;
-    const panelLeft = margin;
-    const panelWidth = doc.internal.pageSize.getWidth() - margin * 2;
-    const panelRight = panelLeft + panelWidth;
-    const innerPadding = 12;
-
-    // Header
-    doc.setDrawColor(230, 230, 230);
-    doc.setFillColor(255, 255, 255);
-    doc.roundedRect(
-      panelLeft,
-      panelTop,
-      panelWidth,
-      estimatedPanelHeight,
-      6,
-      6,
-      "S"
-    );
-
-    let yy = panelTop + innerPadding + 6;
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(12);
-    doc.text(`${emp.name} (${emp.employeeId})`, panelLeft + innerPadding, yy);
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(10);
-    doc.setTextColor(90, 90, 90);
-    doc.text(
-      `${emp.department} • ${emp.position}`,
-      panelRight - innerPadding,
-      yy,
-      { align: "right" }
-    );
-
-    // Divider
-    yy += 8;
-    doc.setDrawColor(230, 230, 230);
-    doc.line(panelLeft + innerPadding, yy, panelRight - innerPadding, yy);
-
-    // Two columns of label/value rows
-    const colGap = 24;
-    const colWidth = (panelWidth - innerPadding * 2 - colGap) / 2;
-    const col1X = panelLeft + innerPadding;
-    const col2X = col1X + colWidth + colGap;
-    const valueRightOffset = 12;
-
-    yy += 16;
-    doc.setFontSize(10);
-    doc.setTextColor(15, 23, 42);
-
-    // Left column: earnings and attendance
-    drawLabelValue(
-      "Regular Pay",
-      formatCurrency(emp.regularPay),
-      col1X,
-      yy,
-      colWidth - valueRightOffset
-    );
-    yy += 14;
-    drawLabelValue(
-      "OT",
-      formatCurrency(emp.overtimePay),
-      col1X,
-      yy,
-      colWidth - valueRightOffset
-    );
-    yy += 14;
-    drawLabelValue(
-      "Leave Pay",
-      formatCurrency(emp.leavePay),
-      col1X,
-      yy,
-      colWidth - valueRightOffset
-    );
-    yy += 16;
-    drawLabelValue(
-      "Working Hours",
-      formatCurrency(emp.workingHours),
-      col1X,
-      yy,
-      colWidth - valueRightOffset
-    );
-    yy += 14;
-    drawLabelValue(
-      "Absences",
-      formatCurrency(emp.absences),
-      col1X,
-      yy,
-      colWidth - valueRightOffset
-    );
-    yy += 14;
-    drawLabelValue(
-      "Tardiness",
-      formatCurrency(emp.tardiness),
-      col1X,
-      yy,
-      colWidth - valueRightOffset
-    );
-    yy += 14;
-    drawLabelValue(
-      "Undertime",
-      formatCurrency(emp.undertime),
-      col1X,
-      yy,
-      colWidth - valueRightOffset
-    );
-
-    // Right column: contributions + summary
-    let yy2 = panelTop + innerPadding + 22;
-    drawLabelValue(
-      "SSS Contribution",
-      formatCurrency(emp.sss),
-      col2X,
-      yy2,
-      colWidth - valueRightOffset
-    );
-    yy2 += 14;
-    drawLabelValue(
-      "PhilHealth",
-      formatCurrency(emp.philhealth),
-      col2X,
-      yy2,
-      colWidth - valueRightOffset
-    );
-    yy2 += 14;
-    drawLabelValue(
-      "Pag-ibig",
-      formatCurrency(emp.pagibig),
-      col2X,
-      yy2,
-      colWidth - valueRightOffset
-    );
-    yy2 += 14;
-    drawLabelValue(
-      "Withholding Tax",
-      formatCurrency(emp.withholdingTax),
-      col2X,
-      yy2,
-      colWidth - valueRightOffset
-    );
-    yy2 += 16;
-    drawLabelValue(
-      "Gross Earnings",
-      formatCurrency(emp.grossEarnings),
-      col2X,
-      yy2,
-      colWidth - valueRightOffset
-    );
-    yy2 += 14;
-    drawLabelValue(
-      "Total Deductions",
-      formatCurrency(emp.totalDeductions),
-      col2X,
-      yy2,
-      colWidth - valueRightOffset
-    );
-    yy2 += 18;
-    doc.setFont("helvetica", "bold");
-    doc.setTextColor(15, 81, 50); // green-ish
-    drawLabelValue(
-      "Net Pay",
-      formatCurrency(emp.netPay),
-      col2X,
-      yy2,
-      colWidth - valueRightOffset
-    );
-
-    // Move y below the taller of the two columns
-    y = Math.max(yy + 12, yy2 + 16) + panelGap;
-  });
-
-  try {
-    doc.save("payslips-summary.pdf");
-    console.log("[Payslip] PDF saved successfully.");
-  } catch (e) {
-    console.error("[Payslip] Failed to save PDF:", e);
-    alert("Unable to save PDF. See console for details.");
-  }
-}
-
-// Generate PDF button
-const generatePdfBtn = document.getElementById("generatePdfBtn");
-if (generatePdfBtn) {
-  generatePdfBtn.addEventListener("click", () => {
-    console.log("[Payslip] Generate PDF button clicked");
+    const selectedPeriod = e.target.value;
+    
     if (!gridApi) {
-      console.warn(
-        "[Payslip] gridApi is not set. Falling back to all dummy employees."
-      );
-    }
-    const hasSelectionApi =
-      gridApi && typeof gridApi.getSelectedRows === "function";
-    const selected = hasSelectionApi ? gridApi.getSelectedRows() || [] : [];
-    console.log("[Payslip] Selected rows count:", selected.length);
-    if (!selected || selected.length === 0) {
-      alert("Please select at least one employee to generate a PDF summary.");
-      console.warn("[Payslip] No rows selected. PDF generation aborted.");
+      console.warn("[Payslip] gridApi not available");
       return;
     }
-    console.log("[Payslip] Generating PDF for rows:", selected.length);
+
     try {
-      generateEmployeesPdf(selected);
-    } catch (e) {
-      console.error("[Payslip] Error during PDF generation:", e);
-      alert("PDF generation failed. See console for details.");
+      // Apply cutoff filter
+      if (selectedPeriod === "all") {
+        filteredData = [...allEmployeesData];
+      } else {
+        filteredData = allEmployeesData.filter(emp => emp.cutoff_period === selectedPeriod);
+      }
+
+      // Also apply search filter if active
+      const searchInput = document.getElementById("searchInput");
+      const searchValue = searchInput?.value.toLowerCase();
+      if (searchValue) {
+        filteredData = filteredData.filter(emp => {
+          const fullName = getFullName(emp).toLowerCase();
+          return fullName.includes(searchValue) ||
+            emp.employee_id?.toString().toLowerCase().includes(searchValue) ||
+            emp.department?.toLowerCase().includes(searchValue) ||
+            emp.position?.toLowerCase().includes(searchValue);
+        });
+      }
+
+      // Update grid
+      if (typeof gridApi.setGridOption === "function") {
+        gridApi.setGridOption("rowData", filteredData);
+      } else if (typeof gridApi.setRowData === "function") {
+        gridApi.setRowData(filteredData);
+      }
+    } catch (error) {
+      console.error("[Payslip] Error changing cutoff period:", error);
     }
   });
 }
 
-// Global error logging to help diagnose issues in the field
-window.addEventListener("error", (e) => {
-  console.error("[Payslip] Global error:", e.message, e.error);
-});
-window.addEventListener("unhandledrejection", (e) => {
-  console.error("[Payslip] Unhandled promise rejection:", e.reason);
-});
-
-// Format currency
-function formatCurrency(value) {
-  const number = Number(value);
-  if (!Number.isFinite(number)) return "0.00";
-  return new Intl.NumberFormat("en-PH", {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  }).format(number);
+// Format date helper
+function formatDate(dateString) {
+  if (!dateString) return "";
+  const date = new Date(dateString);
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  const year = String(date.getFullYear()).slice(-2);
+  return `${month}/${day}/${year}`;
 }
 
 // Safe text update helper
@@ -694,57 +351,48 @@ function setText(id, value) {
 
 // Open preview modal with employee data
 function openPreviewModal(employeeId) {
-  const employee = dummyEmployees.find((emp) => emp.employeeId === employeeId);
+  const employee = allEmployeesData.find((emp) => emp.employee_id === employeeId);
 
   if (!employee) {
     alert("Employee not found!");
     return;
   }
 
+  console.log("[Payslip] Opening preview for employee:", employee);
+
   // Populate modal with employee data
-  setText("previewEmpId", employee.employeeId);
-  setText("previewEmpName", employee.name);
-  setText("previewDept", employee.department);
-  setText("previewPos", employee.position);
+  setText("previewEmpId", employee.employee_id || "");
+  setText("previewEmpName", getFullName(employee));
+  setText("previewDept", employee.department || "");
+  setText("previewPos", employee.position || "");
 
   // Earnings
-  setText("previewRegularPay", formatCurrency(employee.regularPay));
-  setText("previewOT", formatCurrency(employee.overtimePay));
-  setText("previewLeavePay", formatCurrency(employee.leavePay));
+  setText("previewRegularPay", formatCurrency(employee.regular_pay || 0));
+  setText("previewOT", formatCurrency(employee.overtime_pay || 0));
+  setText("previewLeavePay", formatCurrency(employee.leave_pay_amount || 0));
 
-  // Attendance Summary (Working hours, Absences, Tardiness, Undertime)
-  setText("previewWorkingHours", formatCurrency(employee.workingHours));
-  setText("previewAbsences", formatCurrency(employee.absences));
-  setText("previewTardiness", formatCurrency(employee.tardiness));
-  setText("previewUndertime", formatCurrency(employee.undertime));
+  // Attendance Summary
+  setText("previewWorkingHours", formatCurrency(employee.working_hours || 0));
+  setText("previewAbsences", formatCurrency(employee.absences_deduction || 0));
+  setText("previewTardiness", formatCurrency(employee.tardiness_deduction || 0));
+  setText("previewUndertime", formatCurrency(employee.undertime_deduction || 0));
 
   // Deductions
-  setText("previewSSS", formatCurrency(employee.sss));
-  setText("previewPhilhealth", formatCurrency(employee.philhealth));
-  setText("previewPagibig", formatCurrency(employee.pagibig));
-  setText("previewTax", formatCurrency(employee.withholdingTax));
+  setText("previewSSS", formatCurrency(employee.sss_deduction || 0));
+  setText("previewPhilhealth", formatCurrency(employee.philhealth_deduction || 0));
+  setText("previewPagibig", formatCurrency(employee.pagibig_deduction || 0));
+  setText("previewTax", formatCurrency(employee.withholding_tax || 0));
 
   // Summary
-  setText("previewGross", formatCurrency(employee.grossEarnings));
-  setText("previewDeductions", formatCurrency(employee.totalDeductions));
-  setText("previewNetPay", formatCurrency(employee.netPay));
+  setText("previewGross", formatCurrency(employee.gross_pay || 0));
+  setText("previewDeductions", formatCurrency(employee.total_deductions || 0));
+  setText("previewNetPay", formatCurrency(employee.net_pay || 0));
 
   // Update period and issued date
-  const periodMap = {
-    "Sep 1 - 15": { period: "09/01/25 - 09/15/25", issued: "09/16/25" },
-    "Sep 16 - 30": { period: "09/16/25 - 09/30/25", issued: "10/01/25" },
-    "Oct 1 - 15": { period: "10/01/25 - 10/15/25", issued: "10/16/25" },
-    "Oct 16 - 31": { period: "10/16/25 - 10/31/25", issued: "11/01/25" },
-  };
+  setText("previewPeriod", employee.cutoff_period || "");
+  setText("previewIssued", formatDate(new Date())); // Use current date as issued date
 
-  const dates = periodMap[employee.cutoffPeriod] || {
-    period: "09/01/25 - 09/15/25",
-    issued: "09/16/25",
-  };
-  setText("previewPeriod", dates.period);
-  setText("previewIssued", dates.issued);
-
-  // Show modal with outside-click minimize before close
+  // Show modal
   const modal = document.getElementById("previewModal");
   if (modal && modal.showModal) {
     if (!modal.open) modal.showModal();
@@ -753,7 +401,7 @@ function openPreviewModal(employeeId) {
       modal.classList.add("minimizing");
       setTimeout(() => {
         if (modal.open) modal.close();
-      }, 170); // slightly longer than CSS 160ms
+      }, 170);
     };
 
     const onBackdropClick = (e) => {
@@ -774,9 +422,377 @@ function openPreviewModal(employeeId) {
   }
 }
 
-// Window resize handler for responsive grid
+// Generate PDF matching preview design - 2 PAYSLIPS PER PAGE
+function generateEmployeesPdf(employees) {
+  console.log("[Payslip] generateEmployeesPdf called. Count:", employees ? employees.length : "n/a");
+  
+  if (!window.jspdf || !window.jspdf.jsPDF) {
+    console.error("[Payslip] jsPDF not available.");
+    alert("PDF library not loaded. Please check your network connection.");
+    return;
+  }
+  
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ unit: "pt", format: "a4" });
+  
+  const pageWidth = doc.internal.pageSize.getWidth();
+  const pageHeight = doc.internal.pageSize.getHeight();
+  const margin = 30;
+  const payslipHeight = (pageHeight - margin * 3) / 2;
+  
+  // Add summary header on first page
+  const today = new Date();
+  const formattedDate = today.toLocaleDateString('en-US', { 
+    month: '2-digit', 
+    day: '2-digit', 
+    year: '2-digit' 
+  });
+  
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(14);
+  doc.setTextColor(0, 0, 0);
+  doc.text("Payslip Generation Summary", pageWidth / 2, margin + 10, { align: "center" });
+  
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(9);
+  doc.text(`Total Payslips: ${employees.length} | Generated: ${formattedDate}`, pageWidth / 2, margin + 25, { align: "center" });
+  
+  doc.setDrawColor(200, 200, 200);
+  doc.setLineWidth(1);
+  doc.line(margin, margin + 35, pageWidth - margin, margin + 35);
+  
+  let currentY = margin + 45;
+  
+  employees.forEach((emp, index) => {
+    if (index > 0 && index % 2 === 0) {
+      doc.addPage();
+      currentY = margin;
+    } else if (index > 0) {
+      currentY += payslipHeight + 10;
+    }
+    
+    let y = currentY;
+    
+    // Header Card Background
+    doc.setFillColor(248, 248, 248);
+    doc.roundedRect(margin, y, pageWidth - margin * 2, 60, 6, 6, 'F');
+    
+    // Company Logo Circle
+    doc.setFillColor(99, 102, 241);
+    doc.circle(margin + 18, y + 25, 15, 'F');
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(10);
+    doc.setTextColor(255, 255, 255);
+    doc.text("CN", margin + 18, y + 28, { align: "center" });
+    
+    // Company Info
+    doc.setTextColor(0, 0, 0);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(10);
+    doc.text("Company Name", margin + 45, y + 20);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(7);
+    doc.setTextColor(100, 100, 100);
+    doc.text("Company Address", margin + 45, y + 32);
+    
+    // Payslip Title
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(16);
+    doc.setTextColor(99, 102, 241);
+    doc.text("Payslip", pageWidth / 2, y + 28, { align: "center" });
+    
+    // Dates
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(6);
+    doc.setTextColor(120, 120, 120);
+    doc.text("SALARY STATEMENT", pageWidth - margin - 5, y + 14, { align: "right" });
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(7);
+    doc.setTextColor(0, 0, 0);
+    doc.text(emp.cutoff_period || "", pageWidth - margin - 5, y + 23, { align: "right" });
+    
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(6);
+    doc.setTextColor(120, 120, 120);
+    doc.text("DATE ISSUED", pageWidth - margin - 5, y + 35, { align: "right" });
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(7);
+    doc.setTextColor(0, 0, 0);
+    doc.text(formattedDate, pageWidth - margin - 5, y + 44, { align: "right" });
+    
+    y += 70;
+    
+    // Employee Info Card
+    doc.setFillColor(248, 248, 248);
+    doc.roundedRect(margin, y, pageWidth - margin * 2, 38, 4, 4, 'F');
+    
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(7);
+    doc.setTextColor(120, 120, 120);
+    doc.text("Employee ID:", margin + 10, y + 13);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(0, 0, 0);
+    doc.text(emp.employee_id?.toString() || "", margin + 70, y + 13);
+    
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(120, 120, 120);
+    doc.text("Department:", pageWidth / 2 + 10, y + 13);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(0, 0, 0);
+    doc.text(emp.department || "", pageWidth / 2 + 60, y + 13);
+    
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(120, 120, 120);
+    doc.text("Employee Name:", margin + 10, y + 28);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(0, 0, 0);
+    doc.text(getFullName(emp), margin + 70, y + 28);
+    
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(120, 120, 120);
+    doc.text("Position:", pageWidth / 2 + 10, y + 28);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(0, 0, 0);
+    doc.text(emp.position || "", pageWidth / 2 + 60, y + 28);
+    
+    y += 48;
+    
+    // Two Column Layout
+    const colWidth = (pageWidth - margin * 2 - 20) / 2;
+    const col1X = margin;
+    const col2X = margin + colWidth + 20;
+    
+    function drawCard(x, yPos, width, title, items) {
+      doc.setDrawColor(200, 200, 200);
+      doc.setLineWidth(0.8);
+      doc.roundedRect(x, yPos, width, 18 + items.length * 13 + 10, 4, 4, 'S');
+      
+      doc.setFillColor(248, 248, 248);
+      doc.roundedRect(x, yPos, width, 18, 4, 4, 'F');
+      doc.setDrawColor(200, 200, 200);
+      doc.line(x + 4, yPos + 18, x + width - 4, yPos + 18);
+      
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(8);
+      doc.setTextColor(0, 0, 0);
+      doc.text(title, x + 8, yPos + 12);
+      
+      let itemY = yPos + 28;
+      items.forEach(item => {
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(7);
+        doc.setTextColor(120, 120, 120);
+        doc.text(item.label, x + 8, itemY);
+        
+        doc.setFont("helvetica", "bold");
+        doc.setTextColor(0, 0, 0);
+        doc.text(item.value, x + width - 8, itemY, { align: "right" });
+        
+        itemY += 13;
+      });
+      
+      return yPos + 18 + items.length * 13 + 10;
+    }
+    
+    // Gross Earnings
+    const grossItems = [
+      { label: "Regular Pay", value: formatCurrency(emp.regular_pay || 0) },
+      { label: "OT", value: formatCurrency(emp.overtime_pay || 0) },
+      { label: "Leave Pay", value: formatCurrency(emp.leave_pay_amount || 0) }
+    ];
+    const grossEndY = drawCard(col1X, y, colWidth, "Gross Earnings", grossItems);
+    
+    // Attendance Summary
+    const attendanceItems = [
+      { label: "Working Hours", value: formatCurrency(emp.working_hours || 0) },
+      { label: "Absences", value: formatCurrency(emp.absences_deduction || 0) },
+      { label: "Tardiness", value: formatCurrency(emp.tardiness_deduction || 0) },
+      { label: "Undertime", value: formatCurrency(emp.undertime_deduction || 0) }
+    ];
+    drawCard(col1X, grossEndY + 10, colWidth, "Attendance Summary", attendanceItems);
+    
+    // Gov. Contributions
+    const contribItems = [
+      { label: "SSS Contribution", value: formatCurrency(emp.sss_deduction || 0) },
+      { label: "PhilHealth", value: formatCurrency(emp.philhealth_deduction || 0) },
+      { label: "Pag-ibig", value: formatCurrency(emp.pagibig_deduction || 0) },
+      { label: "Withholding Tax", value: formatCurrency(emp.withholding_tax || 0) }
+    ];
+    
+    const contribStartY = y;
+    const contribEndY = contribStartY + 18 + contribItems.length * 13 + 10;
+    
+    doc.setDrawColor(200, 200, 200);
+    doc.setLineWidth(0.8);
+    doc.roundedRect(col2X, contribStartY, colWidth, contribEndY - contribStartY + 45, 4, 4, 'S');
+    
+    doc.setFillColor(248, 248, 248);
+    doc.roundedRect(col2X, contribStartY, colWidth, 18, 4, 4, 'F');
+    doc.setDrawColor(200, 200, 200);
+    doc.line(col2X + 4, contribStartY + 18, col2X + colWidth - 4, contribStartY + 18);
+    
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(8);
+    doc.setTextColor(0, 0, 0);
+    doc.text("Gov. Contributions", col2X + 8, contribStartY + 12);
+    
+    let contribY = contribStartY + 28;
+    contribItems.forEach(item => {
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(7);
+      doc.setTextColor(120, 120, 120);
+      doc.text(item.label, col2X + 8, contribY);
+      
+      doc.setFont("helvetica", "bold");
+      doc.setTextColor(0, 0, 0);
+      doc.text(item.value, col2X + colWidth - 8, contribY, { align: "right" });
+      
+      contribY += 13;
+    });
+    
+    contribY += 3;
+    doc.setDrawColor(200, 200, 200);
+    doc.setLineWidth(1.5);
+    doc.line(col2X + 8, contribY, col2X + colWidth - 8, contribY);
+    contribY += 13;
+    
+    const summaryItems = [
+      { label: "Gross Earnings", value: formatCurrency(emp.gross_pay || 0) },
+      { label: "Total Deductions", value: formatCurrency(emp.total_deductions || 0) }
+    ];
+    
+    summaryItems.forEach(item => {
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(7);
+      doc.setTextColor(120, 120, 120);
+      doc.text(item.label, col2X + 8, contribY);
+      
+      doc.setFont("helvetica", "bold");
+      doc.setTextColor(0, 0, 0);
+      doc.text(item.value, col2X + colWidth - 8, contribY, { align: "right" });
+      
+      contribY += 13;
+    });
+    
+    y = Math.max(grossEndY + 10 + 18 + attendanceItems.length * 13 + 10, contribEndY + 45) + 12;
+    
+    // Net Pay Card
+    doc.setFillColor(236, 253, 245);
+    doc.setDrawColor(134, 239, 172);
+    doc.setLineWidth(1.5);
+    doc.roundedRect(margin, y, pageWidth - margin * 2, 28, 4, 4, 'FD');
+    
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(8);
+    doc.setTextColor(75, 85, 99);
+    doc.text("Net Pay", margin + 10, y + 18);
+    
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(14);
+    doc.setTextColor(22, 163, 74);
+    doc.text(formatCurrency(emp.net_pay || 0), pageWidth - margin - 10, y + 18, { align: "right" });
+    
+    y += 38;
+    
+    // Signature Section
+    doc.setFillColor(248, 248, 248);
+    doc.roundedRect(margin, y, pageWidth - margin * 2, 42, 4, 4, 'F');
+    
+    const sigColWidth = (pageWidth - margin * 2 - 30) / 2;
+    
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(7);
+    doc.setTextColor(120, 120, 120);
+    doc.text("Received By:", margin + 10, y + 14);
+    
+    doc.setDrawColor(150, 150, 150);
+    doc.setLineWidth(1);
+    doc.line(margin + 10, y + 30, margin + 10 + sigColWidth - 15, y + 30);
+    
+    doc.setFontSize(6);
+    doc.text("Signature over Printed Name", margin + 10 + (sigColWidth - 15) / 2, y + 36, { align: "center" });
+    
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(7);
+    doc.setTextColor(120, 120, 120);
+    doc.text("Date Received:", pageWidth / 2 + 20, y + 14);
+    
+    doc.line(pageWidth / 2 + 20, y + 30, pageWidth / 2 + 20 + sigColWidth - 15, y + 30);
+    
+    doc.setFontSize(6);
+    doc.text("MM / DD / YYYY", pageWidth / 2 + 20 + (sigColWidth - 15) / 2, y + 36, { align: "center" });
+    
+    if (index < employees.length - 1 && (index + 1) % 2 !== 0) {
+      doc.setDrawColor(200, 200, 200);
+      doc.setLineWidth(1);
+      doc.setLineDash([3, 3]);
+      doc.line(margin, currentY + payslipHeight + 5, pageWidth - margin, currentY + payslipHeight + 5);
+      doc.setLineDash([]);
+    }
+  });
+  
+  try {
+    doc.save("payslips.pdf");
+    console.log("[Payslip] PDF saved successfully.");
+  } catch (e) {
+    console.error("[Payslip] Failed to save PDF:", e);
+    alert("Unable to save PDF. See console for details.");
+  }
+}
+
+// Generate PDF button
+const generatePdfBtn = document.getElementById("generatePdfBtn");
+if (generatePdfBtn) {
+  generatePdfBtn.addEventListener("click", () => {
+    console.log("[Payslip] Generate PDF button clicked");
+    if (!gridApi) {
+      console.warn("[Payslip] gridApi is not set.");
+    }
+    const hasSelectionApi = gridApi && typeof gridApi.getSelectedRows === "function";
+    const selected = hasSelectionApi ? gridApi.getSelectedRows() || [] : [];
+    console.log("[Payslip] Selected rows count:", selected.length);
+    
+    if (!selected || selected.length === 0) {
+      alert("Please select at least one employee to generate a PDF.");
+      return;
+    }
+    
+    try {
+      generateEmployeesPdf(selected);
+    } catch (e) {
+      console.error("[Payslip] Error during PDF generation:", e);
+      alert("PDF generation failed. See console for details.");
+    }
+  });
+}
+
+// Window resize handler
 window.addEventListener("resize", () => {
   if (gridApi && gridApi.sizeColumnsToFit) {
     gridApi.sizeColumnsToFit();
   }
 });
+
+// Global error logging
+window.addEventListener("error", (e) => {
+  console.error("[Payslip] Global error:", e.message, e.error);
+});
+
+window.addEventListener("unhandledrejection", (e) => {
+  console.error("[Payslip] Unhandled promise rejection:", e.reason);
+});
+
+// Initialize data on page load
+document.addEventListener("DOMContentLoaded", () => {
+  console.log("[Payslip] Page loaded, fetching data...");
+  fetchPayslipData();
+});
+
+// Also fetch data immediately if DOM is already loaded
+if (document.readyState === "loading") {
+  // DOM is still loading, event listener above will handle it
+} else {
+  // DOM is already loaded
+  console.log("[Payslip] DOM already loaded, fetching data...");
+  fetchPayslipData();
+}
