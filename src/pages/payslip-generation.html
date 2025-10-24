@@ -83,7 +83,9 @@
       aria-labelledby="previewTitle"
       role="dialog"
     >
-      <div class="modal-box max-w-4xl w-full max-h-[95vh] p-0 my-auto overflow-y-auto">
+      <div
+        class="modal-box max-w-4xl w-full max-h-[95vh] p-0 my-auto overflow-y-auto"
+      >
         <form method="dialog">
           <button
             class="btn btn-sm btn-circle btn-ghost absolute right-4 top-4 z-10 bg-base-100"
@@ -92,7 +94,7 @@
             ✕
           </button>
         </form>
-        
+
         <header class="bg-base-200 dark:bg-base-300 px-8 py-6">
           <h3 id="previewTitle" class="text-2xl font-bold">Preview</h3>
         </header>
@@ -103,18 +105,24 @@
             <div class="flex items-start justify-between gap-8">
               <!-- Left: Company Info -->
               <div class="flex items-center gap-4">
-                <div class="w-16 h-16 rounded-full bg-primary text-primary-content flex items-center justify-center font-bold text-xl flex-shrink-0 shadow-lg">
+                <div
+                  class="w-16 h-16 rounded-full bg-primary text-primary-content flex items-center justify-center font-bold text-xl flex-shrink-0 shadow-lg"
+                >
                   CN
                 </div>
                 <div>
                   <div class="font-bold text-xl">Company Name</div>
-                  <div class="text-sm text-gray-500 dark:text-gray-400 mt-1">Company Address</div>
+                  <div class="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                    Company Address
+                  </div>
                 </div>
               </div>
 
               <!-- Center: Payslip Title -->
               <div class="text-center flex-shrink-0">
-                <div class="text-4xl font-extrabold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+                <div
+                  class="text-4xl font-extrabold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent"
+                >
                   Payslip
                 </div>
               </div>
@@ -122,12 +130,24 @@
               <!-- Right: Dates -->
               <div class="text-right space-y-3 flex-shrink-0 min-w-[200px]">
                 <div>
-                  <div class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Salary Statement</div>
-                  <div id="previewPeriod" class="font-bold text-base mt-1">09/01/25 - 09/15/25</div>
+                  <div
+                    class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide"
+                  >
+                    Salary Statement
+                  </div>
+                  <div id="previewPeriod" class="font-bold text-base mt-1">
+                    09/01/25 - 09/15/25
+                  </div>
                 </div>
                 <div>
-                  <div class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Date Issued</div>
-                  <div id="previewIssued" class="font-bold text-base mt-1">09/16/25</div>
+                  <div
+                    class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide"
+                  >
+                    Date Issued
+                  </div>
+                  <div id="previewIssued" class="font-bold text-base mt-1">
+                    09/16/25
+                  </div>
                 </div>
               </div>
             </div>
@@ -137,19 +157,33 @@
           <div class="mt-6 bg-base-200 dark:bg-base-300 rounded-lg p-5">
             <div class="grid grid-cols-2 gap-x-8 gap-y-3">
               <div class="flex items-baseline gap-2">
-                <span class="text-sm text-gray-500 dark:text-gray-400 min-w-[120px]">Employee ID:</span>
+                <span
+                  class="text-sm text-gray-500 dark:text-gray-400 min-w-[120px]"
+                  >Employee ID:</span
+                >
                 <span id="previewEmpId" class="font-bold">010101</span>
               </div>
               <div class="flex items-baseline gap-2">
-                <span class="text-sm text-gray-500 dark:text-gray-400 min-w-[100px]">Department:</span>
+                <span
+                  class="text-sm text-gray-500 dark:text-gray-400 min-w-[100px]"
+                  >Department:</span
+                >
                 <span id="previewDept" class="font-bold">IT</span>
               </div>
               <div class="flex items-baseline gap-2">
-                <span class="text-sm text-gray-500 dark:text-gray-400 min-w-[120px]">Employee Name:</span>
-                <span id="previewEmpName" class="font-bold">Dela Cruz, Juan</span>
+                <span
+                  class="text-sm text-gray-500 dark:text-gray-400 min-w-[120px]"
+                  >Employee Name:</span
+                >
+                <span id="previewEmpName" class="font-bold"
+                  >Dela Cruz, Juan</span
+                >
               </div>
               <div class="flex items-baseline gap-2">
-                <span class="text-sm text-gray-500 dark:text-gray-400 min-w-[100px]">Position:</span>
+                <span
+                  class="text-sm text-gray-500 dark:text-gray-400 min-w-[100px]"
+                  >Position:</span
+                >
                 <span id="previewPos" class="font-bold">IT Support</span>
               </div>
             </div>
@@ -160,47 +194,85 @@
             <!-- LEFT PANEL -->
             <div class="space-y-6">
               <!-- Gross Earnings -->
-              <div class="rounded-lg border border-gray-300 dark:border-gray-600 overflow-hidden">
-                <div class="bg-base-200 dark:bg-base-300 px-4 py-3 border-b border-gray-300 dark:border-gray-600">
+              <div
+                class="rounded-lg border border-gray-300 dark:border-gray-600 overflow-hidden"
+              >
+                <div
+                  class="bg-base-200 dark:bg-base-300 px-4 py-3 border-b border-gray-300 dark:border-gray-600"
+                >
                   <h4 class="font-bold text-base">Gross Earnings</h4>
                 </div>
                 <div class="bg-base-100 dark:bg-base-200 p-4 space-y-3">
                   <div class="flex justify-between items-center">
-                    <span class="text-sm text-gray-500 dark:text-gray-400">Regular Pay</span>
-                    <span id="previewRegularPay" class="font-bold tabular-nums">15,000.00</span>
+                    <span class="text-sm text-gray-500 dark:text-gray-400"
+                      >Regular Pay</span
+                    >
+                    <span id="previewRegularPay" class="font-bold tabular-nums"
+                      >15,000.00</span
+                    >
                   </div>
                   <div class="flex justify-between items-center">
-                    <span class="text-sm text-gray-500 dark:text-gray-400">OT</span>
-                    <span id="previewOT" class="font-bold tabular-nums">1,500.00</span>
+                    <span class="text-sm text-gray-500 dark:text-gray-400"
+                      >OT</span
+                    >
+                    <span id="previewOT" class="font-bold tabular-nums"
+                      >1,500.00</span
+                    >
                   </div>
                   <div class="flex justify-between items-center">
-                    <span class="text-sm text-gray-500 dark:text-gray-400">Leave Pay</span>
-                    <span id="previewLeavePay" class="font-bold tabular-nums">0.00</span>
+                    <span class="text-sm text-gray-500 dark:text-gray-400"
+                      >Leave Pay</span
+                    >
+                    <span id="previewLeavePay" class="font-bold tabular-nums"
+                      >0.00</span
+                    >
                   </div>
                 </div>
               </div>
 
               <!-- Attendance Summary -->
-              <div class="rounded-lg border border-gray-300 dark:border-gray-600 overflow-hidden">
-                <div class="bg-base-200 dark:bg-base-300 px-4 py-3 border-b border-gray-300 dark:border-gray-600">
+              <div
+                class="rounded-lg border border-gray-300 dark:border-gray-600 overflow-hidden"
+              >
+                <div
+                  class="bg-base-200 dark:bg-base-300 px-4 py-3 border-b border-gray-300 dark:border-gray-600"
+                >
                   <h4 class="font-bold text-base">Attendance Summary</h4>
                 </div>
                 <div class="bg-base-100 dark:bg-base-200 p-4 space-y-3">
                   <div class="flex justify-between items-center">
-                    <span class="text-sm text-gray-500 dark:text-gray-400">Working Hours</span>
-                    <span id="previewWorkingHours" class="font-bold tabular-nums">168.00</span>
+                    <span class="text-sm text-gray-500 dark:text-gray-400"
+                      >Working Hours</span
+                    >
+                    <span
+                      id="previewWorkingHours"
+                      class="font-bold tabular-nums"
+                      >168.00</span
+                    >
                   </div>
                   <div class="flex justify-between items-center">
-                    <span class="text-sm text-gray-500 dark:text-gray-400">Absences</span>
-                    <span id="previewAbsences" class="font-bold tabular-nums">12.00</span>
+                    <span class="text-sm text-gray-500 dark:text-gray-400"
+                      >Absences</span
+                    >
+                    <span id="previewAbsences" class="font-bold tabular-nums"
+                      >12.00</span
+                    >
                   </div>
                   <div class="flex justify-between items-center">
-                    <span class="text-sm text-gray-500 dark:text-gray-400">Tardiness</span>
-                    <span id="previewTardiness" class="font-bold tabular-nums">0.00</span>
+                    <span class="text-sm text-gray-500 dark:text-gray-400"
+                      >Tardiness</span
+                    >
+                    <span id="previewTardiness" class="font-bold tabular-nums"
+                      >0.00</span
+                    >
                   </div>
                   <div class="flex justify-between items-center">
-                    <span class="text-sm text-gray-500 dark:text-gray-400">Undertime</span>
-                    <span id="previewUndertime" class="font-bold tabular-nums">0.00</span>
+                    <span class="text-sm text-gray-500 dark:text-gray-400"
+                      >Undertime</span
+                    >
+                    <span id="previewUndertime" class="font-bold tabular-nums"
+                      >0.00</span
+                    >
                   </div>
                 </div>
               </div>
@@ -208,39 +280,69 @@
 
             <!-- RIGHT PANEL -->
             <div>
-              <div class="rounded-lg border border-gray-300 dark:border-gray-600 overflow-hidden">
+              <div
+                class="rounded-lg border border-gray-300 dark:border-gray-600 overflow-hidden"
+              >
                 <!-- Gov. Contributions -->
-                <div class="bg-base-200 dark:bg-base-300 px-4 py-3 border-b border-gray-300 dark:border-gray-600">
+                <div
+                  class="bg-base-200 dark:bg-base-300 px-4 py-3 border-b border-gray-300 dark:border-gray-600"
+                >
                   <h4 class="font-bold text-base">Gov. Contributions</h4>
                 </div>
                 <div class="bg-base-100 dark:bg-base-200 p-4 space-y-3">
                   <div class="flex justify-between items-center">
-                    <span class="text-sm text-gray-500 dark:text-gray-400">SSS Contribution</span>
-                    <span id="previewSSS" class="font-bold tabular-nums">1,125.00</span>
+                    <span class="text-sm text-gray-500 dark:text-gray-400"
+                      >SSS Contribution</span
+                    >
+                    <span id="previewSSS" class="font-bold tabular-nums"
+                      >1,125.00</span
+                    >
                   </div>
                   <div class="flex justify-between items-center">
-                    <span class="text-sm text-gray-500 dark:text-gray-400">PhilHealth</span>
-                    <span id="previewPhilhealth" class="font-bold tabular-nums">450.00</span>
+                    <span class="text-sm text-gray-500 dark:text-gray-400"
+                      >PhilHealth</span
+                    >
+                    <span id="previewPhilhealth" class="font-bold tabular-nums"
+                      >450.00</span
+                    >
                   </div>
                   <div class="flex justify-between items-center">
-                    <span class="text-sm text-gray-500 dark:text-gray-400">Pag-ibig</span>
-                    <span id="previewPagibig" class="font-bold tabular-nums">100.00</span>
+                    <span class="text-sm text-gray-500 dark:text-gray-400"
+                      >Pag-ibig</span
+                    >
+                    <span id="previewPagibig" class="font-bold tabular-nums"
+                      >100.00</span
+                    >
                   </div>
                   <div class="flex justify-between items-center">
-                    <span class="text-sm text-gray-500 dark:text-gray-400">Withholding Tax</span>
-                    <span id="previewTax" class="font-bold tabular-nums">1,250.00</span>
+                    <span class="text-sm text-gray-500 dark:text-gray-400"
+                      >Withholding Tax</span
+                    >
+                    <span id="previewTax" class="font-bold tabular-nums"
+                      >1,250.00</span
+                    >
                   </div>
                 </div>
 
                 <!-- Summary Section -->
-                <div class="bg-base-100 dark:bg-base-200 px-4 py-4 space-y-3 border-t-2 border-gray-300 dark:border-gray-600">
+                <div
+                  class="bg-base-100 dark:bg-base-200 px-4 py-4 space-y-3 border-t-2 border-gray-300 dark:border-gray-600"
+                >
                   <div class="flex justify-between items-center">
-                    <span class="text-sm text-gray-500 dark:text-gray-400">Gross Earnings</span>
-                    <span id="previewGross" class="font-bold tabular-nums">16,500.00</span>
+                    <span class="text-sm text-gray-500 dark:text-gray-400"
+                      >Gross Earnings</span
+                    >
+                    <span id="previewGross" class="font-bold tabular-nums"
+                      >16,500.00</span
+                    >
                   </div>
                   <div class="flex justify-between items-center">
-                    <span class="text-sm text-gray-500 dark:text-gray-400">Total Deductions</span>
-                    <span id="previewDeductions" class="font-bold tabular-nums">2,925.00</span>
+                    <span class="text-sm text-gray-500 dark:text-gray-400"
+                      >Total Deductions</span
+                    >
+                    <span id="previewDeductions" class="font-bold tabular-nums"
+                      >2,925.00</span
+                    >
                   </div>
                 </div>
               </div>
@@ -248,10 +350,18 @@
           </div>
 
           <!-- Net Pay Section -->
-          <div class="mt-6 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-950 dark:to-emerald-950 border-2 border-green-300 dark:border-green-700 rounded-lg p-5">
+          <div
+            class="mt-6 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-950 dark:to-emerald-950 border-2 border-green-300 dark:border-green-700 rounded-lg p-5"
+          >
             <div class="flex justify-between items-center">
-              <span class="font-semibold text-gray-700 dark:text-gray-300">Net Pay</span>
-              <span id="previewNetPay" class="text-3xl font-extrabold text-green-600 dark:text-green-400 tabular-nums">13,575.00</span>
+              <span class="font-semibold text-gray-700 dark:text-gray-300"
+                >Net Pay</span
+              >
+              <span
+                id="previewNetPay"
+                class="text-3xl font-extrabold text-green-600 dark:text-green-400 tabular-nums"
+                >13,575.00</span
+              >
             </div>
           </div>
 
@@ -259,18 +369,26 @@
           <div class="mt-6 bg-base-200 dark:bg-base-300 rounded-lg p-5">
             <div class="grid grid-cols-2 gap-12">
               <div>
-                <div class="text-sm text-gray-500 dark:text-gray-400 mb-8">Received By: ______________________________</div>
-                <div class="border-b-2 border-gray-400 dark:border-gray-500 pb-1"></div>
+                <div class="text-sm text-gray-500 dark:text-gray-400 mb-8">
+                  Received By: ______________________________
+                </div>
+                <div
+                  class="border-b-2 border-gray-400 dark:border-gray-500 pb-1"
+                ></div>
               </div>
               <div>
-                <div class="text-sm text-gray-500 dark:text-gray-400 mb-8">Date Received: ______________________________</div>
-                <div class="border-b-2 border-gray-400 dark:border-gray-500 pb-1"></div>
+                <div class="text-sm text-gray-500 dark:text-gray-400 mb-8">
+                  Date Received: ______________________________
+                </div>
+                <div
+                  class="border-b-2 border-gray-400 dark:border-gray-500 pb-1"
+                ></div>
               </div>
             </div>
           </div>
         </div>
       </div>
-      
+
       <form method="dialog" class="modal-backdrop">
         <button>close</button>
       </form>
@@ -278,10 +396,10 @@
 
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="../js/supabase/supabaseClient.js"></script>
+    <script type="module" src="../js/supabase/supabaseClient.js"></script>
     <script src="../js/layout/sidebar.js"></script>
     <script src="../js/libs/ag-grid-community.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="../js/payslip-generation/main.js"></script>
+    <script type="module" src="../js/payslip-generation/main.js"></script>
   </body>
 </html>
