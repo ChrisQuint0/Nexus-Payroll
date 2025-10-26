@@ -76,12 +76,6 @@
     <script type="module" src="../js/utils/alerts.js"></script>
 
     <script type="module" src="../js/user-management/grid.js"></script>
-    <script type="module" src="../js/user-management/add-user.js"></script>
-    <script
-      type="module"
-      src="../js/user-management/reset-password.js"
-    ></script>
-    <script type="module" src="../js/user-management/csv-export.js"></script>
 
     <script>
       // Function to dynamically load the modals from the component file
@@ -93,6 +87,10 @@
           }
           const modalHtml = await response.text();
           document.getElementById("modalsContainer").innerHTML = modalHtml;
+
+          await import("../js/user-management/add-user.js");
+          await import("../js/user-management/reset-password.js");
+          await import("../js/user-management/csv-export.js");
         } catch (error) {
           console.error("Failed to load user modals:", error);
           // Optional: Display an error on the page if loading fails
