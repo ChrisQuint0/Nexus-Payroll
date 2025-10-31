@@ -251,20 +251,33 @@
         passwordInput.setAttribute("type", type);
         eyeIcon.classList.toggle("hidden");
         eyeSlashIcon.classList.toggle("hidden");
+        W;
       });
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script type="module">
+      import { supabaseClient } from "../js/supabase/supabaseClient.js";
 
-      // Original form handling
       const form = document.getElementById("loginForm");
       const loginError = document.getElementById("loginError");
-      form.addEventListener("submit", (e) => {
+
+      form.addEventListener("submit", async (e) => {
         e.preventDefault();
+
         const email = document.getElementById("email").value.trim();
         const password = document.getElementById("password").value.trim();
-        // Simulated login check
-        if (email === "admin@nexus.com" && password === "password123") {
-          alert("Login successful! (Simulated)");
-        } else {
+
+        // Supabase login
+        const { data, error } = await supabaseClient.auth.signInWithPassword({
+          email,
+          password,
+        });
+
+        if (error) {
+          console.error("Login failed:", error.message);
           loginError.showModal();
+        } else {
+          window.location.href = "dashboard.html"; // redirect example
         }
       });
     </script>
