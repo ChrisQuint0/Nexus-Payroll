@@ -3,10 +3,270 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Nexus Payroll</title>
+    <title>Nexus Payroll - Login</title>
     <link rel="stylesheet" href="../output.css" />
+    <style>
+      body {
+        position: relative;
+        overflow: hidden;
+      }
+
+      .animated-grid {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 0;
+        opacity: 0.15;
+      }
+
+      .grid-line {
+        position: absolute;
+        background: linear-gradient(
+          90deg,
+          transparent,
+          rgba(99, 102, 241, 0.5),
+          transparent
+        );
+      }
+
+      .grid-line-horizontal {
+        width: 100%;
+        height: 2px;
+        animation: slideRight 3s ease-in-out infinite;
+      }
+
+      .grid-line-vertical {
+        width: 2px;
+        height: 100%;
+        animation: slideDown 3s ease-in-out infinite;
+      }
+
+      @keyframes slideRight {
+        0%,
+        100% {
+          transform: translateX(-100%);
+          opacity: 0;
+        }
+        50% {
+          opacity: 1;
+        }
+        100% {
+          transform: translateX(100%);
+        }
+      }
+
+      @keyframes slideDown {
+        0%,
+        100% {
+          transform: translateY(-100%);
+          opacity: 0;
+        }
+        50% {
+          opacity: 1;
+        }
+        100% {
+          transform: translateY(100%);
+        }
+      }
+
+      .grid-dot {
+        position: absolute;
+        width: 4px;
+        height: 4px;
+        background: rgba(99, 102, 241, 0.6);
+        border-radius: 50%;
+        animation: pulse 2s ease-in-out infinite;
+      }
+
+      @keyframes pulse {
+        0%,
+        100% {
+          transform: scale(1);
+          opacity: 0.3;
+        }
+        50% {
+          transform: scale(1.5);
+          opacity: 0.8;
+        }
+      }
+
+      .content-wrapper {
+        position: relative;
+        z-index: 10;
+      }
+    </style>
   </head>
-  <body>
-    <h1 class="text-4xl font-medium text-center py-8">Login</h1>
+  <body class="min-h-screen flex items-center justify-center bg-base-200">
+    <!-- Animated Grid Background -->
+    <div class="animated-grid" id="gridContainer"></div>
+
+    <!-- Original Content -->
+    <div class="content-wrapper card w-96 bg-base-100 shadow-xl p-6">
+      <div class="text-center mb-4">
+        <div class="flex items-center justify-center gap-2 mb-2">
+          <img
+            src="../assets/npayroll_logo.png"
+            alt="Nexus Payroll Logo"
+            height="50"
+            width="50"
+          />
+          <h1 class="text-2xl font-bold">Nexus Payroll</h1>
+        </div>
+        <p class="text-sm opacity-70">Please log in to continue</p>
+      </div>
+      <form id="loginForm" class="space-y-4">
+        <div class="form-control">
+          <label class="label">
+            <span class="label-text">Email</span>
+          </label>
+          <input
+            type="email"
+            id="email"
+            placeholder="Enter your email"
+            class="input input-bordered w-full"
+            required
+          />
+        </div>
+        <div class="form-control">
+          <label class="label">
+            <span class="label-text">Password</span>
+          </label>
+          <div class="relative">
+            <input
+              type="password"
+              id="password"
+              placeholder="Enter your password"
+              class="input input-bordered w-full pr-10"
+              required
+            />
+            <button
+              type="button"
+              id="togglePassword"
+              class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+            >
+              <svg
+                id="eyeIcon"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke-width="1.5"
+                stroke="currentColor"
+                class="w-5 h-5"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z"
+                />
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                />
+              </svg>
+              <svg
+                id="eyeSlashIcon"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke-width="1.5"
+                stroke="currentColor"
+                class="w-5 h-5 hidden"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M3.98 8.223A10.477 10.477 0 001.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0112 4.5c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228l3.65 3.65m7.894 7.894L21 21m-3.228-3.228l-3.65-3.65m0 0a3 3 0 10-4.243-4.243m4.242 4.242L9.88 9.88"
+                />
+              </svg>
+            </button>
+          </div>
+        </div>
+        <div class="form-control mt-6">
+          <button type="submit" class="btn btn-primary w-full">Login</button>
+        </div>
+      </form>
+    </div>
+
+    <!-- DaisyUI dialog for login failure -->
+    <dialog id="loginError" class="modal">
+      <div class="modal-box">
+        <h3 class="font-bold text-lg text-error">Login Failed</h3>
+        <p class="py-2">Invalid email or password. Please try again.</p>
+        <div class="modal-action">
+          <form method="dialog">
+            <button class="btn">Close</button>
+          </form>
+        </div>
+      </div>
+    </dialog>
+
+    <script>
+      // Create animated grid
+      const container = document.getElementById("gridContainer");
+
+      // Create horizontal moving lines
+      for (let i = 0; i < 5; i++) {
+        const line = document.createElement("div");
+        line.className = "grid-line grid-line-horizontal";
+        line.style.top = i * 25 + 10 + "%";
+        line.style.animationDelay = i * 0.5 + "s";
+        container.appendChild(line);
+      }
+
+      // Create vertical moving lines
+      for (let i = 0; i < 5; i++) {
+        const line = document.createElement("div");
+        line.className = "grid-line grid-line-vertical";
+        line.style.left = i * 25 + 10 + "%";
+        line.style.animationDelay = i * 0.5 + 0.25 + "s";
+        container.appendChild(line);
+      }
+
+      // Create pulsing dots at intersections
+      for (let i = 0; i < 5; i++) {
+        for (let j = 0; j < 5; j++) {
+          const dot = document.createElement("div");
+          dot.className = "grid-dot";
+          dot.style.left = i * 25 + 10 + "%";
+          dot.style.top = j * 25 + 10 + "%";
+          dot.style.animationDelay = i * 0.2 + j * 0.2 + "s";
+          container.appendChild(dot);
+        }
+      }
+
+      // Toggle password visibility
+      const togglePassword = document.getElementById("togglePassword");
+      const passwordInput = document.getElementById("password");
+      const eyeIcon = document.getElementById("eyeIcon");
+      const eyeSlashIcon = document.getElementById("eyeSlashIcon");
+
+      togglePassword.addEventListener("click", () => {
+        const type =
+          passwordInput.getAttribute("type") === "password"
+            ? "text"
+            : "password";
+        passwordInput.setAttribute("type", type);
+        eyeIcon.classList.toggle("hidden");
+        eyeSlashIcon.classList.toggle("hidden");
+      });
+
+      // Original form handling
+      const form = document.getElementById("loginForm");
+      const loginError = document.getElementById("loginError");
+      form.addEventListener("submit", (e) => {
+        e.preventDefault();
+        const email = document.getElementById("email").value.trim();
+        const password = document.getElementById("password").value.trim();
+        // Simulated login check
+        if (email === "admin@nexus.com" && password === "password123") {
+          alert("Login successful! (Simulated)");
+        } else {
+          loginError.showModal();
+        }
+      });
+    </script>
   </body>
 </html>
