@@ -3,9 +3,7 @@
 
 import { supabaseClient } from "../supabase/supabaseClient.js";
 
-
- // Generate DTR for a specific employee and cutoff period
- 
+// Generate DTR for a specific employee and cutoff period
 export async function generateDTR(employeeId, cutoffPeriod) {
   try {
     console.log(`Generating DTR for Employee ${employeeId}, Period: ${cutoffPeriod}`);
@@ -25,7 +23,7 @@ export async function generateDTR(employeeId, cutoffPeriod) {
     // Calculate totals
     const totals = calculateDTRTotals(dtrData);
 
-    console.log("✅ DTR generated successfully");
+    console.log(" DTR generated successfully");
 
     return {
       employee,
@@ -36,14 +34,12 @@ export async function generateDTR(employeeId, cutoffPeriod) {
       year,
     };
   } catch (error) {
-    console.error("❌ Error generating DTR:", error);
+    console.error(" Error generating DTR:", error);
     throw error;
   }
 }
 
-
- //Get employee time logs from Supabase for a specific month/year
- 
+// Get employee time logs from Supabase for a specific month/year
 async function getEmployeeTimeLogs(employeeId, month, year) {
   try {
     const startDate = new Date(year, month, 1);
@@ -80,9 +76,7 @@ async function getEmployeeTimeLogs(employeeId, month, year) {
   }
 }
 
-
- // Parse cutoff period string into components
- 
+// Parse cutoff period string into components
 function parseCutoffPeriod(cutoffPeriod) {
   const parts = cutoffPeriod.match(/(\w+)\s+(\d+)\s*-\s*(\d+),\s*(\d+)/);
   if (!parts) throw new Error("Invalid cutoff period format");
@@ -93,24 +87,36 @@ function parseCutoffPeriod(cutoffPeriod) {
   };
 
   return {
-  startDay: parseInt(parts[2]),
-  endDay: parseInt(parts[3]),
-  month: monthMap[parts[1]],
-  year: parseInt(parts[4]),
-};
+    startDay: parseInt(parts[2]),
+    endDay: parseInt(parts[3]),
+    month: monthMap[parts[1]],
+    year: parseInt(parts[4]),
+  };
 }
 
-
- // Get employee information
-
+// Get employee information
 async function getEmployeeInfo(employeeId) {
   try {
-    const { data, error } = await supabaseClient
+    // Try with department_name first
+    let { data, error } = await supabaseClient
       .from("employee_time_logs")
-      .select("employee_id, first_name, middle_name, last_name")
+      .select("employee_id, first_name, middle_name, last_name, department_name")
       .eq("employee_id", employeeId)
       .limit(1)
       .single();
+
+    // If department_name doesn't exist, try with department
+    if (error && error.code === '42703') {
+      const result = await supabaseClient
+        .from("employee_time_logs")
+        .select("employee_id, first_name, middle_name, last_name, department")
+        .eq("employee_id", employeeId)
+        .limit(1)
+        .single();
+      
+      data = result.data;
+      error = result.error;
+    }
 
     if (error) throw error;
 
@@ -121,7 +127,7 @@ async function getEmployeeInfo(employeeId) {
     return {
       id: employeeId,
       name: fullName || "Unknown Employee",
-      department: "N/A",
+      department: data.department_name || data.department || "N/A",
     };
   } catch (error) {
     console.error("Error fetching employee info:", error);
@@ -129,15 +135,11 @@ async function getEmployeeInfo(employeeId) {
   }
 }
 
-
- // Build DTR data structure
- 
+// Build DTR data structure with proper AM/PM columns
 function buildDTRData(employeeLogs, startDay, endDay, month, year) {
   const dtrData = [];
-  const daysInMonth = new Date(year, month + 1, 0).getDate();
 
   for (let day = startDay; day <= endDay; day++) {
-
     const dateStr = `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
     const dayLogs = employeeLogs.filter((log) => log.Date === dateStr);
 
@@ -145,8 +147,39 @@ function buildDTRData(employeeLogs, startDay, endDay, month, year) {
       const timeIns = dayLogs.map((l) => l["Time In"]).filter(Boolean);
       const timeOuts = dayLogs.map((l) => l["Time Out"]).filter(Boolean);
 
-      const arrival = timeIns.length > 0 ? formatTime(timeIns[0]) : "";
-      const departure = timeOuts.length > 0 ? formatTime(timeOuts[timeOuts.length - 1]) : "";
+      // Determine AM and PM entries based on number of time logs
+      let amArrival = "";
+      let amDeparture = "";
+      let pmArrival = "";
+      let pmDeparture = "";
+
+      if (timeIns.length === 1 && timeOuts.length === 1) {
+        // Single shift: Only morning in and afternoon out
+        amArrival = formatTime(timeIns[0]);
+        pmDeparture = formatTime(timeOuts[0]);
+      } else if (timeIns.length === 2 && timeOuts.length === 2) {
+        // Full day with lunch break
+        amArrival = formatTime(timeIns[0]);  
+        amDeparture = formatTime(timeOuts[0]); 
+        pmArrival = formatTime(timeIns[1]);    
+        pmDeparture = formatTime(timeOuts[1]); 
+      } else if (timeIns.length === 2 && timeOuts.length === 1) {
+        // Two time-ins but only one time-out (incomplete)
+        amArrival = formatTime(timeIns[0]);
+        pmArrival = formatTime(timeIns[1]);
+        pmDeparture = formatTime(timeOuts[0]);
+      } else if (timeIns.length === 1 && timeOuts.length === 2) {
+        // One time-in but two time-outs (unusual case)
+        amArrival = formatTime(timeIns[0]);
+        amDeparture = formatTime(timeOuts[0]);
+        pmDeparture = formatTime(timeOuts[1]);
+      } else if (timeIns.length > 0) {
+        // Fallback: Just use available times
+        amArrival = formatTime(timeIns[0]);
+        if (timeOuts.length > 0) {
+          pmDeparture = formatTime(timeOuts[timeOuts.length - 1]);
+        }
+      }
 
       const undertimeMinutesTotal = dayLogs.reduce(
         (sum, log) => sum + (parseFloat(log.Undertime) || 0),
@@ -158,16 +191,20 @@ function buildDTRData(employeeLogs, startDay, endDay, month, year) {
 
       dtrData.push({
         day,
-        arrival,
-        departure,
+        amArrival,
+        amDeparture,
+        pmArrival,
+        pmDeparture,
         undertimeHours: undertimeHours > 0 ? undertimeHours : "",
         undertimeMinutes: undertimeMinutes > 0 ? undertimeMinutes : "",
       });
     } else {
       dtrData.push({
         day,
-        arrival: "",
-        departure: "",
+        amArrival: "",
+        amDeparture: "",
+        pmArrival: "",
+        pmDeparture: "",
         undertimeHours: "",
         undertimeMinutes: "",
       });
@@ -177,9 +214,7 @@ function buildDTRData(employeeLogs, startDay, endDay, month, year) {
   return dtrData;
 }
 
-
- // Accurate time formatting (no timezone shift)
- 
+// Accurate time formatting (no timezone shift)
 function formatTime(timeStr) {
   if (!timeStr) return "";
 
@@ -205,9 +240,7 @@ function formatTime(timeStr) {
   }
 }
 
-
- // Calculate DTR totals
- 
+// Calculate DTR totals
 function calculateDTRTotals(dtrData) {
   let totalUndertimeMinutes = 0;
 
@@ -229,9 +262,7 @@ function calculateDTRTotals(dtrData) {
   };
 }
 
-
- // Get month name from index
- 
+// Get month name from index
 function getMonthName(monthIndex) {
   const months = [
     "January", "February", "March", "April", "May", "June",
@@ -240,122 +271,182 @@ function getMonthName(monthIndex) {
   return months[monthIndex];
 }
 
+// Generate PDF with multiple DTRs - 1 DTR per page
+export function generateMultipleDTRsPdf(dtrInfoArray) {
+  console.log("[DTR] generateMultipleDTRsPdf called. Count:", dtrInfoArray?.length || "n/a");
 
- // Display DTR in printable window
- 
-export function displayDTR(dtrInfo) {
-  const dtrHTML = generateDTRHTML(dtrInfo);
-  const printWindow = window.open("", "_blank", "width=1200,height=800");
-  printWindow.document.write(dtrHTML);
-  printWindow.document.close();
+  if (!window.jspdf) {
+    console.error("[DTR] jsPDF library not loaded in window.jspdf");
+    alert("PDF library not loaded. Please ensure jsPDF is included in your HTML:\n<script src=\"https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js\"></script>");
+    return;
+  }
 
-  printWindow.onload = () => printWindow.print();
+  if (!window.jspdf.jsPDF) {
+    console.error("[DTR] jsPDF.jsPDF constructor not available");
+    alert("PDF library not properly initialized. Please check your jsPDF installation.");
+    return;
+  }
+
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ unit: "pt", format: "a4", orientation: "portrait" });
+
+  const pageWidth = doc.internal.pageSize.getWidth();
+  const pageHeight = doc.internal.pageSize.getHeight();
+  const margin = 40;
+
+  dtrInfoArray.forEach((dtrInfo, index) => {
+    if (index > 0) {
+      doc.addPage();
+    }
+
+    const { employee, cutoffPeriod, dtrData, totals, month, year } = dtrInfo;
+    
+    // Draw two DTR columns side by side (original design)
+    const colWidth = (pageWidth - margin * 3) / 2;
+    const col1X = margin;
+    const col2X = margin + colWidth + margin;
+
+    // Draw left column
+    drawDTRColumn(doc, col1X, margin, colWidth, employee, month, year, dtrData, totals, false);
+    
+    // Draw right column
+    drawDTRColumn(doc, col2X, margin, colWidth, employee, month, year, dtrData, totals, true);
+  });
+
+  try {
+    doc.save("DTR_Records.pdf");
+    console.log("[DTR] PDF saved successfully.");
+  } catch (e) {
+    console.error("[DTR] Failed to save PDF:", e);
+    alert("Unable to save PDF. See console for details.");
+  }
 }
 
+// Helper function to draw a single DTR column
+function drawDTRColumn(doc, x, y, width, employee, month, year, dtrData, totals, showTotal) {
+  let currentY = y;
 
- // Generate printable DTR HTML
- 
-function generateDTRHTML(dtrInfo) {
-  const { employee, cutoffPeriod, dtrData, totals, month, year } = dtrInfo;
-  const leftColumn = dtrData;
-  const rightColumn = dtrData;
+  // Header
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(10);
+  doc.setTextColor(0, 0, 0);
+  doc.text("DAILY TIME RECORD", x + width / 2, currentY, { align: "center" });
+  currentY += 20;
 
-  return `
-    <!DOCTYPE html>
-    <html lang="en" data-theme="light">
-    <head>
-      <meta charset="UTF-8">
-      <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>Daily Time Record - ${employee.name}</title>
-      <style>
-        @page { size: A4 portrait; margin: 0.5in; }
-        body { font-family: Arial, sans-serif; margin: 0; padding: 10px; }
-        .container { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        .header-title { text-align:center; font-size:12px; font-weight:bold; }
-        .field-label { font-size:8px; }
-        .underline-field { border-bottom: 1px solid #000; display:inline-block; min-width:140px; padding: 0 4px; }
-        .dtr-table { width:100%; border-collapse:collapse; font-size:8px; margin-top:5px; }
-        .dtr-table th, .dtr-table td { border:1px solid #000; padding:2px 3px; text-align:center; }
-        .dtr-table th { font-weight:bold; background:#eee; }
-        .signature-line { border-bottom:1px solid #000; width:70%; height:10px; margin:20px auto 3px auto; }
-        .signature-text { text-align:center; font-size:8px; }
-        @media print { .no-print { display:none; } }
-      </style>
-    </head>
-    <body>
-      <div class="no-print" style="text-align:right;margin-bottom:10px;">
-        <button onclick="window.print()">🖨️ Print</button>
-        <button onclick="window.close()">✖ Close</button>
-      </div>
+  // Employee name
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(8);
+  doc.text(employee.name, x + width / 2, currentY, { align: "center" });
+  doc.setDrawColor(0, 0, 0);
+  doc.line(x + 10, currentY + 2, x + width - 10, currentY + 2);
+  currentY += 10;
+  doc.text("(Name)", x + width / 2, currentY, { align: "center" });
+  currentY += 15;
 
-      <div class="container">
-        ${[leftColumn, rightColumn].map((column, idx) => `
-          <div>
-            <div class="header-title">DAILY TIME RECORD</div>
-            <br>
+  // Month and year
+  doc.text(`For the month of ${month} ${year}`, x + 10, currentY);
+  doc.line(x + 90, currentY + 2, x + width - 10, currentY + 2);
+  currentY += 15;
 
-            <div class="field-label" style="text-align:center;">
-              <span class="underline-field">${employee.name}</span><br>
-              (Name)
-            </div>
+  // Official hours
+  doc.text("Official hours for arrival and departure", x + 10, currentY);
+  doc.line(x + 150, currentY + 2, x + width - 10, currentY + 2);
+  currentY += 15;
 
-            <div class="field-label" style="margin-top:5px;">
-              For the month of <span class="underline-field">${month} ${year}</span>
-            </div>
-            <div class="field-label" style="margin-top:3px;">
-              Official hours for arrival and departure <span class="underline-field"></span>
-            </div>
+  // Table
+  const tableStartY = currentY;
+  const cellHeight = 15;
+  const col1Width = 25;
+  const col2Width = 35;
+  const col3Width = 35;
+  const col4Width = 35;
+  const col5Width = 35;
+  const col6Width = 30;
+  const col7Width = 30;
 
-            <table class="dtr-table">
-              <thead>
-                <tr>
-                  <th rowspan="2">Day</th>
-                  <th colspan="2">AM</th>
-                  <th colspan="2">PM</th>
-                  <th colspan="2">Undertime</th>
-                </tr>
-                <tr>
-                  <th>Arrival</th><th>Departure</th>
-                  <th>Arrival</th><th>Departure</th>
-                  <th>Hours</th><th>Minutes</th>
-                </tr>
-              </thead>
-              <tbody>
-                ${column.map(entry => `
-                  <tr>
-                    <td>${entry.day}</td>
-                    <td>${entry.arrival || ""}</td>
-                    <td>${entry.departure || ""}</td>
-                    <td></td>
-                    <td></td>
-                    <td>${entry.undertimeHours || ""}</td>
-                    <td>${entry.undertimeMinutes || ""}</td>
-                  </tr>`).join("")}
+  // Table headers
+  doc.setFillColor(240, 240, 240);
+  doc.rect(x, currentY, width, cellHeight * 2, "F");
+  doc.setDrawColor(0, 0, 0);
+  doc.rect(x, currentY, width, cellHeight * 2, "S");
 
-                <tr style="font-weight:bold;background:#eee;">
-                  <td colspan="5" style="text-align:right;">TOTAL</td>
-                  <td colspan="2">${idx === 1 ? totals.totalUndertime : ""}</td>
-                </tr>
-              </tbody>
-            </table>
+  // Draw column lines for header
+  doc.line(x + col1Width, currentY, x + col1Width, currentY + cellHeight * 2);
+  doc.line(x + col1Width + col2Width * 2, currentY + cellHeight, x + col1Width + col2Width * 2, currentY + cellHeight * 2);
+  doc.line(x + col1Width + col2Width * 4, currentY + cellHeight, x + col1Width + col2Width * 4, currentY + cellHeight * 2);
+  doc.line(x + col1Width + col2Width * 4 + col6Width, currentY + cellHeight, x + col1Width + col2Width * 4 + col6Width, currentY + cellHeight * 2);
 
-            <div class="signature-line"></div>
-            <div class="signature-text">Verified as to the prescribed office hours.</div>
+  // Header row 1
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(7);
+  doc.text("Day", x + col1Width / 2, currentY + 18, { align: "center" });
+  doc.text("AM", x + col1Width + col2Width, currentY + 8, { align: "center" });
+  doc.text("PM", x + col1Width + col2Width * 3, currentY + 8, { align: "center" });
+  doc.text("Undertime", x + col1Width + col2Width * 4 + col6Width / 2 + 15, currentY + 8, { align: "center" });
 
-            <div class="signature-line"></div>
-            <div class="signature-text">In Charge</div>
-          </div>
-        `).join("")}
-      </div>
-    </body>
-    </html>
-  `;
+  doc.line(x, currentY + cellHeight, x + width, currentY + cellHeight);
+
+  // Header row 2
+  currentY += cellHeight;
+  doc.text("Arrival", x + col1Width + col2Width / 2, currentY + 8, { align: "center" });
+  doc.line(x + col1Width + col2Width, currentY, x + col1Width + col2Width, currentY + cellHeight);
+  doc.text("Departure", x + col1Width + col2Width + col3Width / 2, currentY + 8, { align: "center" });
+  doc.text("Arrival", x + col1Width + col2Width * 2 + col4Width / 2, currentY + 8, { align: "center" });
+  doc.line(x + col1Width + col2Width * 3, currentY, x + col1Width + col2Width * 3, currentY + cellHeight);
+  doc.text("Departure", x + col1Width + col2Width * 3 + col5Width / 2, currentY + 8, { align: "center" });
+  doc.text("Hours", x + col1Width + col2Width * 4 + col6Width / 2, currentY + 8, { align: "center" });
+  doc.text("Minutes", x + col1Width + col2Width * 4 + col6Width + col7Width / 2, currentY + 8, { align: "center" });
+
+  currentY += cellHeight;
+
+  // Data rows with proper AM/PM columns
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(7);
+
+  dtrData.forEach((entry) => {
+    doc.rect(x, currentY, width, cellHeight, "S");
+    doc.line(x + col1Width, currentY, x + col1Width, currentY + cellHeight);
+    doc.line(x + col1Width + col2Width, currentY, x + col1Width + col2Width, currentY + cellHeight);
+    doc.line(x + col1Width + col2Width * 2, currentY, x + col1Width + col2Width * 2, currentY + cellHeight);
+    doc.line(x + col1Width + col2Width * 3, currentY, x + col1Width + col2Width * 3, currentY + cellHeight);
+    doc.line(x + col1Width + col2Width * 4, currentY, x + col1Width + col2Width * 4, currentY + cellHeight);
+    doc.line(x + col1Width + col2Width * 4 + col6Width, currentY, x + col1Width + col2Width * 4 + col6Width, currentY + cellHeight);
+
+    doc.text(entry.day.toString(), x + col1Width / 2, currentY + 10, { align: "center" });
+    doc.text(entry.amArrival || "", x + col1Width + col2Width / 2, currentY + 10, { align: "center" });
+    doc.text(entry.amDeparture || "", x + col1Width + col2Width + col3Width / 2, currentY + 10, { align: "center" });
+    doc.text(entry.pmArrival || "", x + col1Width + col2Width * 2 + col4Width / 2, currentY + 10, { align: "center" });
+    doc.text(entry.pmDeparture || "", x + col1Width + col2Width * 3 + col5Width / 2, currentY + 10, { align: "center" });
+    doc.text(entry.undertimeHours?.toString() || "", x + col1Width + col2Width * 4 + col6Width / 2, currentY + 10, { align: "center" });
+    doc.text(entry.undertimeMinutes?.toString() || "", x + col1Width + col2Width * 4 + col6Width + col7Width / 2, currentY + 10, { align: "center" });
+
+    currentY += cellHeight;
+  });
+
+  // Total row
+  doc.setFillColor(240, 240, 240);
+  doc.rect(x, currentY, width, cellHeight, "FD");
+  doc.setFont("helvetica", "bold");
+  doc.text("TOTAL", x + col1Width + col2Width * 2, currentY + 10, { align: "center" });
+  if (showTotal) {
+    doc.text(totals.totalUndertime, x + col1Width + col2Width * 4 + (col6Width + col7Width) / 2, currentY + 10, { align: "center" });
+  }
+
+  currentY += cellHeight + 20;
+
+  // Signature lines
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(7);
+  doc.line(x + 10, currentY, x + width - 10, currentY);
+  currentY += 10;
+  doc.text("Verified as to the prescribed office hours.", x + width / 2, currentY, { align: "center" });
+  currentY += 20;
+  doc.line(x + 10, currentY, x + width - 10, currentY);
+  currentY += 10;
+  doc.text("In Charge", x + width / 2, currentY, { align: "center" });
 }
 
-
-
-  // Get available cutoff periods
- 
+// Get available cutoff periods
 export async function getAvailableCutoffPeriods(employeeId) {
   try {
     const { data, error } = await supabaseClient
@@ -392,9 +483,132 @@ export async function getAvailableCutoffPeriods(employeeId) {
   }
 }
 
+// Get all unique departments from Supabase
+export async function getAvailableDepartments() {
+  try {
+    console.log(" Fetching departments from Supabase...");
+    
+    // First try to get from departments table with department_name column
+    const { data: deptTableData, error: deptTableError } = await supabaseClient
+      .from("departments")
+      .select("department_name")
+      .order("department_name");
 
- // Generate DTR for multiple employees
- 
+    // If departments table exists and has data, use it
+    if (!deptTableError && deptTableData && deptTableData.length > 0) {
+      const departments = deptTableData.map(row => row.department_name).filter(Boolean);
+      console.log(` Found ${departments.length} departments from departments table:`, departments);
+      return departments;
+    }
+
+    // Fallback: Get unique departments from employee_time_logs view
+    console.log("Trying employee_time_logs view...");
+    const { data, error } = await supabaseClient
+      .from("employee_time_logs")
+      .select("department_name");
+
+    if (error) {
+      // If department_name doesn't exist, try just 'department'
+      console.log("Trying 'department' column...");
+      const { data: data2, error: error2 } = await supabaseClient
+        .from("employee_time_logs")
+        .select("department");
+      
+      if (error2) throw error2;
+      
+      const departments = [...new Set(data2.map(row => row.department).filter(Boolean))];
+      console.log(` Found ${departments.length} unique departments:`, departments);
+      return departments.sort();
+    }
+
+    // Extract unique departments and filter out nulls
+    const departments = [...new Set(data.map(row => row.department_name).filter(Boolean))];
+    console.log(` Found ${departments.length} unique departments:`, departments);
+    
+    return departments.sort();
+  } catch (error) {
+    console.error(" Error fetching departments:", error);
+    return [];
+  }
+}
+
+// Get employees by department from Supabase
+export async function getEmployeesByDepartment(department) {
+  try {
+    console.log(` Fetching employees for department: ${department}`);
+    
+    // Try with department_name first
+    let { data, error } = await supabaseClient
+      .from("employee_time_logs")
+      .select("employee_id, first_name, middle_name, last_name, department_name")
+      .eq("department_name", department);
+
+    // If department_name doesn't exist, try with department
+    if (error && error.code === '42703') {
+      console.log("Trying 'department' column...");
+      const result = await supabaseClient
+        .from("employee_time_logs")
+        .select("employee_id, first_name, middle_name, last_name, department")
+        .eq("department", department);
+      
+      data = result.data;
+      error = result.error;
+    }
+
+    if (error) throw error;
+
+    // Get unique employees (since employee_time_logs has multiple entries per employee)
+    const uniqueEmployees = {};
+    data.forEach(row => {
+      if (!uniqueEmployees[row.employee_id]) {
+        uniqueEmployees[row.employee_id] = {
+          employee_id: row.employee_id,
+          first_name: row.first_name,
+          middle_name: row.middle_name,
+          last_name: row.last_name,
+          department: row.department_name || row.department
+        };
+      }
+    });
+
+    const employees = Object.values(uniqueEmployees);
+    console.log(` Found ${employees.length} employees in ${department}`);
+    
+    return employees;
+  } catch (error) {
+    console.error(" Error fetching employees by department:", error);
+    return [];
+  }
+}
+
+// Generate DTR for entire department
+export async function generateDepartmentDTR(department, cutoffPeriod) {
+  try {
+    console.log(` Generating DTR for department: ${department}`);
+    
+    // Get all employees in the department
+    const employees = await getEmployeesByDepartment(department);
+    console.log(`Found ${employees.length} employees in ${department}`);
+    
+    // Generate DTR for each employee
+    const dtrInfoArray = [];
+    for (const employee of employees) {
+      try {
+        const dtrInfo = await generateDTR(employee.employee_id, cutoffPeriod);
+        dtrInfoArray.push(dtrInfo);
+      } catch (error) {
+        console.error(`Failed to generate DTR for ${employee.employee_id}:`, error);
+      }
+    }
+    
+    return dtrInfoArray;
+  } catch (error) {
+    console.error("Error generating department DTR:", error);
+    throw error;
+  }
+}
+
+// Generate DTR for multiple employees
 export async function generateBulkDTR(employeeIds, cutoffPeriod) {
   const results = [];
   for (const employeeId of employeeIds) {
