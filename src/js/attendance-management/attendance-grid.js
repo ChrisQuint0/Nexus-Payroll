@@ -190,6 +190,7 @@ const rawTimeLogsColumns = [
     },
   },
   { field: "Cutoff Period", sortable: true, filter: true, hide: true },
+  { field: "Department", sortable: true, filter: true },
 ];
 
 
@@ -208,6 +209,7 @@ const summaryColumns = [
   { headerName: "Leave W/O Pay", field: "Leave W/O Pay", sortable: true, filter: true, resizable: true },
   { headerName: "Absences", field: "Absences", sortable: true, filter: true, resizable: true },
   { headerName: "Cutoff Period", field: "Cutoff Period", sortable: true, filter: true, resizable: true, width: 220, pinned: null, hide: false },
+  { headerName: "Department", field: "Department", sortable: true, filter: true, resizable: true },
 ];
 
 // grid initialization
@@ -375,39 +377,27 @@ function populateCutoffDropdown(data) {
 
 // Filtering
 export function applyDataFilter(searchValue, cutoffValue) {
-  const search = (searchValue || "").toLowerCase().trim();
+  const search = (searchValue || "").trim();
   const cutoff = (cutoffValue || "").trim();
 
-  const filteredData = currentData.filter((item) => {
-    // Search across multiple fields
-    const searchMatches = !search || [
-      item["Employee ID"],
-      item["employee_id"],
-      item["First Name"],
-      item["first_name"],
-      item["Last Name"], 
-      item["last_name"]
-    ].some(field => String(field || "").toLowerCase().includes(search));
+  // Apply quick filter for search (searches across all columns)
+  gridApi.setGridOption("quickFilterText", search);
 
-    // Match cutoff period
-    const cutoffMatches = !cutoff || 
-      String(item["Cutoff Period"] || item.cutoff_period || "").trim() === cutoff;
-
-    return searchMatches && cutoffMatches;
-  });
-
-  gridApi.setGridOption("rowData", filteredData);
-
-  // Highlight filtered rows
-  if (filteredData.length > 0) {
-    setTimeout(() => {
-      const displayedRows = [];
-      gridApi.forEachNodeAfterFilterAndSort((node) => displayedRows.push(node));
-      displayedRows.slice(0, 10).forEach((node) => {
-        gridApi.flashCells({ rowNodes: [node] });
-      });
-    }, 100);
+  // Apply cutoff period filter
+  if (cutoff === "" || cutoff === "All Cutoff") {
+    // Clear filter if "All Cutoff" selected
+    gridApi.setColumnFilterModel("Cutoff Period", null);
+  } else {
+    // Apply filter to the "Cutoff Period" column
+    gridApi.setColumnFilterModel("Cutoff Period", {
+      filterType: "text",
+      type: "equals",
+      filter: cutoff,
+    });
   }
+
+  // Refresh grid to apply the changes
+  gridApi.onFilterChanged();
 }
 
 // Add event listeners when DOM is ready

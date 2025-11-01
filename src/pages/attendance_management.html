@@ -290,7 +290,20 @@
           </fieldset>
         </div>
 
-        
+        <div class="flex justify-between items-center">
+          Department
+          <fieldset class="fieldset">
+            <select class="select select-accent w-48">
+              <option>All Departments</option>
+              <option>IT</option>
+              <option>Accounting</option>
+              <option>Sales</option>
+              <option>Human Resources</option>
+            </select>
+          </fieldset>
+        </div>
+
+
         <div class="flex justify-end mt-5">
           <button class="btn btn-primary">Generate DTR</button>
         </div>
@@ -347,5 +360,6 @@
     <script type="module" src="../js/attendance-management/dtr-integration.js"></script>
     <script type="module" src="../js/attendance-management/attendance-func.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   </body>
 </html>

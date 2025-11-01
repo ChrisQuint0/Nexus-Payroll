@@ -30,6 +30,8 @@ export async function getEmployeeAttendanceTable() {
       "Late (m)": log.late_m ?? 0,
       "Undertime": log.undertime ?? 0,
       "Status": log.status || "N/A",
+      "Cutoff Period": log.cutoff_period || "",
+      "Department": log.department_name || "N/A",
     }));
 
     console.log(" Attendance logs ready.");
