@@ -152,6 +152,10 @@ const gridOptions = {
     '<span class="ag-overlay-loading-center">Loading payslip data...</span>',
   overlayNoRowsTemplate:
     '<span class="ag-overlay-no-rows-center">No payslip data available</span>',
+  // Pagination settings
+  pagination: true,
+  paginationPageSize: 20,
+  paginationPageSizeSelector: [10, 20, 50, 100],
 };
 
 // Initialize AG Grid
