@@ -6,6 +6,54 @@ import { initializeEmployeeData, fetchOfficialTimeSchedules, fetchDepartments, f
 import { supabaseClient } from '../supabase/supabaseClient.js';
 
 // ============================================================================
+// Custom Dialog Functions (DaisyUI)
+// ============================================================================
+
+// Custom alert function using DaisyUI modal
+function showAlert(message, title = 'Alert') {
+  const alertModal = document.getElementById('alertModal');
+  const alertTitle = document.getElementById('alertTitle');
+  const alertMessage = document.getElementById('alertMessage');
+  
+  alertTitle.textContent = title;
+  alertMessage.textContent = message;
+  alertModal.showModal();
+}
+
+// Custom confirm function using DaisyUI modal
+function showConfirm(message, title = 'Confirm Action') {
+  return new Promise((resolve) => {
+    const confirmModal = document.getElementById('confirmModal');
+    const confirmTitle = document.getElementById('confirmTitle');
+    const confirmMessage = document.getElementById('confirmMessage');
+    const confirmOkBtn = document.getElementById('confirmOkBtn');
+    const confirmCancelBtn = document.getElementById('confirmCancelBtn');
+    
+    confirmTitle.textContent = title;
+    confirmMessage.textContent = message;
+    
+    // Remove any existing event listeners
+    const newOkBtn = confirmOkBtn.cloneNode(true);
+    const newCancelBtn = confirmCancelBtn.cloneNode(true);
+    confirmOkBtn.replaceWith(newOkBtn);
+    confirmCancelBtn.replaceWith(newCancelBtn);
+    
+    // Add event listeners
+    newOkBtn.addEventListener('click', () => {
+      confirmModal.close();
+      resolve(true);
+    });
+    
+    newCancelBtn.addEventListener('click', () => {
+      confirmModal.close();
+      resolve(false);
+    });
+    
+    confirmModal.showModal();
+  });
+}
+
+// ============================================================================
 // Global Variables
 // ============================================================================
 let currentEmployeeData = [];
@@ -21,7 +69,6 @@ document.addEventListener('DOMContentLoaded', async function() {
   initializeEventListeners();
   initializeSearch();
   initializeCSVGeneration();
-  await populateOfficialTimeDropdown();
   await populateFormDropdowns();
   initializeTabSwitching();
 });
@@ -35,7 +82,7 @@ async function initializeData() {
     console.log('Data initialization complete');
   } catch (error) {
     console.error('Error initializing data:', error);
-    alert('Error loading employee data. Please refresh the page.');
+    showAlert('Error loading employee data. Please refresh the page.', 'Error');
   }
 }
 
@@ -90,6 +137,7 @@ function initializeEventListeners() {
   });
 
   initializePositionChange();
+  initializeTimeCalculation();
 }
 
 // Handle selection change for archive button
@@ -133,6 +181,42 @@ function initializePositionChange() {
       }
     });
   }
+}
+
+// Initialize time calculation (auto-calculate end time)
+function initializeTimeCalculation() {
+  const startTimeInput = document.getElementById('startTime');
+  const endTimeInput = document.getElementById('endTime');
+  
+  if (startTimeInput && endTimeInput) {
+    startTimeInput.addEventListener('change', function() {
+      const startTime = this.value;
+      if (startTime) {
+        const endTime = calculateEndTime(startTime);
+        endTimeInput.value = endTime;
+      }
+    });
+  }
+}
+
+// Calculate end time (9 hours after start time)
+function calculateEndTime(startTime) {
+  const [hours, minutes] = startTime.split(':').map(Number);
+  
+  // Add 9 hours (8 work hours + 1 break hour)
+  let endHours = hours + 9;
+  let endMinutes = minutes;
+  
+  // Handle day overflow (if end time goes past midnight)
+  if (endHours >= 24) {
+    endHours = endHours - 24;
+  }
+  
+  // Format as HH:MM
+  const formattedHours = endHours.toString().padStart(2, '0');
+  const formattedMinutes = endMinutes.toString().padStart(2, '0');
+  
+  return `${formattedHours}:${formattedMinutes}`;
 }
 
 // ============================================================================
@@ -251,7 +335,12 @@ async function handleArchiveSelected() {
   const actionText = currentView === 'active' ? 'Archive' : 'Restore';
   const newStatusId = action === 'archive' ? 2 : 1;
   
-  if (confirm(`Are you sure you want to ${actionText.toLowerCase()} ${selectedRows.length} employee(s)?`)) {
+  const confirmed = await showConfirm(
+    `Are you sure you want to ${actionText.toLowerCase()} ${selectedRows.length} employee(s)?`,
+    `${actionText} Employees`
+  );
+  
+  if (confirmed) {
     try {
       const selectedIds = selectedRows.map(row => parseInt(row['Employee ID']));
       
@@ -269,10 +358,10 @@ async function handleArchiveSelected() {
         archiveBtn.disabled = true;
       }
       
-      alert(`${selectedRows.length} employee(s) ${actionText.toLowerCase()}d successfully!`);
+      showAlert(`${selectedRows.length} employee(s) ${actionText.toLowerCase()}d successfully!`, 'Success');
     } catch (error) {
       console.error('Error updating employee status:', error);
-      alert('Error updating employee status. Please try again.');
+      showAlert('Error updating employee status. Please try again.', 'Error');
     }
   }
 }
@@ -315,23 +404,6 @@ async function populateFormDropdowns() {
     }
   } catch (error) {
     console.error('Error populating form dropdowns:', error);
-  }
-}
-
-// Populate official time dropdown
-async function populateOfficialTimeDropdown() {
-  const officialTimeSelect = document.getElementById('officialTime');
-  if (officialTimeSelect) {
-    officialTimeSelect.innerHTML = '<option value="">Select Official Time</option>';
-    
-    const schedules = await fetchOfficialTimeSchedules();
-    
-    schedules.forEach(schedule => {
-      const option = document.createElement('option');
-      option.value = schedule.official_time_id;
-      option.textContent = schedule.schedule_name;
-      officialTimeSelect.appendChild(option);
-    });
   }
 }
 
@@ -524,10 +596,14 @@ window.editEmployee = function(employeeId) {
   form.querySelector('[name="pagibigId"]').value = employee.PagIBIGID || '';
   form.querySelector('[name="tinId"]').value = employee.TINID || '';
   
-  // Set official time
-  const officialTimeSelect = document.getElementById('officialTime');
-  if (officialTimeSelect && employee.OfficialTimeID) {
-    officialTimeSelect.value = employee.OfficialTimeID;
+  // Set start and end time
+  const startTimeInput = document.getElementById('startTime');
+  const endTimeInput = document.getElementById('endTime');
+  if (startTimeInput && employee.StartTime) {
+    startTimeInput.value = employee.StartTime;
+  }
+  if (endTimeInput && employee.EndTime) {
+    endTimeInput.value = employee.EndTime;
   }
   
   // Make Employee ID read-only during edit
@@ -552,13 +628,14 @@ async function handleAddEmployee(e) {
   
   const formData = new FormData(e.target);
   const isEditing = e.target.dataset.editingEmployeeId;
-  const officialTimeId = formData.get('officialTime');
+  const startTime = formData.get('startTime');
+  const endTime = formData.get('endTime');
 
   try {
     if (isEditing) {
-      await updateEmployeeInSupabase(formData, isEditing, officialTimeId);
+      await updateEmployeeInSupabase(formData, isEditing, startTime, endTime);
     } else {
-      await addEmployeeToSupabase(formData, officialTimeId);
+      await addEmployeeToSupabase(formData, startTime, endTime);
     }
 
     await refreshData();
@@ -576,10 +653,10 @@ async function handleAddEmployee(e) {
     document.querySelector('#addEmployeeModal h3').textContent = 'Add New Employee';
     document.querySelector('#addEmployeeModal button[type="submit"]').textContent = 'Add Employee';
     
-    alert(`Employee ${isEditing ? 'updated' : 'added'} successfully!`);
+    showAlert(`Employee ${isEditing ? 'updated' : 'added'} successfully!`, 'Success');
   } catch (error) {
     console.error('Error saving employee:', error);
-    alert('Error saving employee data. Please try again.');
+    showAlert('Error saving employee data. Please try again.', 'Error');
   }
 }
 
@@ -588,7 +665,7 @@ async function handleAddEmployee(e) {
 // ============================================================================
 
 // Add employee to Supabase
-async function addEmployeeToSupabase(formData, officialTimeId) {
+async function addEmployeeToSupabase(formData, startTime, endTime) {
   // First create gov_info record
   const { data: govInfo, error: govError } = await supabaseClient
     .from('gov_info')
@@ -602,6 +679,37 @@ async function addEmployeeToSupabase(formData, officialTimeId) {
     .single();
 
   if (govError) throw govError;
+
+  // Create or find official_time record
+  const scheduleName = `${startTime} - ${endTime}`;
+  
+  // Check if schedule already exists
+  let { data: existingSchedule } = await supabaseClient
+    .from('official_time')
+    .select('official_time_id')
+    .eq('start_time', startTime)
+    .eq('end_time', endTime)
+    .single();
+
+  let officialTimeId;
+  
+  if (existingSchedule) {
+    officialTimeId = existingSchedule.official_time_id;
+  } else {
+    // Create new schedule
+    const { data: newSchedule, error: schedError } = await supabaseClient
+      .from('official_time')
+      .insert({
+        schedule_name: scheduleName,
+        start_time: startTime,
+        end_time: endTime
+      })
+      .select()
+      .single();
+
+    if (schedError) throw schedError;
+    officialTimeId = newSchedule.official_time_id;
+  }
 
   // Get department ID
   const { data: department, error: deptError } = await supabaseClient
@@ -634,7 +742,7 @@ async function addEmployeeToSupabase(formData, officialTimeId) {
       department_id: department.department_id,
       position_id: position.position_id,
       gov_info_id: govInfo.gov_info_id,
-      official_time_id: parseInt(officialTimeId),
+      official_time_id: officialTimeId,
       status_id: 1
     });
 
@@ -642,7 +750,7 @@ async function addEmployeeToSupabase(formData, officialTimeId) {
 }
 
 // Update employee in Supabase
-async function updateEmployeeInSupabase(formData, employeeId, officialTimeId) {
+async function updateEmployeeInSupabase(formData, employeeId, startTime, endTime) {
   // Get current employee data to find gov_info_id
   const { data: employee, error: empFetchError } = await supabaseClient
     .from('employees')
@@ -664,6 +772,37 @@ async function updateEmployeeInSupabase(formData, employeeId, officialTimeId) {
     .eq('gov_info_id', employee.gov_info_id);
 
   if (govError) throw govError;
+
+  // Create or find official_time record
+  const scheduleName = `${startTime} - ${endTime}`;
+  
+  // Check if schedule already exists
+  let { data: existingSchedule } = await supabaseClient
+    .from('official_time')
+    .select('official_time_id')
+    .eq('start_time', startTime)
+    .eq('end_time', endTime)
+    .single();
+
+  let officialTimeId;
+  
+  if (existingSchedule) {
+    officialTimeId = existingSchedule.official_time_id;
+  } else {
+    // Create new schedule
+    const { data: newSchedule, error: schedError } = await supabaseClient
+      .from('official_time')
+      .insert({
+        schedule_name: scheduleName,
+        start_time: startTime,
+        end_time: endTime
+      })
+      .select()
+      .single();
+
+    if (schedError) throw schedError;
+    officialTimeId = newSchedule.official_time_id;
+  }
 
   // Get department ID
   const { data: department, error: deptError } = await supabaseClient
@@ -695,7 +834,7 @@ async function updateEmployeeInSupabase(formData, employeeId, officialTimeId) {
       date_hired: formData.get('dateHired'),
       department_id: department.department_id,
       position_id: position.position_id,
-      official_time_id: parseInt(officialTimeId)
+      official_time_id: officialTimeId
     })
     .eq('emp_id', parseInt(employeeId));
 
@@ -754,7 +893,7 @@ function handleGenerateCSV() {
   });
 
   if (filteredData.length === 0) {
-    alert('No active employees match the selected filters.');
+    showAlert('No active employees match the selected filters.', 'No Data');
     return;
   }
 
@@ -828,5 +967,5 @@ function generateCSVFile(data) {
   link.click();
   document.body.removeChild(link);
   
-  alert(`CSV file "${filename}" generated successfully with ${data.length} employee(s)!`);
+  showAlert(`CSV file "${filename}" generated successfully with ${data.length} employee(s)!`, 'Success');
 }
