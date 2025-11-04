@@ -29,14 +29,53 @@ export function initializeGrid() {
     { 
       field: "Leave Duration",
       width: 150,
+      editable: true,
+      cellEditor: 'agNumberCellEditor',
+      cellEditorParams: {
+        min: 1,
+        max: 365,
+        precision: 0
+      },
       valueFormatter: (params) => {
         if (params.value) {
           return `${params.value} day(s)`;
         }
         return params.value;
+      },
+      valueSetter: (params) => {
+        const newValue = parseInt(params.newValue);
+        if (!isNaN(newValue) && newValue > 0) {
+          params.data["Leave Duration"] = newValue;
+          return true;
+        }
+        return false;
       }
     },
-    { field: "Type", width: 150 },
+    { 
+      field: "Type", 
+      width: 150,
+      editable: true,
+      cellEditor: 'agSelectCellEditor',
+      cellEditorParams: {
+        values: ['Vacation Leave', 'Sick Leave', 'Emergency Leave', 'Personal Leave', 'Maternity Leave']
+      }
+    },
+    { 
+      field: "Status",
+      width: 120,
+      editable: true,
+      cellEditor: 'agSelectCellEditor',
+      cellEditorParams: {
+        values: ['Paid', 'Unpaid']
+      },
+      cellStyle: (params) => {
+        const isPaid = params.value === "Paid";
+        return {
+          color: isPaid ? "#10b981" : "#f59e0b",
+          fontWeight: "600"
+        };
+      }
+    },
     { 
       field: "Leave Balance",
       width: 150,
@@ -82,6 +121,11 @@ export function initializeGrid() {
     onSelectionChanged: function() {
       if (window.handleSelectionChange) {
         window.handleSelectionChange();
+      }
+    },
+    onCellValueChanged: function(event) {
+      if (window.handleCellEdit) {
+        window.handleCellEdit(event);
       }
     },
   };

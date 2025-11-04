@@ -44,6 +44,7 @@ export async function fetchLeaveData() {
         "Department": employee?.departments?.department_name || 'N/A',
         "Leave Duration": duration,
         "Type": leave.leave_type || 'N/A',
+        "Status": leave.is_paid ? "Paid" : "Unpaid",
         "Leave Balance": leave.leave_balance || 0,
         "Leave Request ID": leave.leave_id,
         "Start Date": leave.leave_start,

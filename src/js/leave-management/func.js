@@ -102,6 +102,65 @@ window.handleSelectionChange = function() {
   }
 };
 
+// Handle cell edit to update database
+window.handleCellEdit = async function(event) {
+  const { data, colDef, newValue, oldValue } = event;
+  
+  // Don't update if value hasn't changed
+  if (newValue === oldValue) return;
+  
+  const leaveId = data["Leave Request ID"];
+  if (!leaveId) {
+    showGlobalAlert('error', 'Could not identify leave record to update.');
+    return;
+  }
+
+  try {
+    const { supabaseClient } = await import('../supabase/supabaseClient.js');
+    
+    let updateData = {};
+    
+    // Map column field to database column
+    switch (colDef.field) {
+      case "Leave Duration":
+        // Recalculate end date based on new duration
+        const startDate = new Date(data["Start Date"]);
+        const newEndDate = new Date(startDate);
+        newEndDate.setDate(newEndDate.getDate() + newValue - 1);
+        updateData.leave_end = newEndDate.toISOString();
+        break;
+      case "Type":
+        updateData.leave_type = newValue;
+        break;
+      case "Status":
+        updateData.is_paid = newValue === "Paid";
+        break;
+      default:
+        return;
+    }
+    
+    // Update database
+    const { error } = await supabaseClient
+      .from('leave_management')
+      .update(updateData)
+      .eq('leave_id', leaveId);
+    
+    if (error) throw error;
+    
+    showGlobalAlert('success', 'Leave record updated successfully!');
+    
+    // Refresh data to ensure consistency
+    await refreshData();
+    
+  } catch (error) {
+    console.error('Error updating leave record:', error);
+    showGlobalAlert('error', 'Error updating leave record. Please try again.');
+    
+    // Revert the change in the grid
+    await refreshData();
+  }
+};
+
 // ============================================================================
 // Leave Management
 // ============================================================================
@@ -225,7 +284,7 @@ async function handleAddLeave(event) {
         leave_type: leaveType,
         leave_start: leaveStart.toISOString(),
         leave_end: leaveEnd.toISOString(),
-        leave_balance: isPaid ? 'Paid' : 'Unpaid'
+        is_paid: isPaid
       });
     
     if (error) throw error;
