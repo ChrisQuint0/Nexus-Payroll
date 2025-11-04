@@ -13,6 +13,12 @@
     </style>
   </head>
   <body class="flex">
+    <!-- Global Alert Container -->
+    <div
+      id="globalAlert"
+      class="fixed top-4 left-1/2 -translate-x-1/2 w-[90%] max-w-md z-[999999] pointer-events-none"
+    ></div>
+
     <!-- Sidebar placeholder -->
     <div id="sidebar"></div>
 
@@ -250,17 +256,12 @@
                     <label class="label">Date Hired</label>
                     <input type="date" name="dateHired" class="input input-bordered w-full" required />
                 </div>
-                <div class="col-span-2">
-                    <div class="grid grid-cols-2 gap-4">
-                        <div>
-                            <label class="label">Start Time</label>
-                            <input type="time" id="startTime" name="startTime" class="input input-bordered w-full" required />
-                        </div>
-                        <div>
-                            <label class="label">End Time</label>
-                            <input type="time" id="endTime" name="endTime" class="input input-bordered w-full" readonly required />
-                        </div>
-                    </div>
+                <div>
+                    <label class="label">Official Time</label>
+                    <select name="officialTime" id="officialTimeSelect" class="select select-bordered w-full" required>
+                        <option value="">Select Official Time</option>
+                        <!-- Options will be populated dynamically -->
+                    </select>
                 </div>
             </div>
         </div>
@@ -310,31 +311,21 @@
       </form>
     </dialog>
 
-    <!-- Alert Modal (for notifications) -->
-    <dialog id="alertModal" class="modal">
+    <!-- Archive/Restore Confirmation Modal -->
+    <dialog id="archiveConfirmModal" class="modal">
       <div class="modal-box">
-        <h3 class="font-bold text-lg" id="alertTitle">Alert</h3>
-        <p class="py-4" id="alertMessage"></p>
+        <h3 class="font-bold text-lg flex items-center gap-2">
+          <span id="archiveConfirmTitle">Confirm Action</span>
+        </h3>
+        <p class="py-4" id="archiveConfirmMessage">Are you sure you want to proceed with this action?</p>
         <div class="modal-action">
-          <form method="dialog">
-            <button class="btn btn-primary">OK</button>
-          </form>
+          <button type="button" class="btn btn-ghost" id="archiveCancelBtn">Cancel</button>
+          <button type="button" class="btn btn-primary" id="archiveConfirmBtn">Confirm</button>
         </div>
       </div>
-    </dialog>
-
-    <!-- Confirm Modal (for confirmations) -->
-    <dialog id="confirmModal" class="modal">
-      <div class="modal-box">
-        <h3 class="font-bold text-lg" id="confirmTitle">Confirm Action</h3>
-        <p class="py-4" id="confirmMessage"></p>
-        <div class="modal-action">
-          <form method="dialog">
-            <button class="btn btn-ghost" id="confirmCancelBtn">Cancel</button>
-            <button class="btn btn-primary" id="confirmOkBtn">Confirm</button>
-          </form>
-        </div>
-      </div>
+      <form method="dialog" class="modal-backdrop">
+        <button>close</button>
+      </form>
     </dialog>
 
     <script src="../js/layout/sidebar.js"></script>
