@@ -95,4 +95,4 @@ window.addEventListener("DOMContentLoaded", () => {
 
 
 //  DEBUG LOG
-console.log("✅ attendance-func.js loaded successfully");
+console.log(" attendance-func.js loaded successfully");

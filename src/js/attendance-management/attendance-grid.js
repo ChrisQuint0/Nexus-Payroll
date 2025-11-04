@@ -1,3 +1,4 @@
+import { supabaseClient } from "../supabase/supabaseClient.js";
 import { getEmployeeAttendanceTable } from "./raw-time-logs-data-retrieval.js";
 import { getPayrollSummaryReport } from "./attendance-summary-data-retrieval.js";
 
@@ -75,7 +76,6 @@ class CustomStatusEditor {
       params.stopEditing();
     });
     
-
     // Add keydown handler for Enter and Escape
     this.eSelect.addEventListener('keydown', (e) => {
       if (e.key === 'Enter') {
@@ -212,6 +212,77 @@ const summaryColumns = [
   { headerName: "Department", field: "Department", sortable: true, filter: true, resizable: true },
 ];
 
+// Save Edited Row Function
+async function saveEditedRow(rowData, fieldChanged) {
+  try {
+    console.log(" Saving edited row to Supabase...", { rowData, fieldChanged });
+    
+    // Map the display field names to database column names
+    const fieldMapping = {
+      "Time In": "time_in",
+      "Time Out": "time_out",
+      "Late (m)": "late",
+      "Undertime": "undertime",
+      "Status": "status"
+    };
+    
+    const dbField = fieldMapping[fieldChanged];
+    
+    if (!dbField) {
+      console.warn(" Field not mapped for saving:", fieldChanged);
+      return;
+    }
+    
+    // Prepare the update object
+    const updateData = {
+      [dbField]: rowData[fieldChanged]
+    };
+    
+    // Format datetime fields if needed (Time In/Time Out)
+    if (dbField === "time_in" || dbField === "time_out") {
+      const value = rowData[fieldChanged];
+      if (value && !value.includes("T")) {
+        // If the value doesn't have 'T', add it back for proper datetime format
+        updateData[dbField] = value.replace(" ", "T");
+      }
+    }
+    
+    console.log(" Update data:", updateData);
+    console.log("Matching on emp_id:", rowData["Employee ID"], "and date:", rowData["Date"]);
+    
+    // Find the record by emp_id and date
+    // Since raw_time_logs uses time_in as timestamp, we need to match by date part
+    const { data, error } = await supabaseClient
+      .from("raw_time_logs")
+      .update(updateData)
+      .eq("emp_id", rowData["Employee ID"])
+      .gte("time_in", rowData["Date"] + "T00:00:00")
+      .lt("time_in", rowData["Date"] + "T23:59:59")
+      .select();
+    
+    if (error) {
+      console.error(" Error saving to Supabase:", error);
+      alert(`Failed to save changes: ${error.message}`);
+      return;
+    }
+    
+    if (!data || data.length === 0) {
+      console.warn(" No records updated. Check if employee ID and date match.");
+      alert("No matching record found to update. Please refresh and try again.");
+      return;
+    }
+    
+    console.log(" Successfully saved to Supabase:", data);
+    
+    // Optional: Show success notification
+    // You can add a toast notification here if you have one
+    
+  } catch (err) {
+    console.error(" Unexpected error saving row:", err);
+    alert(`An error occurred while saving: ${err.message}`);
+  }
+}
+
 // grid initialization
 
 let currentData = [];
@@ -258,7 +329,7 @@ async function loadRawTimeLogs() {
     console.log(" Raw time logs loaded:", data.length);
     return data;
   } catch (error) {
-    console.error("❌ Failed to load raw time logs:", error);
+    console.error(" Failed to load raw time logs:", error);
     return [];
   }
 }
