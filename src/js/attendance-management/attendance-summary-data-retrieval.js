@@ -1,4 +1,5 @@
 import { supabaseClient } from "../supabase/supabaseClient.js";
+
 export async function getPayrollSummaryReport(cutoffId) {
   try {
     if (!cutoffId) {
@@ -38,7 +39,8 @@ export async function getPayrollSummaryReport(cutoffId) {
       "Leave W/ Pay": item.leave_w_pay ?? 0,
       "Leave W/O Pay": item.leave_wo_pay ?? 0,
       "Absences": item.absences ?? 0,
-      "Cutoff Period": item.cutoff_period || "N/A", 
+      "Cutoff Period": item.cutoff_period || "N/A",
+      "Department": item.department_name || "N/A",
     }));
 
     console.log(" Payroll Summary Report ready.");
