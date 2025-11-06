@@ -3,18 +3,244 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Dashboard | Nexus Payroll</title>
+    <title>Leave Management | Nexus Payroll</title>
     <link rel="stylesheet" href="../output.css" />
+    <link rel="stylesheet" href="../css/ag-grid/ag-theme-quartz.css" />
+    <style>
+      .ag-header-cell[col-id="Actions"] .ag-header-cell-label {
+        justify-content: center !important;
+      }
+      
+      #leaveManagementGrid {
+        width: 100% !important;
+        height: 100% !important;
+      }
+      
+      /* Ensure grid wrapper has height */
+      .ag-theme-quartz, .ag-theme-quartz-dark {
+        --ag-wrapper-border-radius: 0px;
+      }
+    </style>
   </head>
   <body class="flex">
+    <!-- Global Alert Container -->
+    <div
+      id="globalAlert"
+      class="fixed top-4 left-1/2 -translate-x-1/2 w-[90%] max-w-md z-[999999] pointer-events-none"
+    ></div>
+
     <!-- Sidebar placeholder -->
     <div id="sidebar"></div>
 
     <!-- Main content -->
     <main class="flex-1 p-6">
-      <h1 class="text-2xl font-medium">Leave Management</h1>
+      <h1 class="text-3xl font-medium">Leave Management</h1>
+
+      <!-- Search and Buttons Div -->
+      <div class="mt-5 flex w-full items-center justify-between">
+        <!-- Left side: Search -->
+        <div class="flex flex-row items-center gap-3">
+          <!-- Search Bar -->
+          <label
+            class="input border border-accent focus-within:border-accent focus-within:ring-0 focus-within:outline-none shadow-none"
+          >
+            <svg
+              class="h-[1em] opacity-50"
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+            >
+              <g
+                stroke-linejoin="round"
+                stroke-linecap="round"
+                stroke-width="2.5"
+                fill="none"
+                stroke="currentColor"
+              >
+                <circle cx="11" cy="11" r="8"></circle>
+                <path d="m21 21-4.3-4.3"></path>
+              </g>
+            </svg>
+
+            <input
+              id="searchBar"
+              type="search"
+              required
+              placeholder="Search"
+              class="bg-transparent focus:outline-none"
+            />
+          </label>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="flex flex-row items-center gap-2">
+          <div class="m-2">
+            <button id="deleteBtn" class="btn btn-error" disabled>
+              Delete
+            </button>
+          </div>
+          <div class="m-2">
+            <button id="addNewBtn" class="btn btn-primary">
+              Add New
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- AG Grid -->
+      <div class="mt-5" style="height: 70vh; width: 100%;">
+        <div id="leaveManagementGrid" class="ag-theme-quartz" style="width: 100%; height: 100%;"></div>
+      </div>
+
+      <!-- Generate CSV Div -->
+      <div class="flex justify-end mt-5">
+        <button class="btn btn-secondary btn-lg" onclick="genCSV.showModal()">
+          Generate CSV
+        </button>
+      </div>
     </main>
 
+    <!-- Generate CSV Modal -->
+    <dialog id="genCSV" class="modal">
+      <div class="modal-box">
+        <form method="dialog">
+          <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">
+            ✕
+          </button>
+        </form>
+        <h3 class="text-lg font-bold">Generate Leave Data CSV</h3>
+        
+        <div class="space-y-4 mt-4">
+          <!-- Department Filter -->
+          <div class="flex justify-between items-center">
+            <span class="font-medium">Department</span>
+            <select id="csvDepartment" class="select select-bordered w-48">
+              <option value="all">All Departments</option>
+              <option value="Information Technology">Information Technology</option>
+              <option value="Human Resources">Human Resources</option>
+              <option value="Accounting">Accounting</option>
+              <option value="Sales">Sales</option>
+            </select>
+          </div>
+
+          <!-- Position Filter -->
+          <div class="flex justify-between items-center">
+            <span class="font-medium">Position</span>
+            <select id="csvPosition" class="select select-bordered w-48">
+              <option value="all">All Positions</option>
+              <option value="Senior Developer">Senior Developer</option>
+              <option value="HR Specialist">HR Specialist</option>
+              <option value="Staff Accountant">Staff Accountant</option>
+              <option value="Sales Manager">Sales Manager</option>
+              <option value="Junior Developer">Junior Developer</option>
+            </select>
+          </div>
+
+          <!-- Leave Type Filter -->
+          <div class="flex justify-between items-center">
+            <span class="font-medium">Leave Type</span>
+            <select id="csvLeaveType" class="select select-bordered w-48">
+              <option value="all">All Leave Types</option>
+              <option value="Vacation Leave">Vacation Leave</option>
+              <option value="Sick Leave">Sick Leave</option>
+              <option value="Emergency Leave">Emergency Leave</option>
+              <option value="Personal Leave">Personal Leave</option>
+              <option value="Maternity Leave">Maternity Leave</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="flex justify-end gap-2 mt-6">
+          <button type="button" class="btn btn-ghost" onclick="genCSV.close()">Cancel</button>
+          <button id="generateCsvBtn" class="btn btn-primary">Generate CSV</button>
+        </div>
+      </div>
+    </dialog>
+
+    <!-- Add New Leave Modal -->
+    <dialog id="addLeaveModal" class="modal">
+      <div class="modal-box max-w-md">
+        <h3 class="font-bold text-lg mb-4">Add New Leave</h3>
+        <button onclick="document.getElementById('addLeaveModal').close()" class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
+        
+        <form id="addLeaveForm" class="space-y-4">
+          <div class="form-control">
+            <label class="label">
+              <span class="label-text">Employee ID</span>
+            </label>
+            <input type="number" name="employeeId" class="input input-bordered w-full" required />
+          </div>
+
+          <div class="form-control">
+            <label class="label">
+              <span class="label-text">Name</span>
+            </label>
+            <input type="text" name="employeeName" class="input input-bordered w-full" readonly />
+          </div>
+
+          <div class="form-control">
+            <label class="label">
+              <span class="label-text">Type</span>
+            </label>
+            <select name="leaveType" class="select select-bordered w-full" required>
+              <option value="">Select Leave Type</option>
+              <option value="Vacation Leave">Vacation Leave</option>
+              <option value="Sick Leave">Sick Leave</option>
+              <option value="Emergency Leave">Emergency Leave</option>
+              <option value="Personal Leave">Personal Leave</option>
+              <option value="Maternity Leave">Maternity Leave</option>
+            </select>
+          </div>
+
+          <div class="form-control">
+            <label class="label">
+              <span class="label-text">Duration (days)</span>
+            </label>
+            <input type="number" name="duration" class="input input-bordered w-full" min="1" required />
+          </div>
+
+          <div class="form-control">
+            <label class="label">
+              <span class="label-text">Paid</span>
+            </label>
+            <select name="paid" class="select select-bordered w-full" required>
+              <option value="">Select Option</option>
+              <option value="Yes">Yes</option>
+              <option value="No">No</option>
+            </select>
+          </div>
+
+          <div class="modal-action">
+            <button type="submit" class="btn btn-primary">Confirm Leave</button>
+          </div>
+        </form>
+      </div>
+      <form method="dialog" class="modal-backdrop">
+        <button>close</button>
+      </form>
+    </dialog>
+
+    <!-- Delete Confirmation Modal -->
+    <dialog id="deleteConfirmModal" class="modal">
+      <div class="modal-box">
+        <h3 class="font-bold text-lg">Confirm Delete</h3>
+        <p class="py-4" id="deleteConfirmMessage">Are you sure you want to delete the selected leave record(s)? This action cannot be undone.</p>
+        <div class="modal-action">
+          <button type="button" class="btn btn-ghost" onclick="deleteConfirmModal.close()">Cancel</button>
+          <button type="button" id="confirmDeleteBtn" class="btn btn-error">Delete</button>
+        </div>
+      </div>
+      <form method="dialog" class="modal-backdrop">
+        <button>close</button>
+      </form>
+    </dialog>
+
     <script src="../js/layout/sidebar.js"></script>
+    <script src="../js/libs/ag-grid-community.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <script type="module" src="../js/supabase/supabaseClient.js"></script>
+    <script type="module" src="../js/leave-management/leave-data.js"></script>
+    <script type="module" src="../js/leave-management/grid.js"></script>
+    <script type="module" src="../js/leave-management/func.js"></script>
   </body>
 </html>
