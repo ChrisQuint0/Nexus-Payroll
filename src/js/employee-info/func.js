@@ -4,6 +4,49 @@
 import { setGridData, getSelectedRows, deselectAll } from './grid.js';
 import { initializeEmployeeData, fetchOfficialTimeSchedules, fetchDepartments, fetchPositions } from './employee-data.js';
 import { supabaseClient } from '../supabase/supabaseClient.js';
+import { showGlobalAlert } from '../utils/alerts.js';
+
+// ============================================================================
+// Enhanced Confirmation Dialog
+// ============================================================================
+
+// Custom confirm function using enhanced DaisyUI modal
+function showArchiveConfirm(message, title = 'Confirm Action') {
+  return new Promise((resolve) => {
+    const confirmModal = document.getElementById('archiveConfirmModal');
+    const confirmTitle = document.getElementById('archiveConfirmTitle');
+    const confirmMessage = document.getElementById('archiveConfirmMessage');
+    const confirmBtn = document.getElementById('archiveConfirmBtn');
+    const cancelBtn = document.getElementById('archiveCancelBtn');
+    
+    confirmTitle.textContent = title;
+    confirmMessage.textContent = message;
+    
+    // Remove any existing event listeners by cloning
+    const newConfirmBtn = confirmBtn.cloneNode(true);
+    const newCancelBtn = cancelBtn.cloneNode(true);
+    confirmBtn.replaceWith(newConfirmBtn);
+    cancelBtn.replaceWith(newCancelBtn);
+    
+    // Add event listeners
+    newConfirmBtn.addEventListener('click', () => {
+      confirmModal.close();
+      resolve(true);
+    });
+    
+    newCancelBtn.addEventListener('click', () => {
+      confirmModal.close();
+      resolve(false);
+    });
+    
+    // Also handle backdrop click
+    confirmModal.addEventListener('close', () => {
+      resolve(false);
+    }, { once: true });
+    
+    confirmModal.showModal();
+  });
+}
 
 // ============================================================================
 // Global Variables
@@ -21,7 +64,6 @@ document.addEventListener('DOMContentLoaded', async function() {
   initializeEventListeners();
   initializeSearch();
   initializeCSVGeneration();
-  await populateOfficialTimeDropdown();
   await populateFormDropdowns();
   initializeTabSwitching();
 });
@@ -35,7 +77,7 @@ async function initializeData() {
     console.log('Data initialization complete');
   } catch (error) {
     console.error('Error initializing data:', error);
-    alert('Error loading employee data. Please refresh the page.');
+    showGlobalAlert('error', 'Error loading employee data. Please refresh the page.');
   }
 }
 
@@ -90,6 +132,7 @@ function initializeEventListeners() {
   });
 
   initializePositionChange();
+  initializeTimeCalculation();
 }
 
 // Handle selection change for archive button
@@ -133,6 +176,42 @@ function initializePositionChange() {
       }
     });
   }
+}
+
+// Initialize time calculation (auto-calculate end time)
+function initializeTimeCalculation() {
+  const startTimeInput = document.getElementById('startTime');
+  const endTimeInput = document.getElementById('endTime');
+  
+  if (startTimeInput && endTimeInput) {
+    startTimeInput.addEventListener('change', function() {
+      const startTime = this.value;
+      if (startTime) {
+        const endTime = calculateEndTime(startTime);
+        endTimeInput.value = endTime;
+      }
+    });
+  }
+}
+
+// Calculate end time (9 hours after start time)
+function calculateEndTime(startTime) {
+  const [hours, minutes] = startTime.split(':').map(Number);
+  
+  // Add 9 hours (8 work hours + 1 break hour)
+  let endHours = hours + 9;
+  let endMinutes = minutes;
+  
+  // Handle day overflow (if end time goes past midnight)
+  if (endHours >= 24) {
+    endHours = endHours - 24;
+  }
+  
+  // Format as HH:MM
+  const formattedHours = endHours.toString().padStart(2, '0');
+  const formattedMinutes = endMinutes.toString().padStart(2, '0');
+  
+  return `${formattedHours}:${formattedMinutes}`;
 }
 
 // ============================================================================
@@ -251,7 +330,12 @@ async function handleArchiveSelected() {
   const actionText = currentView === 'active' ? 'Archive' : 'Restore';
   const newStatusId = action === 'archive' ? 2 : 1;
   
-  if (confirm(`Are you sure you want to ${actionText.toLowerCase()} ${selectedRows.length} employee(s)?`)) {
+  const confirmed = await showArchiveConfirm(
+    `Are you sure you want to ${actionText.toLowerCase()} ${selectedRows.length} employee(s)? This action can be reversed later.`,
+    `${actionText} Employees`
+  );
+  
+  if (confirmed) {
     try {
       const selectedIds = selectedRows.map(row => parseInt(row['Employee ID']));
       
@@ -269,10 +353,10 @@ async function handleArchiveSelected() {
         archiveBtn.disabled = true;
       }
       
-      alert(`${selectedRows.length} employee(s) ${actionText.toLowerCase()}d successfully!`);
+      showGlobalAlert('success', `${selectedRows.length} employee(s) ${actionText.toLowerCase()}d successfully!`);
     } catch (error) {
       console.error('Error updating employee status:', error);
-      alert('Error updating employee status. Please try again.');
+      showGlobalAlert('error', 'Error updating employee status. Please try again.');
     }
   }
 }
@@ -284,9 +368,10 @@ async function handleArchiveSelected() {
 // Populate form dropdowns
 async function populateFormDropdowns() {
   try {
-    const [departments, positions] = await Promise.all([
+    const [departments, positions, officialTimes] = await Promise.all([
       fetchDepartments(),
-      fetchPositions()
+      fetchPositions(),
+      fetchOfficialTimeSchedules()
     ]);
 
     // Populate department dropdown
@@ -313,25 +398,23 @@ async function populateFormDropdowns() {
         posSelect.appendChild(option);
       });
     }
+
+    // Populate official time dropdown - display time range instead of name
+    const officialTimeSelect = document.getElementById('officialTimeSelect');
+    if (officialTimeSelect) {
+      officialTimeSelect.innerHTML = '<option value="">Select Official Time</option>';
+      officialTimes.forEach(time => {
+        const option = document.createElement('option');
+        option.value = time.official_time_id;
+        // Display the actual time range, not the schedule name
+        option.textContent = `${time.start_time} - ${time.end_time}`;
+        option.setAttribute('data-start', time.start_time);
+        option.setAttribute('data-end', time.end_time);
+        officialTimeSelect.appendChild(option);
+      });
+    }
   } catch (error) {
     console.error('Error populating form dropdowns:', error);
-  }
-}
-
-// Populate official time dropdown
-async function populateOfficialTimeDropdown() {
-  const officialTimeSelect = document.getElementById('officialTime');
-  if (officialTimeSelect) {
-    officialTimeSelect.innerHTML = '<option value="">Select Official Time</option>';
-    
-    const schedules = await fetchOfficialTimeSchedules();
-    
-    schedules.forEach(schedule => {
-      const option = document.createElement('option');
-      option.value = schedule.official_time_id;
-      option.textContent = schedule.schedule_name;
-      officialTimeSelect.appendChild(option);
-    });
   }
 }
 
@@ -524,8 +607,8 @@ window.editEmployee = function(employeeId) {
   form.querySelector('[name="pagibigId"]').value = employee.PagIBIGID || '';
   form.querySelector('[name="tinId"]').value = employee.TINID || '';
   
-  // Set official time
-  const officialTimeSelect = document.getElementById('officialTime');
+  // Set official time dropdown
+  const officialTimeSelect = document.getElementById('officialTimeSelect');
   if (officialTimeSelect && employee.OfficialTimeID) {
     officialTimeSelect.value = employee.OfficialTimeID;
   }
@@ -576,10 +659,10 @@ async function handleAddEmployee(e) {
     document.querySelector('#addEmployeeModal h3').textContent = 'Add New Employee';
     document.querySelector('#addEmployeeModal button[type="submit"]').textContent = 'Add Employee';
     
-    alert(`Employee ${isEditing ? 'updated' : 'added'} successfully!`);
+    showGlobalAlert('success', `Employee ${isEditing ? 'updated' : 'added'} successfully!`);
   } catch (error) {
     console.error('Error saving employee:', error);
-    alert('Error saving employee data. Please try again.');
+    showGlobalAlert('error', 'Error saving employee data. Please try again.');
   }
 }
 
@@ -754,7 +837,7 @@ function handleGenerateCSV() {
   });
 
   if (filteredData.length === 0) {
-    alert('No active employees match the selected filters.');
+    showGlobalAlert('error', 'No active employees match the selected filters.');
     return;
   }
 
@@ -828,5 +911,5 @@ function generateCSVFile(data) {
   link.click();
   document.body.removeChild(link);
   
-  alert(`CSV file "${filename}" generated successfully with ${data.length} employee(s)!`);
+  showGlobalAlert('success', `CSV file "${filename}" generated successfully with ${data.length} employee(s)!`);
 }

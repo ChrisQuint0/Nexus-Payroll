@@ -13,6 +13,12 @@
     </style>
   </head>
   <body class="flex">
+    <!-- Global Alert Container -->
+    <div
+      id="globalAlert"
+      class="fixed top-4 left-1/2 -translate-x-1/2 w-[90%] max-w-md z-[999999] pointer-events-none"
+    ></div>
+
     <!-- Sidebar placeholder -->
     <div id="sidebar"></div>
 
@@ -252,8 +258,9 @@
                 </div>
                 <div>
                     <label class="label">Official Time</label>
-                    <select id="officialTime" name="officialTime" class="select select-bordered w-full" required>
+                    <select name="officialTime" id="officialTimeSelect" class="select select-bordered w-full" required>
                         <option value="">Select Official Time</option>
+                        <!-- Options will be populated dynamically -->
                     </select>
                 </div>
             </div>
@@ -298,6 +305,23 @@
             <button type="submit" class="btn btn-primary">Add Employee</button>
           </div>
         </form>
+      </div>
+      <form method="dialog" class="modal-backdrop">
+        <button>close</button>
+      </form>
+    </dialog>
+
+    <!-- Archive/Restore Confirmation Modal -->
+    <dialog id="archiveConfirmModal" class="modal">
+      <div class="modal-box">
+        <h3 class="font-bold text-lg flex items-center gap-2">
+          <span id="archiveConfirmTitle">Confirm Action</span>
+        </h3>
+        <p class="py-4" id="archiveConfirmMessage">Are you sure you want to proceed with this action?</p>
+        <div class="modal-action">
+          <button type="button" class="btn btn-ghost" id="archiveCancelBtn">Cancel</button>
+          <button type="button" class="btn btn-primary" id="archiveConfirmBtn">Confirm</button>
+        </div>
       </div>
       <form method="dialog" class="modal-backdrop">
         <button>close</button>

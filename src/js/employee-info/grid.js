@@ -82,6 +82,9 @@ function initializeGrid() {
       filter: true,
       sortable: true,
     },
+    pagination: true,
+    paginationPageSize: 10,
+    paginationPageSizeSelector: [10, 20, 50, 100],
     onSelectionChanged: function() {
       if (window.handleSelectionChange) {
         window.handleSelectionChange();
