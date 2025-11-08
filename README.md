@@ -294,7 +294,6 @@ Based on the codebase analysis, the database includes the following main tables:
 
 1. **Supabase API**:
 
-   - **URL**: `https://gsihnjyewuzyxzdcztge.supabase.co`
    - **Authentication**: JWT-based authentication
    - **Endpoints**:
      - REST API for database operations
