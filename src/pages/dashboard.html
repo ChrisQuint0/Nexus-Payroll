@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="../output.css" />
     <!--- This is the CDN, please make this local-->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   </head>
   <body class="flex">
     <!-- Sidebar placeholder -->
@@ -22,14 +23,10 @@
           class="self-center content-center flex-col max-w-max max-h-max"
         >
           <h3 class="w-2xs font-medium text-2xl">Department</h3>
-          <select class="select select-accent select-xl text-2xl mt-4">
-            <option disabled selected>Pick a Department</option>
-            <option>Accounting</option>
-            <option>Human Resources</option>
-            <option>Logistics and Procurement</option>
-            <option>Marketing</option>
-            <option>IT</option>
-          </select>
+          <select
+            id="department-select"
+            class="select select-accent select-xl text-2xl mt-4"
+          ></select>
         </div>
         <div
           id="quick-stat-1"
@@ -43,15 +40,13 @@
               <h2
                 class="text-5xl font-bold stat-value"
                 id="total-employees-val"
-              >
-                24
-              </h2>
+              ></h2>
             </div>
           </div>
           <div class="shadow-xl/20 rounded-box">
             <div id="on-leave-div" class="stat w-xs rounded-box p-8">
               <h3 class="text-xl font-semibold mb-4 stat-title">On Leave</h3>
-              <h2 class="text-5xl font-bold stat-value" id="on-leave-val">6</h2>
+              <h2 class="text-5xl font-bold stat-value" id="on-leave-val"></h2>
             </div>
           </div>
           <div class="shadow-xl/20 rounded-box">
@@ -59,9 +54,10 @@
               <h3 class="text-xl font-semibold mb-4 stat-title">
                 Promotions This Month
               </h3>
-              <h2 class="text-5xl font-bold stat-value" id="promotions-val">
-                7
-              </h2>
+              <h2
+                class="text-5xl font-bold stat-value"
+                id="promotions-val"
+              ></h2>
             </div>
           </div>
         </div>
@@ -160,6 +156,6 @@
     </main>
 
     <script src="../js/layout/sidebar.js"></script>
-    <script src="../js/dashboard/main.js"></script>
+    <script type="module" src="../js/dashboard/main.js"></script>
   </body>
 </html>
