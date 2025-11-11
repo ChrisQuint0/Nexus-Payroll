@@ -7,26 +7,56 @@
     </form>
     <h3 class="text-lg font-bold">Add New User</h3>
     <br />
-
     <div id="dialogAlert" class="mt-5 mb-5"></div>
-
     <div class="flex justify-between items-center">
       <p>Username</p>
       <input id="usernameInput" type="text" class="input" />
     </div>
-
     <br />
+    <div class="flex justify-between items-center">
+      <p>First Name</p>
+      <input id="firstNameInput" type="text" class="input" />
+    </div>
+    <br />
+    <div class="flex justify-between items-center">
+      <p>Last Name</p>
+      <input id="lastNameInput" type="text" class="input" />
+    </div>
+    <br />
+    <div class="flex justify-between items-center">
+      <p>User Type</p>
+      <select id="userTypeInput" class="select select-bordered w-full max-w-xs">
+        <option value="">Select user type</option>
+        <option value="Admin">Admin</option>
+        <option value="Payroll Staff">Payroll Staff</option>
+        <option value="Employee">Employee</option>
+      </select>
+    </div>
+    <br />
+    <!-- Employee ID Field (conditionally shown) -->
+    <div
+      id="employeeIdContainer"
+      class="flex justify-between items-center hidden"
+    >
+      <p>Employee ID</p>
+      <input
+        id="employeeIdInput"
+        type="number"
+        class="input"
+        placeholder="Enter employee ID"
+        min="1"
+      />
+    </div>
+    <br id="employeeIdBr" class="hidden" />
     <div class="flex justify-between items-center">
       <p>Email</p>
       <input id="emailInput" type="text" class="input" />
     </div>
-
     <br />
     <div class="flex justify-between items-center">
       <p>Password</p>
       <input id="passwordInput" type="password" class="input" />
     </div>
-
     <br />
     <div class="flex justify-end">
       <button id="addUserBtn" class="btn btn-primary">
@@ -35,7 +65,6 @@
       </button>
     </div>
   </div>
-
   <form method="dialog" class="modal-backdrop">
     <button>close</button>
   </form>
