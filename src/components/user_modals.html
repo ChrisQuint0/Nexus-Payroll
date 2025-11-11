@@ -33,6 +33,21 @@
       </select>
     </div>
     <br />
+    <!-- Employee ID Field (conditionally shown) -->
+    <div
+      id="employeeIdContainer"
+      class="flex justify-between items-center hidden"
+    >
+      <p>Employee ID</p>
+      <input
+        id="employeeIdInput"
+        type="number"
+        class="input"
+        placeholder="Enter employee ID"
+        min="1"
+      />
+    </div>
+    <br id="employeeIdBr" class="hidden" />
     <div class="flex justify-between items-center">
       <p>Email</p>
       <input id="emailInput" type="text" class="input" />

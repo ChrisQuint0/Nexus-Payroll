@@ -80,6 +80,22 @@ const columnDefs = [
     },
   },
   {
+    headerName: "Employee ID",
+    field: "employee_id",
+    sortable: true,
+    width: 130,
+    editable: true,
+    cellStyle: {
+      fontWeight: "500",
+    },
+    valueGetter: (params) => {
+      // Only show Employee ID for Employee user type
+      return params.data.user_type === "Employee"
+        ? params.data.employee_id || "-"
+        : "-";
+    },
+  },
+  {
     headerName: "Email",
     field: "email",
     sortable: true,
@@ -131,8 +147,67 @@ const gridOptions = {
         field === "first_name" ||
         field === "last_name" ||
         field === "user_type" ||
-        field === "status"
+        field === "status" ||
+        field === "employee_id"
       ) {
+        // Special validation for employee_id
+        if (field === "employee_id") {
+          // Only allow editing if user type is Employee
+          if (event.data.user_type !== "Employee") {
+            showGlobalAlert(
+              "error",
+              "Employee ID can only be set for Employee user type"
+            );
+            event.data[field] = oldValue;
+            event.api.refreshCells({
+              rowNodes: [event.node],
+              columns: [field],
+              force: true,
+            });
+            return;
+          }
+
+          // Validate that it's a positive number
+          if (isNaN(newValue) || parseInt(newValue) <= 0) {
+            showGlobalAlert(
+              "error",
+              "Employee ID must be a valid positive number"
+            );
+            event.data[field] = oldValue;
+            event.api.refreshCells({
+              rowNodes: [event.node],
+              columns: [field],
+              force: true,
+            });
+            return;
+          }
+
+          // Check if Employee ID already exists
+          const { data: existingUsers, error: checkError } =
+            await supabaseAdmin.auth.admin.listUsers();
+
+          if (checkError) throw checkError;
+
+          const employeeIdExists = existingUsers.users.some(
+            (user) =>
+              user.id !== userId && user.user_metadata?.employee_id === newValue
+          );
+
+          if (employeeIdExists) {
+            showGlobalAlert(
+              "error",
+              "Employee ID already exists. Please use a unique ID."
+            );
+            event.data[field] = oldValue;
+            event.api.refreshCells({
+              rowNodes: [event.node],
+              columns: [field],
+              force: true,
+            });
+            return;
+          }
+        }
+
         // Update user metadata
         const metadataKey = field;
         const { error } = await supabaseAdmin.auth.admin.updateUserById(
@@ -186,6 +261,7 @@ export async function fetchUsers() {
       first_name: user.user_metadata?.first_name || "-",
       last_name: user.user_metadata?.last_name || "-",
       user_type: user.user_metadata?.user_type || "-",
+      employee_id: user.user_metadata?.employee_id || "-",
       status: user.user_metadata?.status || "inactive",
       email: user.email,
       created_at: new Date(user.created_at).toLocaleString(),
