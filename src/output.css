@@ -3140,6 +3140,9 @@
   .text-transparent {
     color: transparent;
   }
+  .text-warning {
+    color: var(--color-warning);
+  }
   .text-white {
     color: var(--color-white);
   }
