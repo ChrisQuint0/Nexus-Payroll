@@ -78,6 +78,16 @@ function filterSidebarByUserType(userType) {
   });
 }
 
+function showSidebar() {
+  const sidebarContent = document.getElementById("sidebarContent");
+  if (sidebarContent) {
+    // Add smooth fade-in transition
+    sidebarContent.style.transition = "opacity 0.3s ease-in-out";
+    sidebarContent.classList.remove("opacity-0");
+    sidebarContent.classList.add("opacity-100");
+  }
+}
+
 function highlightActiveSidebarLink() {
   const links = document.querySelectorAll(".menu a");
   const currentPath = window.location.pathname.split("/").pop();
@@ -137,7 +147,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       const sidebarHTML = await response.text();
       sidebarContainer.innerHTML = sidebarHTML;
 
-      // Get user type and filter sidebar
+      // Get user type and filter sidebar BEFORE showing it
       const userType = await getUserType();
 
       if (userType) {
@@ -148,7 +158,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         // window.location.href = "../pages/login.html";
       }
 
-      // Highlight the active link after the sidebar has loaded
+      // Highlight the active link
       highlightActiveSidebarLink();
 
       // Setup logout button event listener
@@ -156,8 +166,13 @@ document.addEventListener("DOMContentLoaded", async () => {
       if (logoutBtn) {
         logoutBtn.addEventListener("click", handleLogout);
       }
+
+      // NOW show the sidebar after everything is ready
+      showSidebar();
     } catch (error) {
       console.error("Failed to load sidebar:", error);
+      // Show sidebar even if there's an error so page isn't stuck
+      showSidebar();
     }
   }
 });
