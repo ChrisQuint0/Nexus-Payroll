@@ -29,7 +29,7 @@ const MODULE_ACCESS = {
   Employee: ["time-in-out.html", "dashboard.html", "payslip-generation.html"],
 };
 
-async function getUserType() {
+async function getUserInfo() {
   try {
     // Get the current logged-in user
     const {
@@ -42,12 +42,25 @@ async function getUserType() {
       return null;
     }
 
-    // Get user type from metadata
-    const userType = user.user_metadata?.user_type;
-    return userType || null;
+    return {
+      firstName: user.user_metadata?.first_name || "",
+      lastName: user.user_metadata?.last_name || "",
+      userType: user.user_metadata?.user_type || "User",
+    };
   } catch (error) {
-    console.error("Error fetching user type:", error);
+    console.error("Error fetching user info:", error);
     return null;
+  }
+}
+
+function displayUserInfo(userInfo) {
+  const userFullNameEl = document.getElementById("userFullName");
+  const userTypeEl = document.getElementById("userType");
+
+  if (userFullNameEl && userTypeEl && userInfo) {
+    const fullName = `${userInfo.firstName} ${userInfo.lastName}`.trim();
+    userFullNameEl.textContent = fullName || "Unknown User";
+    userTypeEl.textContent = userInfo.userType;
   }
 }
 
@@ -147,13 +160,17 @@ document.addEventListener("DOMContentLoaded", async () => {
       const sidebarHTML = await response.text();
       sidebarContainer.innerHTML = sidebarHTML;
 
-      // Get user type and filter sidebar BEFORE showing it
-      const userType = await getUserType();
+      // Get user info
+      const userInfo = await getUserInfo();
 
-      if (userType) {
-        filterSidebarByUserType(userType);
+      if (userInfo) {
+        // Display user info at the top
+        displayUserInfo(userInfo);
+
+        // Filter sidebar based on user type
+        filterSidebarByUserType(userInfo.userType);
       } else {
-        console.warn("No user type found. User may not be logged in.");
+        console.warn("No user info found. User may not be logged in.");
         // Optionally redirect to login
         // window.location.href = "../pages/login.html";
       }
