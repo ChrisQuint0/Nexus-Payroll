@@ -1,3 +1,4 @@
+//attendance-func.js
 import {
   switchView,
   applyDataFilter,
@@ -62,23 +63,6 @@ window.addEventListener("DOMContentLoaded", () => {
       applyFilters();
     });
 
-    
-  //  CSV EXPORT BUTTON
- 
-  const csvBtn = document.getElementById("generateCSVBtn");
-  if (csvBtn) {
-    csvBtn.addEventListener("click", () => {
-      if (window.gridApi) {
-        window.gridApi.exportDataAsCsv({
-          fileName: `Attendance_${new Date().toISOString().slice(0, 10)}.csv`,
-        });
-      } else {
-        console.error(" gridApi is not available for CSV export");
-      }
-    });
-  }
-
-
   // initialize UI: show raw table by default
   if (rawBtn && summaryBtn) {
     setActiveButton(rawBtn, summaryBtn);
@@ -92,7 +76,6 @@ window.addEventListener("DOMContentLoaded", () => {
     console.error("Failed to initialize attendance view:", err)
   );
 });
-
 
 //  DEBUG LOG
 console.log(" attendance-func.js loaded successfully");

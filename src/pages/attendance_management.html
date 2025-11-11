@@ -121,6 +121,16 @@
               <path d="M3 5h18M7 12h10M10 19h4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
           </button>
+
+          <!-- Add New Time Log Button - Moved to right side -->
+          <div id="addTimeLogContainer" class="ml-3">
+            <button id="addTimeLogBtn" class="btn btn-primary">
+              <svg class="h-4 w-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+              </svg>
+              Add Time Log
+            </button>
+          </div>
         </div>
       </div>
 
@@ -139,30 +149,27 @@
       </div>
 
       <!-- AG Grid Div -->
-      <!-- Raw Time Logs columns: Date, Employee ID, Name, Time In, Time Out, Late (m), Undertime, Status -->
-      <!-- Attendance Summary columns: Employee ID, Name, Regular Hours, Overtime, Late, Undertime, Leave w/ Pay, Leave w/o Pay, Incomplete (Days), Absences -->
       <div id="attendanceGrid" class="mt-5 h-[470px] w-full"></div>
 
       <!-- Generate Buttons Div -->
-<div class="flex justify-end mt-5 gap-3">
-  <!-- Generate DTR button - only for Raw Time Logs -->
-  <button 
-    id="generateDTRBtn"
-    class="btn btn-primary btn-lg" 
-    onclick="generateDTR.showModal()"
-  >
-    Generate DTR
-  </button>
-  <!-- Generate CSV button - for both views -->
-  <button 
-  id="generateCSVBtn"
-  class="btn btn-secondary btn-lg ml-5"
->
-  Generate CSV
-</button>
-
-</div>
-
+      <div class="flex justify-end mt-5 gap-3">
+        <!-- Generate DTR button - only for Raw Time Logs -->
+        <button 
+          id="generateDTRBtn"
+          class="btn btn-primary btn-lg" 
+          onclick="generateDTR.showModal()"
+        >
+          Generate DTR
+        </button>
+        <!-- Generate CSV button - for both views -->
+        <button 
+          id="generateCSVBtn"
+          class="btn btn-secondary btn-lg ml-5"
+        >
+          Generate CSV
+        </button>
+      </div>
+    </main>
 
     <!-- Modal to show attendance details -->
     <dialog id="otherComputation" class="modal">
@@ -303,7 +310,6 @@
           </fieldset>
         </div>
 
-
         <div class="flex justify-end mt-5">
           <button class="btn btn-primary">Generate DTR</button>
         </div>
@@ -325,26 +331,156 @@
             ✕
           </button>
         </form>
-        <h3 class="text-lg font-bold">Generate CSV</h3>
-
-        <div class="flex justify-between items-center mt-5">
-          Cutoff Period
-          <fieldset class="fieldset">
-            <select class="select select-accent w-48">
-              <option>Oct 1 - 15, 2025</option>
-              <option>Oct 16 - 31, 2025</option>
-              <option>Nov 1 - 15, 2025</option>
+        <h3 class="text-lg font-bold">Generate Attendance Data</h3>
+        
+        <div class="space-y-4 mt-4">
+          <!-- Cutoff Period Filter -->
+          <div class="flex justify-between items-center">
+            <span class="font-medium">Cutoff Period</span>
+            <select id="csvCutoffFilter" class="select select-bordered w-48">
+              <option value="all">All Cutoff Periods</option>
+              <option value="Oct 1 - 15, 2025">Oct 1 - 15, 2025</option>
+              <option value="Oct 16 - 31, 2025">Oct 16 - 31, 2025</option>
+              <option value="Nov 1 - 15, 2025">Nov 1 - 15, 2025</option>
             </select>
-          </fieldset>
+          </div>
+
+          <!-- Department Filter -->
+          <div class="flex justify-between items-center">
+            <span class="font-medium">Department</span>
+            <select id="csvDepartmentFilter" class="select select-bordered w-48">
+              <option value="all">All Departments</option>
+              <option value="Information Technology">Information Technology</option>
+              <option value="Human Resources">Human Resources</option>
+              <option value="Accounting">Accounting</option>
+              <option value="Sales">Sales</option>
+            </select>
+          </div>
         </div>
 
-
-        <div class="flex justify-end mt-5">
-          <button class="btn btn-primary">Generate CSV</button>
+        <div class="flex justify-end gap-2 mt-6">
+          <button type="button" class="btn btn-ghost" onclick="generateCSV.close()">Cancel</button>
+          <button id="modalGenerateCSVBtn" class="btn btn-primary">Generate CSV & PDF</button>
         </div>
       </div>
+    </dialog>
 
-      <!-- When you click outside the modal will close -->
+    <!-- Add Time Log Modal -->
+    <dialog id="addTimeLogModal" class="modal">
+      <div class="modal-box max-w-2xl">
+        <form method="dialog">
+          <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
+        </form>
+        
+        <h3 class="text-lg font-bold mb-4">Add New Time Log</h3>
+        
+        <form id="addTimeLogForm" class="space-y-4">
+          <!-- Selected Employee Display -->
+          <div class="bg-base-200 p-3 rounded-lg">
+            <label class="label">
+              <span class="label-text font-semibold">Selected Employee</span>
+            </label>
+            <div id="selectedEmployeeInfo" class="text-sm">
+              No employee selected
+            </div>
+          </div>
+
+          <!-- Date Input -->
+          <div class="form-control">
+            <label class="label">
+              <span class="label-text">Date</span>
+            </label>
+            <input 
+              type="date" 
+              id="logDate" 
+              class="input input-bordered w-full" 
+              required
+            />
+          </div>
+
+          <!-- Time In Input -->
+          <div class="form-control">
+            <label class="label">
+              <span class="label-text">Time In</span>
+            </label>
+            <input 
+              type="datetime-local" 
+              id="timeIn" 
+              class="input input-bordered w-full" 
+              required
+            />
+          </div>
+
+          <!-- Time Out Input -->
+          <div class="form-control">
+            <label class="label">
+              <span class="label-text">Time Out</span>
+            </label>
+            <input 
+              type="datetime-local" 
+              id="timeOut" 
+              class="input input-bordered w-full" 
+            />
+          </div>
+
+          <!-- Status Selection -->
+          <div class="form-control">
+            <label class="label">
+              <span class="label-text">Status</span>
+            </label>
+            <select id="logStatus" class="select select-bordered w-full" required>
+              <option value="Present">Present</option>
+              <option value="Absent">Absent</option>
+              <option value="Late">Late</option>
+              <option value="Undertime">Undertime</option>
+              <option value="Official Business">Official Business</option>
+              <option value="Leave with Pay">Leave with Pay</option>
+              <option value="Leave w/o Pay">Leave w/o Pay</option>
+            </select>
+          </div>
+
+          <!-- Late and Undertime (auto-calculated but editable) -->
+          <div class="grid grid-cols-2 gap-4">
+            <div class="form-control">
+              <label class="label">
+                <span class="label-text">Late (minutes)</span>
+              </label>
+              <input 
+                type="number" 
+                id="lateMinutes" 
+                class="input input-bordered" 
+                min="0" 
+                value="0"
+              />
+            </div>
+            
+            <div class="form-control">
+              <label class="label">
+                <span class="label-text">Undertime (minutes)</span>
+              </label>
+              <input 
+                type="number" 
+                id="undertimeMinutes" 
+                class="input input-bordered" 
+                min="0" 
+                value="0"
+              />
+            </div>
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="modal-action">
+            <button type="button" class="btn btn-ghost" onclick="document.getElementById('addTimeLogModal').close()">
+              Cancel
+            </button>
+            <button type="submit" class="btn btn-primary">
+              Save Time Log
+            </button>
+          </div>
+        </form>
+      </div>
+      
+      <!-- Close modal when clicking outside -->
       <form method="dialog" class="modal-backdrop">
         <button>close</button>
       </form>
@@ -361,5 +497,6 @@
     <script type="module" src="../js/attendance-management/attendance-func.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
   </body>
 </html>
