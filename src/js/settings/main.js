@@ -1,4 +1,4 @@
-// Settings with Supabase Integration - UPDATED VERSION
+// Settings with Supabase Integration
 // Get Supabase client
 import { supabaseClient } from "../supabase/supabaseClient.js";
 const supabase = supabaseClient;
