@@ -1,6 +1,6 @@
 import { supabaseAdmin } from "../supabase/adminClient.js";
 import { showGlobalAlert } from "../utils/alerts.js";
-import { fetchUsers } from "./grid.js"; // Import fetchUsers to refresh grid
+import { fetchUsers } from "./grid.js";
 
 const resetModal = document.getElementById("resetModal");
 const resetPassBtn = resetModal.querySelector("#resetPassBtn");
@@ -10,15 +10,15 @@ const resetDialogAlert = document.getElementById("dialogResetAlert");
 const spinner = resetModal.querySelector("#loadingSpinnerReset");
 const btnText = resetModal.querySelector("#btnTextReset");
 
-let currentUserEmail = null;
+let currentUserId = null;
 
 /**
  * Opens the reset password modal for a specific user.
- * @param {string} email - The email of the user to reset the password for.
+ * @param {string} userId - The ID of the user to reset the password for.
  */
-window.openResetModal = (email) => {
-  currentUserEmail = email;
-  newPassInput.value = ""; // Clear inputs on open
+window.openResetModal = (userId) => {
+  currentUserId = userId;
+  newPassInput.value = "";
   confirmPassInput.value = "";
   resetDialogAlert.innerHTML = "";
   resetModal.showModal();
@@ -54,37 +54,16 @@ resetPassBtn.addEventListener("click", async (e) => {
   resetPassBtn.disabled = true;
 
   try {
-    // 1. Find user by email to get the user ID for Admin API
-    const { data: listData, error: listError } =
-      await supabaseAdmin.auth.admin.listUsers();
-    if (listError) throw listError;
-
-    const user = listData.users.find((u) => u.email === currentUserEmail);
-    if (!user) throw new Error("User not found in auth system.");
-
-    // 2. Update password
     const { error: updateError } =
-      await supabaseAdmin.auth.admin.updateUserById(user.id, {
+      await supabaseAdmin.auth.admin.updateUserById(currentUserId, {
         password: newPass,
       });
 
     if (updateError) throw updateError;
 
-    // 3. Update the 'updated_at' column in your 'users' table
-    const { error: timeUpdateError } = await supabaseAdmin
-      .from("users")
-      .update({ updated_at: new Date().toISOString() })
-      .eq("email", currentUserEmail);
-
-    if (timeUpdateError) throw timeUpdateError;
-
-    // Refresh the grid to show the updated time
     await fetchUsers();
 
-    showGlobalAlert(
-      "success",
-      `Password successfully reset for ${currentUserEmail}!`
-    );
+    showGlobalAlert("success", "Password successfully reset!");
     setTimeout(() => resetModal.close(), 1500);
   } catch (err) {
     console.error("Error resetting password:", err);

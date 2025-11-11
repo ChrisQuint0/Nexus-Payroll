@@ -38,7 +38,6 @@ document.addEventListener("DOMContentLoaded", () => {
       downloadCSVBtn.disabled = true;
 
       const rowData = [];
-      // Get all current row data from the grid
       window.gridApi.forEachNode((node) => rowData.push(node.data));
 
       if (rowData.length === 0) {
@@ -47,21 +46,27 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
       const headers = [
-        "Username",
-        "Email",
         "Status",
+        "Username",
+        "First Name",
+        "Last Name",
+        "User Type",
+        "Email",
         "Created At",
-        "Updated At",
+        "Last Sign In",
       ];
       const csvRows = [headers.join(",")];
 
       rowData.forEach((row) => {
         const values = [
-          escapeCSVValue(row.username),
-          escapeCSVValue(row.email),
           escapeCSVValue(row.status),
+          escapeCSVValue(row.username),
+          escapeCSVValue(row.first_name),
+          escapeCSVValue(row.last_name),
+          escapeCSVValue(row.user_type),
+          escapeCSVValue(row.email),
           escapeCSVValue(row.created_at),
-          escapeCSVValue(row.updated_at),
+          escapeCSVValue(row.last_sign_in),
         ];
         csvRows.push(values.join(","));
       });

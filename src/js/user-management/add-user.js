@@ -1,10 +1,13 @@
-import { supabaseClient } from "../supabase/supabaseClient.js";
+import { supabaseAdmin } from "../supabase/adminClient.js";
 import { showGlobalAlert } from "../utils/alerts.js";
-import { fetchUsers } from "./grid.js"; // Import fetchUsers to refresh grid
+import { fetchUsers } from "./grid.js";
 
 const modal = document.getElementById("addNewModal");
 const addUserBtn = modal.querySelector("#addUserBtn");
 const usernameInput = modal.querySelector("#usernameInput");
+const firstNameInput = modal.querySelector("#firstNameInput");
+const lastNameInput = modal.querySelector("#lastNameInput");
+const userTypeInput = modal.querySelector("#userTypeInput");
 const emailInput = modal.querySelector("#emailInput");
 const passwordInput = modal.querySelector("#passwordInput");
 const spinner = modal.querySelector("#loadingSpinner");
@@ -25,10 +28,20 @@ addUserBtn.addEventListener("click", async (e) => {
   e.preventDefault();
 
   const username = usernameInput.value.trim();
+  const firstName = firstNameInput.value.trim();
+  const lastName = lastNameInput.value.trim();
+  const userType = userTypeInput.value;
   const email = emailInput.value.trim();
   const password = passwordInput.value.trim();
 
-  if (!username || !email || !password) {
+  if (
+    !username ||
+    !firstName ||
+    !lastName ||
+    !userType ||
+    !email ||
+    !password
+  ) {
     showDialogAlert("error", "Please fill out all fields.");
     return;
   }
@@ -38,19 +51,23 @@ addUserBtn.addEventListener("click", async (e) => {
   addUserBtn.disabled = true;
 
   try {
+    // Use Admin API to create user with metadata
     const { data: signUpData, error: signUpError } =
-      await supabaseClient.auth.signUp({ email, password });
+      await supabaseAdmin.auth.admin.createUser({
+        email,
+        password,
+        email_confirm: true, // Auto-confirm email
+        user_metadata: {
+          username,
+          first_name: firstName,
+          last_name: lastName,
+          user_type: userType,
+          status: "active", // Default status when creating user
+        },
+      });
 
     if (signUpError) throw signUpError;
-
-    const userId = signUpData.user?.id;
-    if (!userId) throw new Error("User creation failed — no user ID returned.");
-
-    const { error: insertError } = await supabaseClient
-      .from("users")
-      .insert([{ user_id: userId, username, email }]);
-
-    if (insertError) throw insertError;
+    if (!signUpData.user) throw new Error("User creation failed.");
 
     // Refresh the grid after adding a new user
     await fetchUsers();
@@ -59,6 +76,9 @@ addUserBtn.addEventListener("click", async (e) => {
 
     // Clear and close modal
     usernameInput.value = "";
+    firstNameInput.value = "";
+    lastNameInput.value = "";
+    userTypeInput.value = "";
     emailInput.value = "";
     passwordInput.value = "";
 

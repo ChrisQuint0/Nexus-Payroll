@@ -9,6 +9,13 @@
     <script src="../js/libs/ag-grid-community.min.js"></script>
   </head>
   <body class="flex">
+    <!-- Add this to each protected page -->
+    <script type="module">
+      import { checkPageAccess } from "../js/utils/pageProtection.js";
+
+      // Check access immediately when page loads
+      checkPageAccess();
+    </script>
     <!-- Sidebar placeholder -->
     <div id="sidebar"></div>
 
@@ -98,7 +105,7 @@
       </div>
     </main>
 
-    <script src="../js/layout/sidebar.js"></script>
+    <script type="module" src="../js/layout/sidebar.js"></script>
     <script type="module" src="../js/reports/reports-grid.js"></script>
   </body>
 </html>

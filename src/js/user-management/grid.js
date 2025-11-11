@@ -1,5 +1,4 @@
 import { supabaseAdmin } from "../supabase/adminClient.js";
-import { supabaseClient } from "../supabase/supabaseClient.js";
 import { showGlobalAlert } from "../utils/alerts.js";
 
 const gridDiv = document.getElementById("usersGrid");
@@ -20,25 +19,25 @@ const columnDefs = [
     headerName: "Status",
     field: "status",
     sortable: true,
-    width: 150,
+    width: 120,
     editable: true,
     cellEditor: "agSelectCellEditor",
     cellEditorParams: {
       values: ["active", "inactive"],
     },
     cellStyle: (params) => ({
-      color: params.value === "active" ? "#38B000" : "gray",
+      color: params.value === "active" ? "#38B000" : "#9CA3AF",
       fontWeight: "500",
+      textTransform: "capitalize",
     }),
   },
   {
     headerName: "Actions",
     field: "actions",
     cellRenderer: function (params) {
-      const email = params.data.email;
-      // The openResetModal is defined in reset-password.js and attached to window
+      const userId = params.data.id;
       return `
-        <button class="btn btn-sm btn-primary" onclick="openResetModal('${email}')">Reset</button>
+        <button class="btn btn-sm btn-primary" onclick="openResetModal('${userId}')">Reset</button>
       `;
     },
     width: 100,
@@ -53,11 +52,39 @@ const columnDefs = [
     editable: true,
   },
   {
+    headerName: "First Name",
+    field: "first_name",
+    sortable: true,
+    flex: 1,
+    editable: true,
+  },
+  {
+    headerName: "Last Name",
+    field: "last_name",
+    sortable: true,
+    flex: 1,
+    editable: true,
+  },
+  {
+    headerName: "User Type",
+    field: "user_type",
+    sortable: true,
+    width: 150,
+    editable: true,
+    cellEditor: "agSelectCellEditor",
+    cellEditorParams: {
+      values: ["Admin", "Payroll Staff", "Employee"],
+    },
+    cellStyle: {
+      fontWeight: "500",
+    },
+  },
+  {
     headerName: "Email",
     field: "email",
     sortable: true,
     flex: 1.5,
-    editable: true,
+    editable: false, // Email changes are more complex with auth
   },
   {
     headerName: "Created At",
@@ -66,8 +93,8 @@ const columnDefs = [
     width: 180,
   },
   {
-    headerName: "Updated At",
-    field: "updated_at",
+    headerName: "Last Sign In",
+    field: "last_sign_in",
     sortable: true,
     width: 180,
   },
@@ -90,57 +117,40 @@ const gridOptions = {
 
   onCellEditingStopped: async (event) => {
     const field = event.colDef.field;
-    const email = event.data.email;
+    const userId = event.data.id;
     const newValue = event.value;
     const oldValue = event.oldValue;
 
-    if (!email || newValue === oldValue) return;
+    if (!userId || newValue === oldValue) return;
 
     try {
-      let updateObject = {};
       let alertMessage = "";
 
-      if (field === "status") {
-        updateObject = {
-          status: newValue,
-          updated_at: new Date().toISOString(),
-        };
-        alertMessage = `Status for ${event.data.username} updated to "${newValue}"`;
-      } else if (field === "username") {
-        updateObject = {
-          username: newValue,
-          updated_at: new Date().toISOString(),
-        };
-        alertMessage = `Username updated to "${newValue}"`;
-      } else if (field === "email") {
-        updateObject = {
-          email: newValue,
-          updated_at: new Date().toISOString(),
-        };
-        alertMessage = `Email updated to "${newValue}"`;
+      if (
+        field === "username" ||
+        field === "first_name" ||
+        field === "last_name" ||
+        field === "user_type" ||
+        field === "status"
+      ) {
+        // Update user metadata
+        const metadataKey = field;
+        const { error } = await supabaseAdmin.auth.admin.updateUserById(
+          userId,
+          {
+            user_metadata: { [metadataKey]: newValue },
+          }
+        );
+
+        if (error) throw error;
+
+        const fieldLabel = field.replace(/_/g, " ");
+        alertMessage = `${
+          fieldLabel.charAt(0).toUpperCase() + fieldLabel.slice(1)
+        } updated to "${newValue}"`;
       } else {
         return; // Not a field we update
       }
-
-      // Update in the database. Use oldValue for email update to correctly target the row.
-      const identifier = field === "email" ? oldValue : email;
-      const identifierColumn = field === "email" ? "email" : "email";
-
-      const { error } = await supabaseAdmin
-        .from("users")
-        .update(updateObject)
-        .eq(identifierColumn, identifier);
-
-      if (error) throw error;
-
-      // Update the updated_at column in the grid for the current row
-      event.data.updated_at = new Date().toLocaleString();
-
-      event.api.refreshCells({
-        rowNodes: [event.node],
-        columns: ["updated_at"],
-        force: true,
-      });
 
       showGlobalAlert("success", alertMessage);
     } catch (err) {
@@ -162,25 +172,26 @@ const gridOptions = {
 // Initialize AG Grid
 const gridApi = agGrid.createGrid(gridDiv, gridOptions);
 
-// Fetch users from Supabase
+// Fetch users from Supabase Auth
 export async function fetchUsers() {
   try {
-    const { data, error } = await supabaseClient
-      .from("users")
-      .select("username, email, status, created_at, updated_at")
-      .order("created_at", { ascending: false });
+    const { data, error } = await supabaseAdmin.auth.admin.listUsers();
 
     if (error) throw error;
 
     // Format and map data
-    const users = data.map((user) => ({
-      username: user.username,
+    const users = data.users.map((user) => ({
+      id: user.id,
+      username: user.user_metadata?.username || "-",
+      first_name: user.user_metadata?.first_name || "-",
+      last_name: user.user_metadata?.last_name || "-",
+      user_type: user.user_metadata?.user_type || "-",
+      status: user.user_metadata?.status || "inactive",
       email: user.email,
-      status: user.status || "inactive",
       created_at: new Date(user.created_at).toLocaleString(),
-      updated_at: user.updated_at
-        ? new Date(user.updated_at).toLocaleString()
-        : "-",
+      last_sign_in: user.last_sign_in_at
+        ? new Date(user.last_sign_in_at).toLocaleString()
+        : "Never",
     }));
 
     gridApi.setGridOption("rowData", users);
