@@ -28,7 +28,16 @@ function initializeGrid() {
     { field: "Middle Initial" },
     { field: "Position" },
     { field: "Department" },
-      { field: "Rate" },
+    { 
+      field: "Rate",
+      valueFormatter: (params) => {
+        if (params.value) {
+          const rate = parseFloat(params.value);
+          return '₱' + rate.toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        }
+        return params.value;
+      }
+    },
     { 
       field: "Status",
       valueFormatter: (params) => {

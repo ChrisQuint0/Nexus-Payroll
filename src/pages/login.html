@@ -203,6 +203,20 @@
       </div>
     </dialog>
 
+    <dialog id="inactiveError" class="modal">
+      <div class="modal-box">
+        <h3 class="font-bold text-lg text-warning">Account Inactive</h3>
+        <p class="py-2">
+          Your account has been disabled. Please contact HR or Admin.
+        </p>
+        <div class="modal-action">
+          <form method="dialog">
+            <button class="btn">Close</button>
+          </form>
+        </div>
+      </div>
+    </dialog>
+
     <script>
       // Create animated grid
       const container = document.getElementById("gridContainer");
@@ -276,9 +290,21 @@
         if (error) {
           console.error("Login failed:", error.message);
           loginError.showModal();
-        } else {
-          window.location.href = "dashboard.html"; // redirect example
+          return;
         }
+
+        const user = data.user;
+
+        // ✅ Block inactive accounts
+        if (user?.user_metadata?.status === "inactive") {
+          await supabaseClient.auth.signOut();
+          inactiveError.showModal();
+
+          return;
+        }
+
+        // ✅ Allow login
+        window.location.href = "dashboard.html";
       });
     </script>
   </body>

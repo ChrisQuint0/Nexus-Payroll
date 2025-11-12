@@ -8,6 +8,13 @@
     <link rel="stylesheet" href="../css/ag-grid/ag-theme-quartz.css" />
   </head>
   <body class="flex">
+    <!-- Add this to each protected page -->
+    <script type="module">
+      import { checkPageAccess } from "../js/utils/pageProtection.js";
+
+      // Check access immediately when page loads
+      checkPageAccess();
+    </script>
     <!-- Sidebar placeholder -->
     <div id="sidebar"></div>
 
@@ -48,7 +55,7 @@
 
         <!-- Cutoff Period -->
         <div class="flex flex-row items-center">
-          <p class="mr-5">Cutoff Period</p>
+          <p class="mr-5" id="cutoffPeriodLabel">Cutoff Period</p>
           <fieldset class="fieldset">
             <select
               id="cutoffPeriod"
@@ -397,7 +404,7 @@
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script type="module" src="../js/supabase/supabaseClient.js"></script>
-    <script src="../js/layout/sidebar.js"></script>
+    <script type="module" src="../js/layout/sidebar.js"></script>
     <script src="../js/libs/ag-grid-community.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script type="module" src="../js/payslip-generation/main.js"></script>

@@ -10,19 +10,28 @@
       .ag-header-cell[col-id="Actions"] .ag-header-cell-label {
         justify-content: center !important;
       }
-      
+
       #leaveManagementGrid {
         width: 100% !important;
         height: 100% !important;
       }
-      
+
       /* Ensure grid wrapper has height */
-      .ag-theme-quartz, .ag-theme-quartz-dark {
+      .ag-theme-quartz,
+      .ag-theme-quartz-dark {
         --ag-wrapper-border-radius: 0px;
       }
     </style>
   </head>
   <body class="flex">
+    <!-- Add this to each protected page -->
+    <script type="module">
+      import { checkPageAccess } from "../js/utils/pageProtection.js";
+
+      // Check access immediately when page loads
+      checkPageAccess();
+    </script>
+
     <!-- Global Alert Container -->
     <div
       id="globalAlert"
@@ -82,8 +91,12 @@
       </div>
 
       <!-- AG Grid -->
-      <div class="mt-5" style="height: 70vh; width: 100%;">
-        <div id="leaveManagementGrid" class="ag-theme-quartz" style="width: 100%; height: 100%;"></div>
+      <div class="mt-5" style="height: 70vh; width: 100%">
+        <div
+          id="leaveManagementGrid"
+          class="ag-theme-quartz"
+          style="width: 100%; height: 100%"
+        ></div>
       </div>
 
       <!-- Generate Export Div -->
@@ -101,7 +114,9 @@
     <dialog id="genPDF" class="modal">
       <div class="modal-box">
         <form method="dialog">
-          <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">
+          <button
+            class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2"
+          >
             ✕
           </button>
         </form>
@@ -113,7 +128,9 @@
             <span class="font-medium">Department</span>
             <select id="pdfDepartment" class="select select-bordered w-48">
               <option value="all">All Departments</option>
-              <option value="Information Technology">Information Technology</option>
+              <option value="Information Technology">
+                Information Technology
+              </option>
               <option value="Human Resources">Human Resources</option>
               <option value="Accounting">Accounting</option>
               <option value="Sales">Sales</option>
@@ -179,8 +196,12 @@
         </div>
 
         <div class="flex justify-end gap-2 mt-6">
-          <button type="button" class="btn btn-ghost" onclick="genCSV.close()">Cancel</button>
-          <button id="generateCsvBtn" class="btn btn-primary">Generate CSV</button>
+          <button type="button" class="btn btn-ghost" onclick="genCSV.close()">
+            Cancel
+          </button>
+          <button id="generateCsvBtn" class="btn btn-primary">
+            Generate CSV
+          </button>
         </div>
       </div>
     </dialog>
@@ -345,10 +366,21 @@
     <dialog id="deleteConfirmModal" class="modal">
       <div class="modal-box">
         <h3 class="font-bold text-lg">Confirm Delete</h3>
-        <p class="py-4" id="deleteConfirmMessage">Are you sure you want to delete the selected leave record(s)? This action cannot be undone.</p>
+        <p class="py-4" id="deleteConfirmMessage">
+          Are you sure you want to delete the selected leave record(s)? This
+          action cannot be undone.
+        </p>
         <div class="modal-action">
-          <button type="button" class="btn btn-ghost" onclick="deleteConfirmModal.close()">Cancel</button>
-          <button type="button" id="confirmDeleteBtn" class="btn btn-error">Delete</button>
+          <button
+            type="button"
+            class="btn btn-ghost"
+            onclick="deleteConfirmModal.close()"
+          >
+            Cancel
+          </button>
+          <button type="button" id="confirmDeleteBtn" class="btn btn-error">
+            Delete
+          </button>
         </div>
       </div>
       <form method="dialog" class="modal-backdrop">
@@ -356,7 +388,7 @@
       </form>
     </dialog>
 
-    <script src="../js/layout/sidebar.js"></script>
+    <script type="module" src="../js/layout/sidebar.js"></script>
     <script src="../js/libs/ag-grid-community.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     
