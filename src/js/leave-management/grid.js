@@ -21,71 +21,24 @@ export function initializeGrid() {
   const columnDefs = [
     { 
       field: "Employee ID",
-      width: 150
+      width: 120
     },
-    { field: "Name", width: 200 },
+    { field: "Last Name", width: 150 },
+    { field: "First Name", width: 150 },
+    { field: "Middle Initial", width: 120 },
     { field: "Position", width: 180 },
     { field: "Department", width: 180 },
-    { 
-      field: "Leave Duration",
-      width: 150,
-      editable: true,
-      cellEditor: 'agNumberCellEditor',
-      cellEditorParams: {
-        min: 1,
-        max: 365,
-        precision: 0
-      },
-      valueFormatter: (params) => {
-        if (params.value) {
-          return `${params.value} day(s)`;
-        }
-        return params.value;
-      },
-      valueSetter: (params) => {
-        const newValue = parseInt(params.newValue);
-        if (!isNaN(newValue) && newValue > 0) {
-          params.data["Leave Duration"] = newValue;
-          return true;
-        }
-        return false;
-      }
-    },
-    { 
-      field: "Type", 
-      width: 150,
-      editable: true,
-      cellEditor: 'agSelectCellEditor',
-      cellEditorParams: {
-        values: ['Vacation Leave', 'Sick Leave', 'Emergency Leave', 'Personal Leave', 'Maternity Leave']
-      }
-    },
-    { 
-      field: "Status",
-      width: 120,
-      editable: true,
-      cellEditor: 'agSelectCellEditor',
-      cellEditorParams: {
-        values: ['Paid', 'Unpaid']
-      },
-      cellStyle: (params) => {
-        const isPaid = params.value === "Paid";
-        return {
-          color: isPaid ? "#10b981" : "#f59e0b",
-          fontWeight: "600"
-        };
-      }
-    },
-    { 
-      field: "Leave Balance",
+    {
+      field: "Actions",
       width: 150,
       cellRenderer: (params) => {
         return `
           <button
-            class="btn btn-primary btn-sm view-more-btn"
+            class="btn btn-primary btn-sm add-leave-btn"
             data-employee="${params.data["Employee ID"]}"
+            data-employee-name="${params.data["First Name"]} ${params.data["Middle Initial"] ? params.data["Middle Initial"] + ' ' : ''}${params.data["Last Name"]}"
           >
-            View More
+            Add Leave
           </button>`;
       },
       cellStyle: {
@@ -105,9 +58,7 @@ export function initializeGrid() {
       type: "fitGridWidth",
     },
     rowSelection: {
-      mode: "multiRow",
-      checkboxes: true,
-      headerCheckbox: true,
+      mode: "singleRow",
     },
     defaultColDef: {
       filter: true,
@@ -119,13 +70,15 @@ export function initializeGrid() {
     paginationPageSizeSelector: [10, 20, 50, 100],
     animateRows: true,
     onSelectionChanged: function() {
+      const selectedRows = gridApi.getSelectedRows();
+      const viewHistoryBtn = document.getElementById('viewHistoryBtn');
+      
+      if (viewHistoryBtn) {
+        viewHistoryBtn.disabled = selectedRows.length === 0;
+      }
+      
       if (window.handleSelectionChange) {
         window.handleSelectionChange();
-      }
-    },
-    onCellValueChanged: function(event) {
-      if (window.handleCellEdit) {
-        window.handleCellEdit(event);
       }
     },
   };

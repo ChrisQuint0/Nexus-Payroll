@@ -165,12 +165,36 @@ function initializePositionChange() {
   const rateInput = document.querySelector('input[name="rate"]');
   
   if (positionSelect && rateInput) {
+    // Format rate input as currency
+    function formatRateInput(input) {
+      let value = input.value.replace(/[^\d.]/g, ''); // Remove non-numeric except decimal
+      
+      if (value) {
+        const numValue = parseFloat(value);
+        if (!isNaN(numValue)) {
+          input.value = '₱' + numValue.toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        }
+      }
+    }
+    
+    // Format on blur (when user leaves the field)
+    rateInput.addEventListener('blur', function() {
+      formatRateInput(this);
+    });
+    
+    // Remove formatting on focus for easier editing
+    rateInput.addEventListener('focus', function() {
+      let value = this.value.replace(/[₱,]/g, ''); // Remove currency symbol and commas
+      this.value = value;
+    });
+    
     positionSelect.addEventListener('change', function() {
       const selectedOption = this.options[this.selectedIndex];
       const salary = selectedOption.getAttribute('data-salary');
       
       if (salary) {
-        rateInput.value = salary;
+        const numValue = parseFloat(salary);
+        rateInput.value = '₱' + numValue.toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
       } else {
         rateInput.value = '';
       }
@@ -540,7 +564,7 @@ function showEmployeeDetails(employeeId) {
       <h4 class="text-xl font-semibold mb-4">Salary Information</h4>
       <div class="flex justify-between items-center py-3">
         <span class="text-gray-600 text-sm">Base Rate:</span>
-        <span class="text-2xl font-bold text-gray-800">₱${parseInt(employee.Rate).toLocaleString()}</span>
+        <span class="text-2xl font-bold text-gray-800">₱${parseFloat(employee.Rate).toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
       </div>
     </div>
     
@@ -601,7 +625,16 @@ window.editEmployee = function(employeeId) {
   }
   
   form.querySelector('[name="dateHired"]').value = employee.DateHired || '';
-  form.querySelector('[name="rate"]').value = employee.Rate;
+  
+  // Format rate with currency
+  const rateValue = employee.Rate;
+  if (rateValue) {
+    const numValue = parseFloat(rateValue);
+    form.querySelector('[name="rate"]').value = '₱' + numValue.toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  } else {
+    form.querySelector('[name="rate"]').value = '';
+  }
+  
   form.querySelector('[name="sssId"]').value = employee.SSSID || '';
   form.querySelector('[name="philhealthId"]').value = employee.PhilhealthID || '';
   form.querySelector('[name="pagibigId"]').value = employee.PagIBIGID || '';
@@ -636,6 +669,14 @@ async function handleAddEmployee(e) {
   const formData = new FormData(e.target);
   const isEditing = e.target.dataset.editingEmployeeId;
   const officialTimeId = formData.get('officialTime');
+  
+  // Extract numeric value from formatted rate
+  let rateValue = formData.get('rate');
+  if (rateValue) {
+    // Remove currency symbol and commas, keep only numbers and decimal
+    rateValue = rateValue.replace(/[₱,]/g, '');
+    formData.set('rate', rateValue);
+  }
 
   try {
     if (isEditing) {
@@ -880,6 +921,12 @@ function generateCSVFile(data) {
       let value = employee[header] || '';
       console.log(`Field: ${header}, Value:`, value);
       
+      // Format Rate as currency
+      if (header === 'Rate' && value) {
+        const rate = parseFloat(value);
+        value = '₱' + rate.toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      }
+      
       // Convert to string and handle empty values
       value = String(value);
       
@@ -894,8 +941,9 @@ function generateCSVFile(data) {
 
   console.log('Final CSV content:', csvContent);
 
-  // Create and download the file
-  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+  // Create and download the file with UTF-8 BOM for proper encoding
+  const BOM = '\uFEFF'; // UTF-8 BOM
+  const blob = new Blob([BOM + csvContent], { type: 'text/csv;charset=utf-8;' });
   const link = document.createElement('a');
   const url = URL.createObjectURL(blob);
   

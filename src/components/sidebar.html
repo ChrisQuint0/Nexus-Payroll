@@ -8,7 +8,8 @@
     ></label>
 
     <div
-      class="is-drawer-close:w-14 is-drawer-open:w-64 bg-base-200 flex flex-col items-start min-h-full transition-[width] duration-300 ease-in-out"
+      id="sidebarContent"
+      class="is-drawer-close:w-14 is-drawer-open:w-64 bg-base-200 flex flex-col items-start min-h-full transition-[width] duration-300 ease-in-out opacity-0"
     >
       <!-- button to open/close drawer -->
       <div
@@ -37,6 +38,20 @@
           </svg>
         </label>
       </div>
+
+      <!-- User Info Section with background -->
+      <div
+        class="w-full px-4 py-3 mb-2 is-drawer-close:hidden bg-base-300 rounded-lg mx-2"
+      >
+        <div class="flex flex-col">
+          <p id="userFullName" class="font-semibold text-base truncate">
+            Loading...
+          </p>
+          <p id="userType" class="text-sm text-base-content/70 truncate">...</p>
+        </div>
+      </div>
+
+      <div class="divider my-0 is-drawer-close:hidden"></div>
 
       <!-- Sidebar content -->
       <ul class="menu w-full grow">
@@ -201,7 +216,7 @@
         class="m-2 is-drawer-close:tooltip is-drawer-close:tooltip-right mt-auto"
         data-tip="Log Out"
       >
-        <a href="../pages/login.html" class="btn btn-ghost btn-circle">
+        <a href="#" id="logoutBtn" class="btn btn-ghost btn-circle">
           <img
             src="../assets/logout.svg"
             alt="Logout"
