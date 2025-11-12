@@ -1,4 +1,4 @@
-// Settings with Supabase Integration - WORKING VERSION
+// Settings with Supabase Integration
 // Get Supabase client
 import { supabaseClient } from "../supabase/supabaseClient.js";
 const supabase = supabaseClient;
@@ -51,12 +51,14 @@ function showNotification(message, type = 'info') {
   }, 3000);
 }
 
+// Expose showNotification globally
+window.showNotification = showNotification;
+
 // ========== TAB SWITCHING ==========
 function setupTabs() {
   const tabs = document.querySelectorAll('[role="tab"]');
   const tabContents = document.querySelectorAll('[id^="tab-content-"]');
   
-  // Activate the first tab by default
   const firstTab = tabs[0];
   const firstTabContent = document.getElementById('tab-content-departments');
 
@@ -71,14 +73,12 @@ function setupTabs() {
       e.preventDefault();
       const targetTab = tab.getAttribute('data-tab');
       
-      // Deactivate all tabs and hide all content
       tabs.forEach((t) => t.classList.remove('tab-active'));
       tabContents.forEach((content) => {
         content.classList.add('hidden', 'opacity-0');
         content.classList.remove('opacity-100');
       });
       
-      // Activate the clicked tab and show its content
       tab.classList.add('tab-active');
       const targetContent = document.getElementById(`tab-content-${targetTab}`);
       if (targetContent) {
@@ -86,7 +86,6 @@ function setupTabs() {
         targetContent.classList.add('opacity-100');
       }
       
-      // Resize grid columns after tab switch
       setTimeout(() => {
         let gridApi = null;
         switch(targetTab) {
@@ -98,10 +97,44 @@ function setupTabs() {
         if (gridApi && typeof gridApi.sizeColumnsToFit === 'function') {
           gridApi.sizeColumnsToFit();
         }
-      }, 150); // A slight delay to ensure the container is visible
+      }, 150);
     });
   });
 }
+
+// ========== DEDUCTIONS ==========
+async function loadDeductionRates() {
+  try {
+    const { data, error } = await supabase
+      .from('deduction_percentages')
+      .select('*');
+
+    if (error) throw error;
+
+    console.log("Deduction rates loaded:", data);
+
+    // Display current rates
+    const sssRate = data?.find(d => d.deduction_name === 'SSS_RATE');
+    const philhealthRate = data?.find(d => d.deduction_name === 'PHILHEALTH_RATE');
+    const pagibigRate = data?.find(d => d.deduction_name === 'PAGIBIG_RATE');
+
+    if (sssRate) {
+      document.getElementById('currentSSSRate').textContent = (sssRate.percentage * 100).toFixed(2) + '%';
+    }
+    if (philhealthRate) {
+      document.getElementById('currentPhilHealthRate').textContent = (philhealthRate.percentage * 100).toFixed(2) + '%';
+    }
+    if (pagibigRate) {
+      document.getElementById('currentPagIBIGRate').textContent = (pagibigRate.percentage * 100).toFixed(2) + '%';
+    }
+  } catch (error) {
+    console.error('Error loading deduction rates:', error);
+    showNotification('Failed to load deduction rates: ' + error.message, 'error');
+  }
+}
+
+// Expose loadDeductionRates globally
+window.loadDeductionRates = loadDeductionRates;
 
 // ========== DEPARTMENTS ==========
 function initializeDepartmentsGrid() {
@@ -119,7 +152,8 @@ function initializeDepartmentsGrid() {
       field: "department_id", 
       width: 100,
       sortable: true,
-      filter: true
+      filter: true,
+      editable: false
     },
     { 
       headerName: "Department Name", 
@@ -127,7 +161,8 @@ function initializeDepartmentsGrid() {
       flex: 1,
       minWidth: 200,
       sortable: true,
-      filter: true
+      filter: true,
+      editable: true
     },
     {
       headerName: "Actions",
@@ -136,6 +171,7 @@ function initializeDepartmentsGrid() {
       pinned: "right",
       lockPosition: true,
       suppressMovable: true,
+      editable: false,
       cellStyle: {
         display: "flex",
         alignItems: "center",
@@ -166,6 +202,11 @@ function initializeDepartmentsGrid() {
     paginationPageSizeSelector: [10, 20, 50],
     rowHeight: 50,
     headerHeight: 50,
+    onCellValueChanged: async (event) => {
+      if (event.colDef.field === 'department_name') {
+        await updateDepartment(event.data.department_id, event.newValue);
+      }
+    }
   };
 
   try {
@@ -173,7 +214,6 @@ function initializeDepartmentsGrid() {
     departmentsGridApi = api || gridOptions.api || null;
     console.log("Departments grid initialized:", !!departmentsGridApi);
     
-    // Load data after grid is ready
     loadDepartments();
     return true;
   } catch (error) {
@@ -217,6 +257,23 @@ async function loadDepartments() {
   }
 }
 
+async function updateDepartment(id, newName) {
+  try {
+    const { error } = await supabase
+      .from('departments')
+      .update({ department_name: newName })
+      .eq('department_id', id);
+
+    if (error) throw error;
+
+    showNotification("Department updated successfully!", 'success');
+  } catch (error) {
+    console.error('Error updating department:', error);
+    showNotification('Failed to update department: ' + error.message, 'error');
+    await loadDepartments(); // Reload to revert changes
+  }
+}
+
 async function deleteDepartment(id) {
   if (!confirm("Are you sure you want to delete this department?")) return;
 
@@ -237,6 +294,31 @@ async function deleteDepartment(id) {
 }
 
 // ========== POSITIONS ==========
+// Load departments into dropdown for position modal
+window.loadDepartmentsIntoDropdown = async function() {
+  try {
+    const { data, error } = await supabase
+      .from('departments')
+      .select('*')
+      .order('department_name', { ascending: true });
+
+    if (error) throw error;
+
+    const select = document.getElementById('positionDepartment');
+    select.innerHTML = '<option value="" disabled selected>Select department</option>';
+    
+    data.forEach(dept => {
+      const option = document.createElement('option');
+      option.value = dept.department_id;
+      option.textContent = dept.department_name;
+      select.appendChild(option);
+    });
+  } catch (error) {
+    console.error('Error loading departments:', error);
+    showNotification('Failed to load departments: ' + error.message, 'error');
+  }
+};
+
 function initializePositionsGrid() {
   const gridDiv = document.getElementById("positionsGrid");
   if (!gridDiv) {
@@ -250,17 +332,43 @@ function initializePositionsGrid() {
     { 
       headerName: "ID", 
       field: "position_id", 
-      width: 100,
+      width: 80,
       sortable: true,
-      filter: true
+      filter: true,
+      editable: false
     },
     { 
       headerName: "Position", 
       field: "position_name", 
       flex: 1,
-      minWidth: 200,
+      minWidth: 180,
       sortable: true,
-      filter: true
+      filter: true,
+      editable: true
+    },
+    { 
+      headerName: "Department", 
+      field: "department_name", 
+      width: 180,
+      sortable: true,
+      filter: true,
+      editable: false,
+      valueGetter: (params) => {
+        return params.data.departments?.department_name || 'N/A';
+      }
+    },
+    { 
+      headerName: "Rank", 
+      field: "pos_rank", 
+      width: 100,
+      sortable: true,
+      filter: true,
+      editable: true,
+      cellEditor: 'agNumberCellEditor',
+      cellEditorParams: {
+        min: 1,
+        precision: 0
+      }
     },
     { 
       headerName: "Base Salary", 
@@ -268,6 +376,12 @@ function initializePositionsGrid() {
       width: 150,
       sortable: true,
       filter: true,
+      editable: true,
+      cellEditor: 'agNumberCellEditor',
+      cellEditorParams: {
+        min: 0,
+        precision: 2
+      },
       valueFormatter: (params) => {
         const value = params.value || 0;
         return "₱" + Number(value).toLocaleString("en-PH", {
@@ -283,6 +397,7 @@ function initializePositionsGrid() {
       pinned: "right",
       lockPosition: true,
       suppressMovable: true,
+      editable: false,
       cellStyle: {
         display: "flex",
         alignItems: "center",
@@ -313,6 +428,12 @@ function initializePositionsGrid() {
     paginationPageSizeSelector: [10, 20, 50],
     rowHeight: 50,
     headerHeight: 50,
+    onCellValueChanged: async (event) => {
+      const field = event.colDef.field;
+      if (field === 'position_name' || field === 'pos_rank' || field === 'base_salary') {
+        await updatePosition(event.data.position_id, field, event.newValue);
+      }
+    }
   };
 
   try {
@@ -332,8 +453,8 @@ async function loadPositions() {
   try {
     const { data, error } = await supabase
       .from('positions')
-      .select('*')
-      .order('position_id', { ascending: true });
+      .select('*, departments(department_name)')
+      .order('pos_rank', { ascending: false });
 
     if (error) throw error;
 
@@ -360,6 +481,44 @@ async function loadPositions() {
   } catch (error) {
     console.error('Error loading positions:', error);
     showNotification('Failed to load positions: ' + error.message, 'error');
+  }
+}
+
+async function updatePosition(id, field, newValue) {
+  try {
+    // Check if rank already exists for another position
+    if (field === 'pos_rank') {
+      const { data: existing, error: checkError } = await supabase
+        .from('positions')
+        .select('position_id')
+        .eq('pos_rank', newValue)
+        .neq('position_id', id);
+
+      if (checkError) throw checkError;
+
+      if (existing && existing.length > 0) {
+        showNotification('Rank ' + newValue + ' is already assigned to another position!', 'error');
+        await loadPositions(); // Reload to revert changes
+        return;
+      }
+    }
+
+    const updateData = {};
+    updateData[field] = newValue;
+
+    const { error } = await supabase
+      .from('positions')
+      .update(updateData)
+      .eq('position_id', id);
+
+    if (error) throw error;
+
+    showNotification("Position updated successfully!", 'success');
+    await loadPositions(); // Reload to show updated data
+  } catch (error) {
+    console.error('Error updating position:', error);
+    showNotification('Failed to update position: ' + error.message, 'error');
+    await loadPositions(); // Reload to revert changes
   }
 }
 
@@ -398,7 +557,8 @@ function initializeOfficialTimeGrid() {
       field: "official_time_id", 
       width: 100,
       sortable: true,
-      filter: true
+      filter: true,
+      editable: false
     },
     { 
       headerName: "Schedule Name", 
@@ -406,21 +566,24 @@ function initializeOfficialTimeGrid() {
       flex: 1,
       minWidth: 200,
       sortable: true,
-      filter: true
+      filter: true,
+      editable: true
     },
     { 
       headerName: "Start Time", 
       field: "start_time", 
       width: 120,
       sortable: true,
-      filter: true
+      filter: true,
+      editable: true
     },
     { 
       headerName: "End Time", 
       field: "end_time", 
       width: 120,
       sortable: true,
-      filter: true
+      filter: true,
+      editable: true
     },
     {
       headerName: "Actions",
@@ -429,6 +592,7 @@ function initializeOfficialTimeGrid() {
       pinned: "right",
       lockPosition: true,
       suppressMovable: true,
+      editable: false,
       cellStyle: {
         display: "flex",
         alignItems: "center",
@@ -459,6 +623,12 @@ function initializeOfficialTimeGrid() {
     paginationPageSizeSelector: [10, 20, 50],
     rowHeight: 50,
     headerHeight: 50,
+    onCellValueChanged: async (event) => {
+      const field = event.colDef.field;
+      if (field === 'schedule_name' || field === 'start_time' || field === 'end_time') {
+        await updateSchedule(event.data.official_time_id, field, event.newValue);
+      }
+    }
   };
 
   try {
@@ -509,6 +679,26 @@ async function loadOfficialTime() {
   }
 }
 
+async function updateSchedule(id, field, newValue) {
+  try {
+    const updateData = {};
+    updateData[field] = newValue;
+
+    const { error } = await supabase
+      .from('official_time')
+      .update(updateData)
+      .eq('official_time_id', id);
+
+    if (error) throw error;
+
+    showNotification("Schedule updated successfully!", 'success');
+  } catch (error) {
+    console.error('Error updating schedule:', error);
+    showNotification('Failed to update schedule: ' + error.message, 'error');
+    await loadOfficialTime(); // Reload to revert changes
+  }
+}
+
 async function deleteSchedule(id) {
   if (!confirm("Are you sure you want to delete this schedule?")) return;
 
@@ -544,7 +734,8 @@ function initializeCutoffGrid() {
       field: "cutoff_id", 
       width: 100,
       sortable: true,
-      filter: true
+      filter: true,
+      editable: false
     },
     { 
       headerName: "Start Date", 
@@ -553,6 +744,8 @@ function initializeCutoffGrid() {
       minWidth: 150,
       sortable: true,
       filter: true,
+      editable: true,
+      cellEditor: 'agDateStringCellEditor',
       valueFormatter: (params) => {
         if (!params.value) return '';
         return new Date(params.value).toLocaleDateString('en-US', {
@@ -569,6 +762,8 @@ function initializeCutoffGrid() {
       minWidth: 150,
       sortable: true,
       filter: true,
+      editable: true,
+      cellEditor: 'agDateStringCellEditor',
       valueFormatter: (params) => {
         if (!params.value) return '';
         return new Date(params.value).toLocaleDateString('en-US', {
@@ -585,6 +780,7 @@ function initializeCutoffGrid() {
       pinned: "right",
       lockPosition: true,
       suppressMovable: true,
+      editable: false,
       cellStyle: {
         display: "flex",
         alignItems: "center",
@@ -615,6 +811,12 @@ function initializeCutoffGrid() {
     paginationPageSizeSelector: [10, 20, 50],
     rowHeight: 50,
     headerHeight: 50,
+    onCellValueChanged: async (event) => {
+      const field = event.colDef.field;
+      if (field === 'cutoff_start_date' || field === 'cutoff_end_date') {
+        await updateCutoff(event.data.cutoff_id, field, event.newValue);
+      }
+    }
   };
 
   try {
@@ -665,6 +867,26 @@ async function loadCutoffPeriods() {
   }
 }
 
+async function updateCutoff(id, field, newValue) {
+  try {
+    const updateData = {};
+    updateData[field] = newValue;
+
+    const { error } = await supabase
+      .from('cutoffs')
+      .update(updateData)
+      .eq('cutoff_id', id);
+
+    if (error) throw error;
+
+    showNotification("Cutoff period updated successfully!", 'success');
+  } catch (error) {
+    console.error('Error updating cutoff period:', error);
+    showNotification('Failed to update cutoff period: ' + error.message, 'error');
+    await loadCutoffPeriods(); // Reload to revert changes
+  }
+}
+
 async function deleteCutoff(id) {
   if (!confirm("Are you sure you want to delete this cutoff period?")) return;
 
@@ -681,41 +903,6 @@ async function deleteCutoff(id) {
   } catch (error) {
     console.error('Error deleting cutoff period:', error);
     showNotification('Failed to delete cutoff period: ' + error.message, 'error');
-  }
-}
-
-// ========== DEDUCTIONS ==========
-async function loadDeductionRates() {
-  try {
-    const { data, error } = await supabase
-      .from('deduction_percentages')
-      .select('*');
-
-    if (error) throw error;
-
-    console.log("Deduction rates loaded:", data);
-
-    if (data && data.length > 0) {
-      data.forEach(deduction => {
-        switch(deduction.deduction_name) {
-          case 'SSS':
-            document.getElementById("sssRate").value = deduction.percentage || 0;
-            break;
-          case 'PhilHealth':
-            document.getElementById("philhealthRate").value = deduction.percentage || 0;
-            break;
-          case 'Pag-IBIG':
-            document.getElementById("pagibigRate").value = deduction.percentage || 0;
-            break;
-          case 'Withholding Tax':
-            document.getElementById("taxRate").value = deduction.percentage || 0;
-            break;
-        }
-      });
-    }
-  } catch (error) {
-    console.error('Error loading deduction rates:', error);
-    showNotification('Failed to load deduction rates: ' + error.message, 'error');
   }
 }
 
@@ -739,6 +926,7 @@ document.getElementById("addDepartmentForm")?.addEventListener("submit", async (
 
     showNotification("Department added successfully!", 'success');
     nameInput.value = '';
+    document.getElementById('departmentModal').close();
     await loadDepartments();
   } catch (error) {
     console.error('Error adding department:', error);
@@ -749,26 +937,51 @@ document.getElementById("addDepartmentForm")?.addEventListener("submit", async (
 document.getElementById("addPositionForm")?.addEventListener("submit", async (e) => {
   e.preventDefault();
   const nameInput = document.getElementById("positionName");
+  const deptSelect = document.getElementById("positionDepartment");
+  const rankInput = document.getElementById("positionRank");
   const salaryInput = document.getElementById("positionSalary");
   
   const name = nameInput.value.trim();
+  const departmentId = parseInt(deptSelect.value);
+  const rank = parseInt(rankInput.value);
   const salary = parseFloat(salaryInput.value);
   
-  if (!name || isNaN(salary) || salary < 0) {
+  if (!name || !departmentId || isNaN(rank) || rank < 1 || isNaN(salary) || salary < 0) {
     showNotification("Please enter valid position details", 'warning');
     return;
   }
 
   try {
+    // Check if rank already exists
+    const { data: existing, error: checkError } = await supabase
+      .from('positions')
+      .select('position_id')
+      .eq('pos_rank', rank);
+
+    if (checkError) throw checkError;
+
+    if (existing && existing.length > 0) {
+      showNotification('Rank ' + rank + ' is already assigned to another position!', 'error');
+      return;
+    }
+
     const { error } = await supabase
       .from('positions')
-      .insert([{ position_name: name, base_salary: salary }]);
+      .insert([{ 
+        position_name: name, 
+        department_id: departmentId,
+        pos_rank: rank,
+        base_salary: salary 
+      }]);
 
     if (error) throw error;
 
     showNotification("Position added successfully!", 'success');
     nameInput.value = '';
+    deptSelect.value = '';
+    rankInput.value = '';
     salaryInput.value = '';
+    document.getElementById('positionModal').close();
     await loadPositions();
   } catch (error) {
     console.error('Error adding position:', error);
@@ -802,6 +1015,7 @@ document.getElementById("addOfficialTimeForm")?.addEventListener("submit", async
     nameInput.value = '';
     startInput.value = '';
     endInput.value = '';
+    document.getElementById('scheduleModal').close();
     await loadOfficialTime();
   } catch (error) {
     console.error('Error adding schedule:', error);
@@ -837,55 +1051,11 @@ document.getElementById("addCutoffForm")?.addEventListener("submit", async (e) =
     showNotification("Cutoff period added successfully!", 'success');
     startInput.value = '';
     endInput.value = '';
+    document.getElementById('cutoffModal').close();
     await loadCutoffPeriods();
   } catch (error) {
     console.error('Error adding cutoff period:', error);
     showNotification('Failed to add cutoff period: ' + error.message, 'error');
-  }
-});
-
-document.getElementById("deductionsForm")?.addEventListener("submit", async (e) => {
-  e.preventDefault();
-
-  const rates = [
-    { name: 'SSS', rate: parseFloat(document.getElementById("sssRate").value) },
-    { name: 'PhilHealth', rate: parseFloat(document.getElementById("philhealthRate").value) },
-    { name: 'Pag-IBIG', rate: parseFloat(document.getElementById("pagibigRate").value) },
-    { name: 'Withholding Tax', rate: parseFloat(document.getElementById("taxRate").value) }
-  ];
-
-  if (rates.some(r => isNaN(r.rate) || r.rate < 0 || r.rate > 100)) {
-    showNotification("Please enter valid percentage values (0-100)", 'warning');
-    return;
-  }
-
-  try {
-    const { data: existing } = await supabase
-      .from('deduction_percentages')
-      .select('*');
-
-    for (const rate of rates) {
-      const existingDeduction = existing?.find(d => d.deduction_name === rate.name);
-
-      if (existingDeduction) {
-        const { error } = await supabase
-          .from('deduction_percentages')
-          .update({ percentage: rate.rate })
-          .eq('deduction_id', existingDeduction.deduction_id);
-        if (error) throw error;
-      } else {
-        const { error } = await supabase
-          .from('deduction_percentages')
-          .insert([{ deduction_name: rate.name, percentage: rate.rate }]);
-        if (error) throw error;
-      }
-    }
-
-    showNotification("Deduction rates saved successfully!", 'success');
-    await loadDeductionRates();
-  } catch (error) {
-    console.error('Error saving deduction rates:', error);
-    showNotification('Failed to save deduction rates: ' + error.message, 'error');
   }
 });
 
@@ -942,6 +1112,7 @@ function initializeSettings() {
     initializeOfficialTimeGrid();
     initializeCutoffGrid();
     
+    // Load deduction rates
     loadDeductionRates();
     
     console.log("All grids initialized successfully");
