@@ -97,7 +97,7 @@ window.handleSelectionChange = function() {
 // ============================================================================
 
 // Open add leave modal for specific employee
-function openAddLeaveModal(employeeId, employeeName) {
+async function openAddLeaveModal(employeeId, employeeName) {
   const employee = currentLeaveData.find(emp => emp["Employee ID"] === employeeId);
   if (!employee) {
     showGlobalAlert('error', 'Employee not found.');
@@ -133,6 +133,29 @@ function openAddLeaveModal(employeeId, employeeName) {
     
     return { used, percentage, barColor };
   };
+  
+  // Fetch the latest leave balances from database to ensure we have current data
+  try {
+    const { supabaseClient } = await import('../supabase/supabaseClient.js');
+    const { data: freshLeaveData, error } = await supabaseClient
+      .from('leave_tracking')
+      .select('vacation_leave, sick_leave, emergency_leave, personal_leave, maternity_leave')
+      .eq('leave_tracking_id', parseInt(employee["Leave Tracking ID"]))
+      .single();
+    
+    if (error) throw error;
+    
+    if (freshLeaveData) {
+      // Update the local data with fresh database values
+      leaveDetails["Vacation Leave"] = freshLeaveData.vacation_leave;
+      leaveDetails["Sick Leave"] = freshLeaveData.sick_leave;
+      leaveDetails["Emergency Leave"] = freshLeaveData.emergency_leave;
+      leaveDetails["Personal Leave"] = freshLeaveData.personal_leave;
+      leaveDetails["Maternity Leave"] = freshLeaveData.maternity_leave;
+    }
+  } catch (error) {
+    console.error('Error fetching fresh leave data:', error);
+  }
   
   // Vacation Leave
   const vacation = updateLeaveDisplay('Vacation', leaveDetails["Vacation Leave"], defaultBalances['Vacation Leave']);
@@ -362,6 +385,8 @@ async function showLeaveHistory(employeeId, employeeName, selectedYear = null) {
     
     // Create modal content
     let historyContent = '';
+    const today = new Date();
+    today.setHours(0, 0, 0, 0); // Reset time to midnight for accurate comparison
     
     if (!leaveHistory || leaveHistory.length === 0) {
       historyContent = `
@@ -374,6 +399,16 @@ async function showLeaveHistory(employeeId, employeeName, selectedYear = null) {
       `;
     } else {
       historyContent = `
+        <!-- Legend -->
+        <div class="mb-4 p-2 bg-blue-50 border-l-4 border-blue-500 rounded">
+          <div class="flex items-center gap-2">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-blue-600 flex-shrink-0" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
+            </svg>
+            <span class="text-xs text-blue-800">Rows highlighted in indicate leaves that are active.</span>
+          </div>
+        </div>
+        
         <div class="overflow-x-auto">
           <table class="table table-zebra w-full">
             <thead>
@@ -382,20 +417,27 @@ async function showLeaveHistory(employeeId, employeeName, selectedYear = null) {
                 <th>Start Date</th>
                 <th>End Date</th>
                 <th>Duration</th>
-                <th>Status</th>
+                <th>Paid/Unpaid</th>
               </tr>
             </thead>
             <tbody>
               ${leaveHistory.map(leave => {
                 const startDate = new Date(leave.leave_start);
                 const endDate = new Date(leave.leave_end);
+                startDate.setHours(0, 0, 0, 0);
+                endDate.setHours(0, 0, 0, 0);
+                
                 const duration = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24)) + 1;
-                // Handle null values in is_paid field
-                const isPaid = leave.is_paid === null ? 'Pending' : (leave.is_paid ? 'Paid' : 'Unpaid');
-                const statusColor = leave.is_paid === null ? 'text-blue-600' : (leave.is_paid ? 'text-green-600' : 'text-orange-600');
+                // Display Paid or Unpaid status only
+                const isPaid = leave.is_paid ? 'Paid' : 'Unpaid';
+                const statusColor = leave.is_paid ? 'text-green-600' : 'text-orange-600';
+                
+                // Check if leave is currently active
+                const isActive = today >= startDate && today <= endDate;
+                const rowStyle = isActive ? 'background-color: rgba(59, 130, 246, 0.15); border-left: 4px solid rgb(59, 130, 246);' : '';
                 
                 return `
-                  <tr>
+                  <tr style="${rowStyle}">
                     <td><span class="font-semibold">${leave.leave_type}</span></td>
                     <td>${startDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</td>
                     <td>${endDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</td>
