@@ -2173,6 +2173,18 @@
       }
     }
   }
+  .input-sm {
+    @layer daisyui.modifier {
+      --size: calc(var(--size-field, 0.25rem) * 8);
+      font-size: max(var(--font-size, 0.75rem), 0.75rem);
+      &[type="number"] {
+        &::-webkit-inner-spin-button {
+          margin-block: calc(0.25rem * -2);
+          margin-inline-end: calc(0.25rem * -3);
+        }
+      }
+    }
+  }
   .my-1\.5 {
     margin-block: calc(var(--spacing) * 1.5);
   }

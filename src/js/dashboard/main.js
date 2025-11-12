@@ -422,6 +422,148 @@ async function updateChart(dept_id) {
   }
 }
 
+/**
+ * Fetches government deadlines and displays them in the list.
+ * Populates the deadlines list with data from the government_deadlines table.
+ * @param {boolean} editMode - Whether to display in edit mode with date inputs
+ */
+
+async function getGovDeadlines(editMode = false) {
+  // Fetch all government deadlines
+  const { data, error } = await supabaseClient
+    .from("government_deadlines")
+    .select("*")
+    .order("deadline", { ascending: true }); // Sort by date
+
+  if (error) {
+    console.error("Error fetching government deadlines:", error.message);
+    return;
+  }
+
+  if (!data || data.length === 0) {
+    console.log("No government deadlines found");
+    return;
+  }
+
+  // Get the ul element
+  const deadlinesList = document.getElementById("deadlines-list-values");
+
+  // Clear existing content
+  deadlinesList.innerHTML = "";
+
+  // Create and append list items for each deadline
+  data.forEach((deadline) => {
+    const li = document.createElement("li");
+    li.id = "deadline-list-item";
+    li.className = "list-row";
+
+    // Format the date
+    const deadlineDate = new Date(deadline.deadline);
+    const formattedDate = deadlineDate.toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
+
+    // Format date for input (YYYY-MM-DD)
+    const inputDate = deadline.deadline;
+
+    if (editMode) {
+      li.innerHTML = `
+        <div class="justify-start" id="deadline-type">
+          <h3>${deadline.gov_dept}</h3>
+        </div>
+        <div id="deadline-date-value" class="text-end">
+          <input type="date" value="${inputDate}" 
+                 class="input input-bordered input-sm" 
+                 data-deadline-id="${deadline.id}" />
+        </div>
+      `;
+    } else {
+      li.innerHTML = `
+        <div class="justify-start" id="deadline-type">
+          <h3>${deadline.gov_dept}</h3>
+        </div>
+        <div id="deadline-date-value" class="text-end">
+          <h4>${formattedDate}</h4>
+        </div>
+      `;
+    }
+
+    deadlinesList.appendChild(li);
+  });
+
+  console.log(`Displayed ${data.length} government deadlines`);
+}
+
+/**
+ * Saves all updated government deadlines
+ */
+async function saveGovDeadlines() {
+  const dateInputs = document.querySelectorAll(
+    '#deadlines-list-values input[type="date"]'
+  );
+
+  const updates = [];
+
+  dateInputs.forEach((input) => {
+    const deadlineId = input.dataset.deadlineId;
+    const newDate = input.value;
+
+    updates.push(
+      supabaseClient
+        .from("government_deadlines")
+        .update({ deadline: newDate })
+        .eq("id", deadlineId)
+    );
+  });
+
+  try {
+    await Promise.all(updates);
+    console.log("All deadlines updated successfully");
+
+    // Refresh the list in view mode
+    await getGovDeadlines(false);
+
+    // Update button states
+    toggleEditMode(false);
+  } catch (error) {
+    console.error("Error updating deadlines:", error.message);
+  }
+}
+
+/**
+ * Toggle edit mode for government deadlines
+ */
+let isEditMode = false;
+
+function toggleEditMode(editMode) {
+  isEditMode = editMode;
+  const editButton = document.getElementById("edit-gov-deadlines");
+
+  if (isEditMode) {
+    editButton.textContent = "Save";
+    editButton.classList.add("btn-primary");
+  } else {
+    editButton.textContent = "Edit";
+    editButton.classList.remove("btn-primary");
+  }
+}
+
+// Event listener for edit button
+document
+  .getElementById("edit-gov-deadlines")
+  .addEventListener("click", async () => {
+    if (isEditMode) {
+      // Save mode
+      await saveGovDeadlines();
+    } else {
+      // Edit mode
+      toggleEditMode(true);
+      await getGovDeadlines(true);
+    }
+  });
+
 // Code for Dynamically updating Dashboard info based from
 // Listener for Department Select changes
 departmentSelect.addEventListener("change", async (event) => {
@@ -459,5 +601,6 @@ async function defaultShown() {
   document.getElementById("promotions-val").textContent = promotionsCount;
   //Add the default shown for the chart here.
   updateChart(1);
+  getGovDeadlines(false);
 }
 defaultShown();
