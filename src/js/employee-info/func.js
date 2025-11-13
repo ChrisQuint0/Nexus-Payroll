@@ -190,7 +190,8 @@ function initializePositionChange() {
       const salary = selectedOption.getAttribute("data-salary");
 
       if (salary) {
-        rateInput.value = salary;
+        const numValue = parseFloat(salary);
+        rateInput.value = '₱' + numValue.toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
       } else {
         rateInput.value = "";
       }

@@ -5,8 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Time In/Out | Nexus Payroll</title>
     <link rel="stylesheet" href="../output.css" />
+    <script type="module">
+      import { checkPageAccess } from "../js/utils/pageProtection.js";
+
+      // Check access immediately when page loads
+      checkPageAccess();
+    </script>
   </head>
   <body class="flex min-h-screen">
+    <!-- Add this to each protected page -->
+
     <div id="sidebar"></div>
 
     <main class="flex-1 p-6">
@@ -27,7 +35,7 @@
       <div id="cameraModalContainer"></div>
     </main>
 
-    <script src="../js/layout/sidebar.js"></script>
+    <script type="module" src="../js/layout/sidebar.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
     <script src="../js/time-in-out/main.js" type="module" defer></script>

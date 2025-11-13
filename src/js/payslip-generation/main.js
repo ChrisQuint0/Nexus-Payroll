@@ -3,6 +3,52 @@
 import { supabaseClient } from "../supabase/supabaseClient.js";
 const supabase = supabaseClient;
 
+let currentUser = null;
+
+async function getCurrentUser() {
+  const { data, error } = await supabaseClient.auth.getUser();
+  if (error) {
+    console.error("Error fetching logged in user:", error);
+    return null;
+  }
+  return data.user;
+}
+
+function applyRBAC(user) {
+  if (!user) return;
+
+  const userType = user.user_metadata?.user_type;
+  const employeeId = user.user_metadata?.employee_id;
+
+  if (userType === "Employee") {
+    // Hide search bar
+    const searchBar = document.getElementById("searchInput");
+    if (searchBar) searchBar.closest("label").classList.add("hidden");
+
+    // Hide cutoff dropdown
+    const cutoffSelect = document.getElementById("cutoffPeriod");
+    if (cutoffSelect) cutoffSelect.classList.add("hidden");
+
+    const cutOffLabel = document.getElementById("cutoffPeriodLabel");
+    if (cutOffLabel) cutOffLabel.classList.add("hidden");
+
+    // // Disable selection for employees
+    // if (gridApi) {
+    //   gridApi.setGridOption("rowSelection", {
+    //     mode: "singleRow",
+    //     checkboxes: false,
+    //   });
+    // }
+
+    // Change PDF button text
+    const pdfBtn = document.getElementById("generatePdfBtn");
+    if (pdfBtn) pdfBtn.textContent = "Download My Payslip";
+
+    // Save employeeId globally
+    window.currentEmployeeId = employeeId;
+  }
+}
+
 // State management
 let allEmployeesData = [];
 let filteredData = [];
@@ -202,8 +248,15 @@ async function fetchPayslipData() {
     );
 
     // Store the data
+    // Store the data
     allEmployeesData = data || [];
     filteredData = [...allEmployeesData];
+
+    // Apply RBAC filtering
+    if (currentUser?.user_metadata?.user_type === "Employee") {
+      const empId = currentUser.user_metadata.employee_id;
+      filteredData = allEmployeesData.filter((emp) => emp.employee_id == empId);
+    }
 
     // Update grid
     if (gridApi) {
@@ -874,6 +927,17 @@ if (generatePdfBtn) {
     const selected = hasSelectionApi ? gridApi.getSelectedRows() || [] : [];
     console.log("[Payslip] Selected rows count:", selected.length);
 
+    if (currentUser?.user_metadata?.user_type === "Employee") {
+      if (!selected || selected.length === 0) {
+        alert("Please select at least one payslip to download.");
+        return;
+      }
+
+      generateEmployeesPdf(selected);
+      return;
+    }
+
+    // For Admin/Payroll Staff
     if (!selected || selected.length === 0) {
       alert("Please select at least one employee to generate a PDF.");
       return;
@@ -905,8 +969,9 @@ window.addEventListener("unhandledrejection", (e) => {
 });
 
 // Initialize data on page load
-document.addEventListener("DOMContentLoaded", () => {
-  console.log("[Payslip] Page loaded, fetching data...");
+document.addEventListener("DOMContentLoaded", async () => {
+  currentUser = await getCurrentUser();
+  applyRBAC(currentUser);
   fetchPayslipData();
 });
 

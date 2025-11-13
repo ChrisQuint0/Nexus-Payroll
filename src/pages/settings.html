@@ -9,6 +9,14 @@
   </head>
 
   <body class="flex bg-base-200 min-h-screen">
+    <!-- Add this to each protected page -->
+    <script type="module">
+      import { checkPageAccess } from "../js/utils/pageProtection.js";
+
+      // Check access immediately when page loads
+      checkPageAccess();
+    </script>
+
     <!-- Sidebar placeholder -->
     <div id="sidebar"></div>
 
@@ -19,14 +27,30 @@
       </div>
 
       <!-- Tabs Container -->
-      <div class="bg-base-100 p-6 rounded-2xl shadow-lg border border-base-300/50">
+      <div class="bg-base-100 p-6 rounded-2xl shadow-lg">
         <!-- Tab Navigation -->
-        <div role="tablist" class="tabs tabs-boxed mb-6 bg-base-200/60 p-1 gap-0.5">
-          <a role="tab" class="tab tab-active font-medium text-sm" data-tab="departments">Departments</a>
-          <a role="tab" class="tab font-medium text-sm" data-tab="positions">Positions</a>
-          <a role="tab" class="tab font-medium text-sm" data-tab="schedules">Work Schedules</a>
-          <a role="tab" class="tab font-medium text-sm" data-tab="cutoff">Cutoff Periods</a>
-          <a role="tab" class="tab font-medium text-sm" data-tab="deductions">Deductions</a>
+        <div
+          role="tablist"
+          class="tabs tabs-boxed mb-6 bg-base-200/60 p-1 gap-0.5"
+        >
+          <a
+            role="tab"
+            class="tab tab-active font-medium text-sm"
+            data-tab="departments"
+            >Departments</a
+          >
+          <a role="tab" class="tab font-medium text-sm" data-tab="positions"
+            >Positions</a
+          >
+          <a role="tab" class="tab font-medium text-sm" data-tab="schedules"
+            >Work Schedules</a
+          >
+          <a role="tab" class="tab font-medium text-sm" data-tab="cutoff"
+            >Cutoff Periods</a
+          >
+          <a role="tab" class="tab font-medium text-sm" data-tab="deductions"
+            >Deductions</a
+          >
         </div>
 
         <!-- Tab Content -->
@@ -35,11 +59,21 @@
           <div id="tab-content-departments" class="">
             <div class="flex flex-col gap-4">
               <div class="flex flex-wrap justify-between items-center gap-3">
-                <button onclick="openDepartmentModal()" class="btn btn-primary h-10 min-h-0 px-5 text-sm font-semibold">Add Department</button>
-                <input id="searchDepartments" type="search" placeholder="Search departments..." class="input input-bordered w-52 h-10 text-sm focus:input-primary" />
+                <button
+                  onclick="openDepartmentModal()"
+                  class="btn btn-primary h-10 min-h-0 px-5 text-sm font-semibold"
+                >
+                  Add Department
+                </button>
+                <input
+                  id="searchDepartments"
+                  type="search"
+                  placeholder="Search departments..."
+                  class="input input-bordered w-52 h-10 text-sm focus:input-primary"
+                />
               </div>
 
-              <div id="departmentsGrid" class="h-[470px] w-full ag-theme-quartz rounded-lg border border-base-300/50"></div>
+              <div id="departmentsGrid" class="h-[470px] w-full ag-theme-quartz rounded-lg"></div>
             </div>
           </div>
 
@@ -47,11 +81,21 @@
           <div id="tab-content-positions" class="hidden">
             <div class="flex flex-col gap-4">
               <div class="flex flex-wrap justify-between items-center gap-3">
-                <button onclick="openPositionModal()" class="btn btn-primary h-10 min-h-0 px-5 text-sm font-semibold">Add Position</button>
-                <input id="searchPositions" type="search" placeholder="Search positions..." class="input input-bordered w-52 h-10 text-sm focus:input-primary" />
+                <button
+                  onclick="openPositionModal()"
+                  class="btn btn-primary h-10 min-h-0 px-5 text-sm font-semibold"
+                >
+                  Add Position
+                </button>
+                <input
+                  id="searchPositions"
+                  type="search"
+                  placeholder="Search positions..."
+                  class="input input-bordered w-52 h-10 text-sm focus:input-primary"
+                />
               </div>
 
-              <div id="positionsGrid" class="h-[470px] w-full ag-theme-quartz rounded-lg border border-base-300/50"></div>
+              <div id="positionsGrid" class="h-[470px] w-full ag-theme-quartz rounded-lg"></div>
             </div>
           </div>
 
@@ -59,11 +103,21 @@
           <div id="tab-content-schedules" class="hidden">
             <div class="flex flex-col gap-4">
               <div class="flex flex-wrap justify-between items-center gap-3">
-                <button onclick="openScheduleModal()" class="btn btn-primary h-10 min-h-0 px-5 text-sm font-semibold">Add Schedule</button>
-                <input id="searchOfficialTime" type="search" placeholder="Search schedules..." class="input input-bordered w-52 h-10 text-sm focus:input-primary" />
+                <button
+                  onclick="openScheduleModal()"
+                  class="btn btn-primary h-10 min-h-0 px-5 text-sm font-semibold"
+                >
+                  Add Schedule
+                </button>
+                <input
+                  id="searchOfficialTime"
+                  type="search"
+                  placeholder="Search schedules..."
+                  class="input input-bordered w-52 h-10 text-sm focus:input-primary"
+                />
               </div>
 
-              <div id="officialTimeGrid" class="h-[470px] w-full ag-theme-quartz rounded-lg border border-base-300/50"></div>
+              <div id="officialTimeGrid" class="h-[470px] w-full ag-theme-quartz rounded-lg"></div>
             </div>
           </div>
 
@@ -71,31 +125,65 @@
           <div id="tab-content-cutoff" class="hidden">
             <div class="flex flex-col gap-4">
               <div class="flex flex-wrap justify-between items-center gap-3">
-                <button onclick="openCutoffModal()" class="btn btn-primary h-10 min-h-0 px-5 text-sm font-semibold">Add Cutoff Period</button>
+                <button onclick="window.openCutoffModal()" class="btn btn-primary h-10 min-h-0 px-5 text-sm font-semibold">Add Cutoff Period</button>
                 <input id="searchCutoff" type="search" placeholder="Search cutoff periods..." class="input input-bordered w-52 h-10 text-sm focus:input-primary" />
               </div>
 
-              <div id="cutoffGrid" class="h-[470px] w-full ag-theme-quartz rounded-lg border border-base-300/50"></div>
+              <div id="cutoffGrid" class="h-[470px] w-full ag-theme-quartz rounded-lg"></div>
             </div>
           </div>
 
           <!-- Deductions Tab -->
           <div id="tab-content-deductions" class="hidden">
-            <div class="card bg-base-100 shadow-lg border border-base-300/50 p-8 max-w-4xl">
+            <div class="card bg-base-100 shadow-lg p-8 max-w-4xl">
               <div class="mb-6">
-                <h2 class="text-xl font-bold text-base-content">Deduction Rates</h2>
-                <p class="text-sm text-base-content/60 mt-1">Configure standard deduction percentages for payroll calculations</p>
+                <h2 class="text-xl font-bold text-base-content">
+                  Deduction Rates
+                </h2>
+                <p class="text-sm text-base-content/60 mt-1">
+                  Configure standard deduction percentages for payroll
+                  calculations
+                </p>
               </div>
 
-              <button onclick="openDeductionsModal()" class="btn btn-primary h-10 min-h-0 w-full md:w-auto px-6 text-sm font-semibold">Edit Deduction Rates</button>
+              <button onclick="window.openDeductionsModal()" class="btn btn-primary h-10 min-h-0 w-full md:w-auto px-6 text-sm font-semibold mb-6">Edit Deduction Rates</button>
 
-              <div class="alert bg-info/10 border border-info/30 mt-6">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                <div class="form-control">
+                  <label class="label pb-1.5">
+                    <span class="label-text font-semibold text-sm">SSS Employee Contribution (%)</span>
+                  </label>
+                  <div class="text-2xl font-bold text-primary" id="currentSSSRate">-</div>
+                  <p class="text-xs text-base-content/60 mt-1">Standard: 5% (Employer: 10%)</p>
+                </div>
+
+                <div class="form-control">
+                  <label class="label pb-1.5">
+                    <span class="label-text font-semibold text-sm">PhilHealth Employee Contribution (%)</span>
+                  </label>
+                  <div class="text-2xl font-bold text-primary" id="currentPhilHealthRate">-</div>
+                  <p class="text-xs text-base-content/60 mt-1">Standard: 2.5% (Employer: 2.5%)</p>
+                </div>
+
+                <div class="form-control">
+                  <label class="label pb-1.5">
+                    <span class="label-text font-semibold text-sm">Pag-IBIG Employee Contribution (%)</span>
+                  </label>
+                  <div class="text-2xl font-bold text-primary" id="currentPagIBIGRate">-</div>
+                  <p class="text-xs text-base-content/60 mt-1">Standard: 2% (Employer: 2%)</p>
+                </div>
+              </div>
+
+              <div class="alert bg-info/10 border border-info/30">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="stroke-info shrink-0 w-5 h-5">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                 </svg>
                 <div>
                   <h3 class="font-semibold text-sm">Important Information</h3>
-                  <p class="text-sm mt-0.5">These rates will be applied to all new payroll calculations. Changes will not affect previously calculated payslips.</p>
+                  <p class="text-sm mt-0.5">
+                    These rates will be applied to all new payroll calculations.
+                    Changes will not affect previously calculated payslips.
+                  </p>
                 </div>
               </div>
             </div>
@@ -110,12 +198,33 @@
         <h3 class="font-bold text-lg mb-4">Add Department</h3>
         <form id="addDepartmentForm" method="dialog">
           <div class="form-control mb-4">
-            <label class="label pb-1.5"><span class="label-text font-semibold text-sm">Department Name</span></label>
-            <input type="text" id="departmentName" class="input input-bordered w-full h-10 text-sm focus:input-primary" placeholder="e.g., Information Technology" required />
+            <label class="label pb-1.5"
+              ><span class="label-text font-semibold text-sm"
+                >Department Name</span
+              ></label
+            >
+            <input
+              type="text"
+              id="departmentName"
+              class="input input-bordered w-full h-10 text-sm focus:input-primary"
+              placeholder="e.g., Information Technology"
+              required
+            />
           </div>
           <div class="modal-action">
-            <button type="button" onclick="closeDepartmentModal()" class="btn btn-ghost h-10 min-h-0 px-5 text-sm">Cancel</button>
-            <button type="submit" class="btn btn-primary h-10 min-h-0 px-5 text-sm font-semibold">Add Department</button>
+            <button
+              type="button"
+              onclick="closeDepartmentModal()"
+              class="btn btn-ghost h-10 min-h-0 px-5 text-sm"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              class="btn btn-primary h-10 min-h-0 px-5 text-sm font-semibold"
+            >
+              Add Department
+            </button>
           </div>
         </form>
       </div>
@@ -130,16 +239,50 @@
         <h3 class="font-bold text-lg mb-4">Add Position</h3>
         <form id="addPositionForm" method="dialog">
           <div class="form-control mb-4">
-            <label class="label pb-1.5"><span class="label-text font-semibold text-sm">Position Name</span></label>
-            <input type="text" id="positionName" class="input input-bordered w-full h-10 text-sm focus:input-primary" placeholder="e.g., Software Engineer" required />
+            <label class="label pb-1.5"
+              ><span class="label-text font-semibold text-sm"
+                >Position Name</span
+              ></label
+            >
+            <input
+              type="text"
+              id="positionName"
+              class="input input-bordered w-full h-10 text-sm focus:input-primary"
+              placeholder="e.g., Software Engineer"
+              required
+            />
+          </div>
+          <div class="form-control mb-4">
+            <label class="label pb-1.5"><span class="label-text font-semibold text-sm">Department</span></label>
+            <select id="positionDepartment" class="select select-bordered w-full h-10 text-sm focus:select-primary" required>
+              <option value="" disabled selected>Select department</option>
+            </select>
+          </div>
+          <div class="form-control mb-4">
+            <label class="label pb-1.5"><span class="label-text font-semibold text-sm">Rank</span></label>
+            <input type="number" id="positionRank" class="input input-bordered w-full h-10 text-sm focus:input-primary" placeholder="e.g., 1 (higher number = higher rank)" min="1" required />
+            <label class="label">
+              <span class="label-text-alt text-base-content/60">Higher numbers indicate higher positions in hierarchy</span>
+            </label>
           </div>
           <div class="form-control mb-4">
             <label class="label pb-1.5"><span class="label-text font-semibold text-sm">Base Salary (₱)</span></label>
             <input type="number" id="positionSalary" class="input input-bordered w-full h-10 text-sm focus:input-primary" placeholder="30000" step="0.01" min="0" required />
           </div>
           <div class="modal-action">
-            <button type="button" onclick="closePositionModal()" class="btn btn-ghost h-10 min-h-0 px-5 text-sm">Cancel</button>
-            <button type="submit" class="btn btn-primary h-10 min-h-0 px-5 text-sm font-semibold">Add Position</button>
+            <button
+              type="button"
+              onclick="closePositionModal()"
+              class="btn btn-ghost h-10 min-h-0 px-5 text-sm"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              class="btn btn-primary h-10 min-h-0 px-5 text-sm font-semibold"
+            >
+              Add Position
+            </button>
           </div>
         </form>
       </div>
@@ -154,20 +297,59 @@
         <h3 class="font-bold text-lg mb-4">Add Work Schedule</h3>
         <form id="addOfficialTimeForm" method="dialog">
           <div class="form-control mb-4">
-            <label class="label pb-1.5"><span class="label-text font-semibold text-sm">Schedule Name</span></label>
-            <input type="text" id="scheduleName" class="input input-bordered w-full h-10 text-sm focus:input-primary" placeholder="e.g., Regular Day Shift" required />
+            <label class="label pb-1.5"
+              ><span class="label-text font-semibold text-sm"
+                >Schedule Name</span
+              ></label
+            >
+            <input
+              type="text"
+              id="scheduleName"
+              class="input input-bordered w-full h-10 text-sm focus:input-primary"
+              placeholder="e.g., Regular Day Shift"
+              required
+            />
           </div>
           <div class="form-control mb-4">
-            <label class="label pb-1.5"><span class="label-text font-semibold text-sm">Start Time</span></label>
-            <input type="time" id="startTime" class="input input-bordered w-full h-10 text-sm focus:input-primary" required />
+            <label class="label pb-1.5"
+              ><span class="label-text font-semibold text-sm"
+                >Start Time</span
+              ></label
+            >
+            <input
+              type="time"
+              id="startTime"
+              class="input input-bordered w-full h-10 text-sm focus:input-primary"
+              required
+            />
           </div>
           <div class="form-control mb-4">
-            <label class="label pb-1.5"><span class="label-text font-semibold text-sm">End Time</span></label>
-            <input type="time" id="endTime" class="input input-bordered w-full h-10 text-sm focus:input-primary" required />
+            <label class="label pb-1.5"
+              ><span class="label-text font-semibold text-sm"
+                >End Time</span
+              ></label
+            >
+            <input
+              type="time"
+              id="endTime"
+              class="input input-bordered w-full h-10 text-sm focus:input-primary"
+              required
+            />
           </div>
           <div class="modal-action">
-            <button type="button" onclick="closeScheduleModal()" class="btn btn-ghost h-10 min-h-0 px-5 text-sm">Cancel</button>
-            <button type="submit" class="btn btn-primary h-10 min-h-0 px-5 text-sm font-semibold">Add Schedule</button>
+            <button
+              type="button"
+              onclick="closeScheduleModal()"
+              class="btn btn-ghost h-10 min-h-0 px-5 text-sm"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              class="btn btn-primary h-10 min-h-0 px-5 text-sm font-semibold"
+            >
+              Add Schedule
+            </button>
           </div>
         </form>
       </div>
@@ -182,15 +364,33 @@
         <h3 class="font-bold text-lg mb-4">Add Cutoff Period</h3>
         <form id="addCutoffForm" method="dialog">
           <div class="form-control mb-4">
-            <label class="label pb-1.5"><span class="label-text font-semibold text-sm">Start Date</span></label>
-            <input type="date" id="cutoffStartDate" class="input input-bordered w-full h-10 text-sm focus:input-primary" required />
+            <label class="label pb-1.5"
+              ><span class="label-text font-semibold text-sm"
+                >Start Date</span
+              ></label
+            >
+            <input
+              type="date"
+              id="cutoffStartDate"
+              class="input input-bordered w-full h-10 text-sm focus:input-primary"
+              required
+            />
           </div>
           <div class="form-control mb-4">
-            <label class="label pb-1.5"><span class="label-text font-semibold text-sm">End Date</span></label>
-            <input type="date" id="cutoffEndDate" class="input input-bordered w-full h-10 text-sm focus:input-primary" required />
+            <label class="label pb-1.5"
+              ><span class="label-text font-semibold text-sm"
+                >End Date</span
+              ></label
+            >
+            <input
+              type="date"
+              id="cutoffEndDate"
+              class="input input-bordered w-full h-10 text-sm focus:input-primary"
+              required
+            />
           </div>
           <div class="modal-action">
-            <button type="button" onclick="closeCutoffModal()" class="btn btn-ghost h-10 min-h-0 px-5 text-sm">Cancel</button>
+            <button type="button" onclick="window.closeCutoffModal()" class="btn btn-ghost h-10 min-h-0 px-5 text-sm">Cancel</button>
             <button type="submit" class="btn btn-primary h-10 min-h-0 px-5 text-sm font-semibold">Add Cutoff Period</button>
           </div>
         </form>
@@ -207,25 +407,37 @@
         <form id="deductionsForm" method="dialog">
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
             <div class="form-control">
-              <label class="label pb-1.5"><span class="label-text font-semibold text-sm">SSS Contribution (%)</span></label>
-              <input type="number" id="sssRate" class="input input-bordered h-10 text-sm focus:input-primary" placeholder="e.g., 4.5" step="0.01" min="0" max="100" required />
+              <label class="label pb-1.5">
+                <span class="label-text font-semibold text-sm">SSS Employee (%)</span>
+              </label>
+              <input type="number" id="sssRate" class="input input-bordered w-full h-10 text-sm focus:input-primary" placeholder="5.00" step="0.01" min="0" max="100" required />
             </div>
+
             <div class="form-control">
-              <label class="label pb-1.5"><span class="label-text font-semibold text-sm">PhilHealth Contribution (%)</span></label>
-              <input type="number" id="philhealthRate" class="input input-bordered h-10 text-sm focus:input-primary" placeholder="e.g., 4.0" step="0.01" min="0" max="100" required />
+              <label class="label pb-1.5">
+                <span class="label-text font-semibold text-sm">PhilHealth Employee (%)</span>
+              </label>
+              <input type="number" id="philhealthRate" class="input input-bordered w-full h-10 text-sm focus:input-primary" placeholder="2.50" step="0.01" min="0" max="100" required />
             </div>
+
             <div class="form-control">
-              <label class="label pb-1.5"><span class="label-text font-semibold text-sm">Pag-IBIG Contribution (%)</span></label>
-              <input type="number" id="pagibigRate" class="input input-bordered h-10 text-sm focus:input-primary" placeholder="e.g., 2.0" step="0.01" min="0" max="100" required />
-            </div>
-            <div class="form-control">
-              <label class="label pb-1.5"><span class="label-text font-semibold text-sm">Withholding Tax (%)</span></label>
-              <input type="number" id="taxRate" class="input input-bordered h-10 text-sm focus:input-primary" placeholder="e.g., 15.0" step="0.01" min="0" max="100" required />
+              <label class="label pb-1.5">
+                <span class="label-text font-semibold text-sm">Pag-IBIG Employee (%)</span>
+              </label>
+              <input type="number" id="pagibigRate" class="input input-bordered w-full h-10 text-sm focus:input-primary" placeholder="2.00" step="0.01" min="0" max="100" required />
             </div>
           </div>
+
+          <div class="alert alert-warning mb-6">
+            <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+            <span class="text-sm">Changes will apply to new payroll calculations only.</span>
+          </div>
+
           <div class="modal-action">
-            <button type="button" onclick="closeDeductionsModal()" class="btn btn-ghost h-10 min-h-0 px-5 text-sm">Cancel</button>
-            <button type="submit" class="btn btn-primary h-10 min-h-0 px-5 text-sm font-semibold">Save Deduction Rates</button>
+            <button type="button" onclick="window.closeDeductionsModal()" class="btn btn-ghost h-10 min-h-0 px-5 text-sm">Cancel</button>
+            <button type="submit" class="btn btn-primary h-10 min-h-0 px-5 text-sm font-semibold">Save Changes</button>
           </div>
         </form>
       </div>
@@ -237,43 +449,55 @@
     <script>
       // Modal Functions
       function openDepartmentModal() {
-        document.getElementById('departmentModal').showModal();
+        document.getElementById("departmentModal").showModal();
       }
       function closeDepartmentModal() {
-        document.getElementById('departmentModal').close();
+        document.getElementById("departmentModal").close();
       }
-      
+
       function openPositionModal() {
+        // Load departments into dropdown before opening
+        if (window.loadDepartmentsIntoDropdown) {
+          window.loadDepartmentsIntoDropdown();
+        }
         document.getElementById('positionModal').showModal();
       }
       function closePositionModal() {
-        document.getElementById('positionModal').close();
+        document.getElementById("positionModal").close();
       }
-      
+
       function openScheduleModal() {
-        document.getElementById('scheduleModal').showModal();
+        document.getElementById("scheduleModal").showModal();
       }
       function closeScheduleModal() {
-        document.getElementById('scheduleModal').close();
+        document.getElementById("scheduleModal").close();
       }
       
-      function openCutoffModal() {
+      // Expose cutoff modal functions globally
+      window.openCutoffModal = function() {
         document.getElementById('cutoffModal').showModal();
       }
-      function closeCutoffModal() {
+      
+      window.closeCutoffModal = function() {
         document.getElementById('cutoffModal').close();
       }
       
-      function openDeductionsModal() {
+      // Expose deductions modal functions globally
+      window.openDeductionsModal = function() {
+        // Load current deduction rates before opening modal
+        if (window.loadDeductionRatesIntoModal) {
+          window.loadDeductionRatesIntoModal();
+        }     
         document.getElementById('deductionsModal').showModal();
       }
-      function closeDeductionsModal() {
+      
+      window.closeDeductionsModal = function() {
         document.getElementById('deductionsModal').close();
       }
     </script>
 
     <!-- Scripts -->
-    <script src="../js/layout/sidebar.js"></script>
+    <script type="module" src="../js/layout/sidebar.js"></script>
     <script src="../js/libs/ag-grid-community.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script type="module" src="../js/supabase/supabaseClient.js"></script>
