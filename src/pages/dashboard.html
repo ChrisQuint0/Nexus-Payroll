@@ -11,6 +11,12 @@
   </head>
   <body class="flex">
     <!-- Add this to each protected page -->
+    <script type="module">
+      import { checkPageAccess } from "../js/utils/pageProtection.js";
+
+      // Check access immediately when page loads
+      checkPageAccess();
+    </script>
 
     <!-- Sidebar placeholder -->
     <div id="sidebar"></div>
