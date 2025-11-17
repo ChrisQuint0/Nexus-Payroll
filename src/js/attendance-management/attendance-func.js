@@ -8,32 +8,48 @@ import {
 window.addEventListener("DOMContentLoaded", () => {
   const rawBtn = document.getElementById("rawTimeLogsTab");
   const summaryBtn = document.getElementById("attendanceSummaryTab");
+  const addTimeLogsBtn = document.getElementById("addTimeLogsTab");
   const searchInput = document.getElementById("search");
   const cutoffFilter = document.getElementById("cutoffFilter");
   const cutoffContainer = document.getElementById("cutoffPeriodContainer");
   const filterBtn = document.getElementById("filterBtn");
   const dtrBtn = document.getElementById("generateDTRBtn"); // DTR button reference
 
-  function setActiveButton(active, inactive) {
-    if (!active || !inactive) return;
-    active.classList.add("btn-primary");
-    active.classList.remove("btn-outline");
-    inactive.classList.remove("btn-primary");
-    inactive.classList.add("btn-outline");
+  function setActiveButton(activeBtn) {
+    const allButtons = [rawBtn, summaryBtn, addTimeLogsBtn];
+    
+    allButtons.forEach(btn => {
+      if (!btn) return;
+      
+      if (btn === activeBtn) {
+        btn.classList.add("btn-primary");
+        btn.classList.remove("btn-outline");
+      } else {
+        btn.classList.remove("btn-primary");
+        btn.classList.add("btn-outline");
+      }
+    });
   }
 
   async function showRaw() {
-    setActiveButton(rawBtn, summaryBtn);
+    setActiveButton(rawBtn);
     cutoffContainer?.classList.add("hidden"); // hide cutoff when Raw is active
     if (dtrBtn) dtrBtn.classList.remove("hidden"); //  show DTR button
     await switchView("raw");
   }
 
   async function showSummary() {
-    setActiveButton(summaryBtn, rawBtn);
+    setActiveButton(summaryBtn);
     cutoffContainer?.classList.remove("hidden"); // show cutoff when Summary is active
     if (dtrBtn) dtrBtn.classList.add("hidden"); //  hide DTR button
     await switchView("summary");
+  }
+
+  async function showAddTimeLogs() {
+    setActiveButton(addTimeLogsBtn);
+    cutoffContainer?.classList.add("hidden"); // hide cutoff in Add Time Logs view
+    if (dtrBtn) dtrBtn.classList.add("hidden"); // hide DTR button
+    await switchView("addTimeLogs");
   }
 
   if (rawBtn)
@@ -45,6 +61,11 @@ window.addEventListener("DOMContentLoaded", () => {
     summaryBtn.addEventListener("click", (e) => {
       e.preventDefault();
       showSummary();
+    });
+  if (addTimeLogsBtn)
+    addTimeLogsBtn.addEventListener("click", (e) => {
+      e.preventDefault();
+      showAddTimeLogs();
     });
 
   // Search + cutoff filter wiring
@@ -64,8 +85,8 @@ window.addEventListener("DOMContentLoaded", () => {
     });
 
   // initialize UI: show raw table by default
-  if (rawBtn && summaryBtn) {
-    setActiveButton(rawBtn, summaryBtn);
+  if (rawBtn) {
+    setActiveButton(rawBtn);
   }
 
   // Start with Raw view and hide cutoff
