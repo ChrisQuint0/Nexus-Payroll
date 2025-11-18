@@ -67,10 +67,7 @@
           <!-- Cutoff Period -->
           <fieldset class="fieldset">
             <select id="cutoffSelect" class="select select-accent w-48">
-              <option value="All">All Cutoff</option>
-              <option>Oct 1 - 15</option>
-              <option>Oct 16 - 31</option>
-              <option>Nov 1 - 15</option>
+              <option value="all">All Cutoff</option>
             </select>
           </fieldset>
         </div>
@@ -81,7 +78,7 @@
 
       <!-- Generate CSV Div -->
       <div class="flex justify-end mt-5">
-        <button class="btn btn-secondary btn-lg" onclick="genCSV.showModal()">
+        <button class="btn btn-secondary btn-lg" id="openCSVModal">
           Generate CSV
         </button>
       </div>
@@ -263,12 +260,8 @@
         <div class="flex justify-between items-center">
           Department
           <fieldset class="fieldset">
-            <select class="select select-accent w-48">
+            <select class="select select-accent w-48" id="departmentCSV">
               <option>All Departments</option>
-              <option>IT</option>
-              <option>Finance</option>
-              <option>HR</option>
-              <option>Marketing</option>
             </select>
           </fieldset>
         </div>
@@ -293,6 +286,14 @@
     <script
       type="module"
       src="../js/payroll-computation/payroll-data.js"
+    ></script>
+    <script
+      type="module"
+      src="../js/payroll-computation/cutoff-handler.js"
+    ></script>
+    <script
+      type="module"
+      src="../js/payroll-computation/csv-generator.js"
     ></script>
   </body>
 </html>
