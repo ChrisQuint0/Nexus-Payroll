@@ -1,82 +1,36 @@
-export const rowData = [
-  {
-    "Employee ID": "1000123",
-    Name: "Juan Dela Cruz",
-    Department: "Finance",
-    Gross: 38000,
-    "Total Deductions": 3200,
-    "Cutoff Period": "Oct 1 - 15, 2025",
-  },
-  {
-    "Employee ID": "1000456",
-    Name: "Maria Santos",
-    Department: "HR",
-    Gross: 42000,
-    "Total Deductions": 3800,
-    "Cutoff Period": "Oct 16 - 31, 2025",
-  },
-  {
-    "Employee ID": "1000789",
-    Name: "Jose Ramirez",
-    Department: "IT",
-    Gross: 39500,
-    "Total Deductions": 2900,
-    "Cutoff Period": "Nov 1 - 15, 2025",
-  },
-  {
-    "Employee ID": "1001024",
-    Name: "Ana Bautista",
-    Department: "Sales",
-    Gross: 41000,
-    "Total Deductions": 3500,
-    "Cutoff Period": "Oct 1 - 15, 2025",
-  },
-  {
-    "Employee ID": "1001345",
-    Name: "Pedro Cruz",
-    Department: "Operations",
-    Gross: 36500,
-    "Total Deductions": 2700,
-    "Cutoff Period": "Oct 16 - 31, 2025",
-  },
-  {
-    "Employee ID": "1001567",
-    Name: "Rosa Flores",
-    Department: "Finance",
-    Gross: 39000,
-    "Total Deductions": 3100,
-    "Cutoff Period": "Nov 1 - 15, 2025",
-  },
-  {
-    "Employee ID": "1001890",
-    Name: "Carlos Navarro",
-    Department: "IT",
-    Gross: 45500,
-    "Total Deductions": 4100,
-    "Cutoff Period": "Oct 1 - 15, 2025",
-  },
-  {
-    "Employee ID": "1002234",
-    Name: "Elena Mendoza",
-    Department: "HR",
-    Gross: 37000,
-    "Total Deductions": 2950,
-    "Cutoff Period": "Oct 16 - 31, 2025",
-  },
-  {
-    "Employee ID": "1002456",
-    Name: "Ramon Reyes",
-    Department: "Sales",
-    Gross: 48000,
-    "Total Deductions": 4300,
-    "Cutoff Period": "Nov 1 - 15, 2025",
-  },
-  {
-    "Employee ID": "1002789",
-    Name: "Lucia Morales",
-    Department: "Operations",
-    Gross: 40500,
-    "Total Deductions": 3100,
-    "Cutoff Period": "Oct 1 - 15, 2025",
-  },
-];
+import { supabaseClient } from "../supabase/supabaseClient.js";
+
+// Function to fetch payroll data from Supabase
+export async function fetchPayrollData() {
+  try {
+    const { data, error } = await supabaseClient
+      .from("payroll_register_report")
+      .select("*")
+      .order("cutoff_id", { ascending: true })
+      .order("last_name", { ascending: true });
+
+    if (error) throw error;
+
+    // Transform the data to match your grid column structure
+    return data.map((row) => ({
+      "Employee ID": row.employee_id,
+      Name: `${row.first_name} ${row.middle_name || ""} ${
+        row.last_name
+      }`.trim(),
+      Net: parseFloat(row.net_pay).toFixed(2),
+      Gross: parseFloat(row.gross_pay).toFixed(2),
+      "Total Deductions": parseFloat(row.total_deductions).toFixed(2),
+      "Cutoff Period": row.cutoff_period,
+      "Cutoff ID": row.cutoff_id, // Add this for filtering
+      Department: row.department,
+      // Store additional data for the "View More" modal
+      _rawData: row,
+    }));
+  } catch (error) {
+    console.error("Error fetching payroll data:", error);
+    return [];
+  }
+}
+
+// For backward compatibility, export empty array initially
+export let rowData = [];

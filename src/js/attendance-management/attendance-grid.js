@@ -116,41 +116,55 @@ class CustomStatusEditor {
 
 // Raw Time Logs Columns
 const rawTimeLogsColumns = [
-  { field: "Date", sortable: true, filter: true, width: 100 },
-  { field: "Employee ID", sortable: true, filter: true, width: 110 },
-  {
-    field: "Last Name",
-    sortable: true,
-    filter: true,
-    width: 120,
+  { field: "Date", sortable: true, filter: true, width: 130 },
+  { 
+    field: "Employee ID", 
+    sortable: true, 
+    filter: true, 
+    width: 140,
     valueFormatter: (params) => {
-      if (!params.value) return "";
-      // Ensure all letters including 'T' are displayed properly
+      if (!params.value) return '';
+      // Ensure Employee ID is treated as string
+      return String(params.value);
+    },
+    comparator: (valueA, valueB) => {
+      // String comparison for Employee IDs
+      const strA = String(valueA || '');
+      const strB = String(valueB || '');
+      return strA.localeCompare(strB);
+    }
+  },
+  { 
+    field: "Last Name", 
+    sortable: true, 
+    filter: true, 
+    width: 160,
+    valueFormatter: (params) => {
+      if (!params.value) return '';
       return params.value.toString();
     },
   },
-  {
-    field: "First Name",
-    sortable: true,
-    filter: true,
-    width: 120,
+  { 
+    field: "First Name", 
+    sortable: true, 
+    filter: true, 
+    width: 160,
     valueFormatter: (params) => {
-      if (!params.value) return "";
-      // Ensure all letters including 'T' are displayed properly
+      if (!params.value) return '';
       return params.value.toString();
     },
   },
-  {
-    field: "Middle Name",
-    sortable: true,
-    filter: true,
-    width: 100,
+  { 
+    field: "Middle Name", 
+    sortable: true, 
+    filter: true, 
+    width: 140,
     valueFormatter: (params) => {
       if (!params.value) return "";
       return params.value.toString().toUpperCase();
     },
   },
-  { field: "Official Time", sortable: true, filter: true, width: 130 },
+  { field: "Official Time", sortable: true, filter: true, width: 160 },
 
   {
     field: "Time In",
@@ -159,7 +173,7 @@ const rawTimeLogsColumns = [
     editable: true,
     cellEditor: "agTextCellEditor",
     singleClickEdit: true,
-    width: 130,
+    width: 180,
     valueFormatter: (params) => {
       const val = params.value || "";
       return val.includes("T") ? val.replace("T", " ") : val;
@@ -173,7 +187,7 @@ const rawTimeLogsColumns = [
     editable: true,
     cellEditor: "agTextCellEditor",
     singleClickEdit: true,
-    width: 130,
+    width: 180,
     valueFormatter: (params) => {
       const val = params.value || "";
       return val.includes("T") ? val.replace("T", " ") : val;
@@ -188,7 +202,7 @@ const rawTimeLogsColumns = [
     cellEditor: "agNumberCellEditor",
     cellEditorParams: { min: 0, precision: 0 },
     singleClickEdit: true,
-    width: 80,
+    width: 100
   },
   {
     field: "Undertime",
@@ -198,7 +212,7 @@ const rawTimeLogsColumns = [
     cellEditor: "agNumberCellEditor",
     cellEditorParams: { min: 0, precision: 0 },
     singleClickEdit: true,
-    width: 90,
+    width: 120
   },
   {
     field: "Status",
@@ -207,8 +221,8 @@ const rawTimeLogsColumns = [
     editable: true,
     cellEditor: CustomStatusEditor,
     singleClickEdit: true,
-    cellStyle: { cursor: "pointer" },
-    width: 120,
+    cellStyle: { cursor: 'pointer' },
+    width: 180,
     cellRenderer: (params) => {
       const value = params.value || "N/A";
       const colorClass = statusColorMap[value] || "text-gray-400";
@@ -229,14 +243,13 @@ const rawTimeLogsColumns = [
     },
   },
   { field: "Cutoff Period", sortable: true, filter: true, hide: true },
-  {
-    field: "Department",
-    sortable: true,
-    filter: true,
-    width: 150,
+  { 
+    field: "Department", 
+    sortable: true, 
+    filter: true, 
+    width: 200,
     valueFormatter: (params) => {
-      // Fix department spelling
-      if (!params.value) return "";
+      if (!params.value) return '';
       const dept = params.value.toString().toLowerCase();
       if (dept.includes("information") || dept.includes("ech")) {
         return "Information Technology";
@@ -246,55 +259,41 @@ const rawTimeLogsColumns = [
   },
 ];
 
-// Attendance Summary Columns - ALL FIELDS
+// Attendance Summary Columns
 const summaryColumns = [
-  {
-    headerName: "Cutoff ID",
-    field: "Cutoff ID",
-    sortable: true,
-    filter: true,
-    resizable: true,
-    width: 100,
-  },
-  {
-    headerName: "Employee ID",
-    field: "Employee ID",
-    sortable: true,
-    filter: true,
-    resizable: true,
-    width: 110,
-  },
-  {
-    headerName: "First Name",
-    field: "First Name",
-    sortable: true,
-    filter: true,
-    resizable: true,
-    width: 120,
+  { headerName: "Cutoff ID", field: "Cutoff ID", sortable: true, filter: true, resizable: true, width: 130 },
+  { headerName: "Employee ID", field: "Employee ID", sortable: true, filter: true, resizable: true, width: 140 },
+  { 
+    headerName: "First Name", 
+    field: "First Name", 
+    sortable: true, 
+    filter: true, 
+    resizable: true, 
+    width: 160,
     valueFormatter: (params) => {
       if (!params.value) return "";
       return params.value.toString();
     },
   },
-  {
-    headerName: "Middle Name",
-    field: "Middle Name",
-    sortable: true,
-    filter: true,
-    resizable: true,
-    width: 120,
+  { 
+    headerName: "Middle Name", 
+    field: "Middle Name", 
+    sortable: true, 
+    filter: true, 
+    resizable: true, 
+    width: 140,
     valueFormatter: (params) => {
       if (!params.value) return "";
       return params.value.toString().toUpperCase();
     },
   },
-  {
-    headerName: "Last Name",
-    field: "Last Name",
-    sortable: true,
-    filter: true,
-    resizable: true,
-    width: 120,
+  { 
+    headerName: "Last Name", 
+    field: "Last Name", 
+    sortable: true, 
+    filter: true, 
+    resizable: true, 
+    width: 160,
     valueFormatter: (params) => {
       if (!params.value) return "";
       return params.value.toString();
@@ -348,31 +347,21 @@ const summaryColumns = [
     resizable: true,
     width: 120,
   },
-  {
-    headerName: "Absences",
-    field: "Absences",
-    sortable: true,
-    filter: true,
-    resizable: true,
-    width: 100,
-  },
-  {
-    headerName: "Cutoff Period",
-    field: "Cutoff Period",
-    sortable: true,
-    filter: true,
-    resizable: true,
-    width: 180,
-    pinned: null,
-    hide: false,
-  },
-  {
-    headerName: "Department",
-    field: "Department",
-    sortable: true,
-    filter: true,
-    resizable: true,
-    width: 150,
+  { headerName: "Regular Hours", field: "Regular Hours", sortable: true, filter: true, resizable: true, width: 150 },
+  { headerName: "Overtime Hours", field: "Overtime Hours", sortable: true, filter: true, resizable: true, width: 160 },
+  { headerName: "Late", field: "Late Minutes", sortable: true, filter: true, resizable: true, width: 110 },
+  { headerName: "Undertime", field: "Undertime Minutes", sortable: true, filter: true, resizable: true, width: 140 },
+  { headerName: "Leave W/ Pay", field: "Leave W/ Pay", sortable: true, filter: true, resizable: true, width: 150 },
+  { headerName: "Leave W/O Pay", field: "Leave W/O Pay", sortable: true, filter: true, resizable: true, width: 160 },
+  { headerName: "Absences", field: "Absences", sortable: true, filter: true, resizable: true, width: 130 },
+  { headerName: "Cutoff Period", field: "Cutoff Period", sortable: true, filter: true, resizable: true, width: 220, pinned: null, hide: false },
+  { 
+    headerName: "Department", 
+    field: "Department", 
+    sortable: true, 
+    filter: true, 
+    resizable: true, 
+    width: 200,
     valueFormatter: (params) => {
       if (!params.value) return "";
       const dept = params.value.toString().toLowerCase();
@@ -384,15 +373,82 @@ const summaryColumns = [
   },
 ];
 
+// Add Time Logs Tab - Employee List Columns
+const addTimeLogsColumns = [
+  { 
+    field: "Employee ID", 
+    sortable: true, 
+    filter: true, 
+    width: 130,
+    valueFormatter: (params) => {
+      if (!params.value) return '';
+      // Ensure Employee ID is treated as string to prevent "invalid number" error
+      return String(params.value);
+    },
+    comparator: (valueA, valueB) => {
+      // String comparison for Employee IDs
+      const strA = String(valueA || '');
+      const strB = String(valueB || '');
+      return strA.localeCompare(strB);
+    }
+  },
+  { 
+    field: "First Name", 
+    sortable: true, 
+    filter: true, 
+    width: 200,
+    valueFormatter: (params) => {
+      if (!params.value) return '';
+      return params.value.toString();
+    }
+  },
+  { 
+    field: "Last Name", 
+    sortable: true, 
+    filter: true, 
+    width: 200,
+    valueFormatter: (params) => {
+      if (!params.value) return '';
+      return params.value.toString();
+    }
+  },
+  { 
+    field: "Middle Name", 
+    sortable: true, 
+    filter: true, 
+    width: 140,
+    valueFormatter: (params) => {
+      if (!params.value) return '';
+      return params.value.toString().toUpperCase();
+    }
+  },
+  { 
+    field: "Department", 
+    sortable: true, 
+    filter: true, 
+    width: 220,
+    valueFormatter: (params) => {
+      if (!params.value) return '';
+      const dept = params.value.toString().toLowerCase();
+      if (dept.includes('information') || dept.includes('ech')) {
+        return 'Information Technology';
+      }
+      return params.value;
+    }
+  },
+  { 
+    field: "Position", 
+    sortable: true, 
+    filter: true, 
+    width: 220
+  }
+];
+
 // Save Edited Row Function
 async function saveEditedRow(rowData, fieldChanged) {
   try {
-    console.log("💾 Saving edited row to Supabase...", {
-      rowData,
-      fieldChanged,
-    });
-
-    // Map the display field names to database column names
+    console.log(" Saving edited row to Supabase...", { rowData, fieldChanged });
+    
     const fieldMapping = {
       "Time In": "time_in",
       "Time Out": "time_out",
@@ -404,34 +460,24 @@ async function saveEditedRow(rowData, fieldChanged) {
     const dbField = fieldMapping[fieldChanged];
 
     if (!dbField) {
-      console.warn("⚠️ Field not mapped for saving:", fieldChanged);
+      console.warn(" Field not mapped for saving:", fieldChanged);
       return;
     }
-
-    // Prepare the update object
+    
     const updateData = {
       [dbField]: rowData[fieldChanged],
     };
-
-    // Format datetime fields if needed (Time In/Time Out)
+    
     if (dbField === "time_in" || dbField === "time_out") {
       const value = rowData[fieldChanged];
       if (value && !value.includes("T")) {
-        // If the value doesn't have 'T', add it back for proper datetime format
         updateData[dbField] = value.replace(" ", "T");
       }
     }
-
-    console.log("📝 Update data:", updateData);
-    console.log(
-      "Matching on emp_id:",
-      rowData["Employee ID"],
-      "and date:",
-      rowData["Date"]
-    );
-
-    // Find the record by emp_id and date
-    // Since raw_time_logs uses time_in as timestamp, we need to match by date part
+    
+    console.log(" Update data:", updateData);
+    console.log("Matching on emp_id:", rowData["Employee ID"], "and date:", rowData["Date"]);
+    
     const { data, error } = await supabaseClient
       .from("raw_time_logs")
       .update(updateData)
@@ -441,45 +487,43 @@ async function saveEditedRow(rowData, fieldChanged) {
       .select();
 
     if (error) {
-      console.error("❌ Error saving to Supabase:", error);
+      console.error(" Error saving to Supabase:", error);
       alert(`Failed to save changes: ${error.message}`);
       return;
     }
 
     if (!data || data.length === 0) {
-      console.warn(
-        "⚠️ No records updated. Check if employee ID and date match."
-      );
-      alert(
-        "No matching record found to update. Please refresh and try again."
-      );
+      console.warn(" No records updated. Check if employee ID and date match.");
+      alert("No matching record found to update. Please refresh and try again.");
       return;
     }
-
-    console.log("✅ Successfully saved to Supabase:", data);
+    
+    console.log(" Successfully saved to Supabase:", data);
+    
   } catch (err) {
-    console.error("💥 Unexpected error saving row:", err);
+    console.error(" Unexpected error saving row:", err);
     alert(`An error occurred while saving: ${err.message}`);
   }
 }
 
-// Add New Time Log Variables and Functions
+// Add Time Log Variables and Functions
 let selectedEmployees = [];
-const addTimeLogContainer = document.getElementById("addTimeLogContainer");
-const addTimeLogBtn = document.getElementById("addTimeLogBtn");
 
-// Function to update selected employees and show/hide add button
-function updateSelectedEmployees() {
+// Function to update selected employees for Add Time Logs tab
+function updateSelectedEmployeesForTimeLog() {
   selectedEmployees = gridApi.getSelectedRows();
-
-  // Only show button in Raw Time Logs view and when exactly one employee is selected
-  if (currentView === "raw" && selectedEmployees.length === 1) {
-    // Show button and update selected employee info
-    addTimeLogContainer.classList.remove("hidden");
-    updateSelectedEmployeeInfo(selectedEmployees[0]);
+  const addTimeLogButtonContainer = document.getElementById("addTimeLogButtonContainer");
+  
+  // Always show button in Add Time Logs view
+  if (currentView === "addTimeLogs") {
+    addTimeLogButtonContainer.classList.remove("hidden");
+    
+    // Update employee info if one is selected
+    if (selectedEmployees.length === 1) {
+      updateSelectedEmployeeInfo(selectedEmployees[0]);
+    }
   } else {
-    // Hide button in all other cases (summary view, no selection, or multiple selection)
-    addTimeLogContainer.classList.add("hidden");
+    addTimeLogButtonContainer.classList.add("hidden");
   }
 }
 
@@ -559,7 +603,6 @@ function calculateTimeAdjustments(
     return { lateMinutes: 0, undertimeMinutes: 0, status: "Absent" };
   }
 
-  // Parse times
   const timeInDate = new Date(timeIn);
   const officialStartDate = new Date(`${logDate}T${officialStartTime}`);
   const officialEndDate = new Date(`${logDate}T${officialEndTime}`);
@@ -568,12 +611,12 @@ function calculateTimeAdjustments(
   let undertimeMinutes = 0;
   let status = "Present";
 
-  // Calculate late minutes (if time in is after official start time)
+  // Calculate late minutes
   if (timeInDate > officialStartDate) {
     lateMinutes = Math.round((timeInDate - officialStartDate) / (1000 * 60));
   }
 
-  // Calculate undertime minutes (if time out is before official end time and time out exists)
+  // Calculate undertime minutes
   if (timeOut) {
     const timeOutDate = new Date(timeOut);
     if (timeOutDate < officialEndDate) {
@@ -582,15 +625,15 @@ function calculateTimeAdjustments(
       );
     }
   } else {
-    // If no time out, consider it as undertime for the full afternoon
-    const afternoonDuration = Math.round(
-      (officialEndDate - new Date(`${logDate}T12:00:00`)) / (1000 * 60)
-    );
-    undertimeMinutes = afternoonDuration > 0 ? afternoonDuration : 240; // Default 4 hours if calculation fails
+    // If no time out, calculate undertime as the entire afternoon duration
+    const afternoonDuration = Math.round((officialEndDate - new Date(`${logDate}T12:00:00`)) / (1000 * 60));
+    undertimeMinutes = afternoonDuration > 0 ? afternoonDuration : 240; // Default to 4 hours if calculation fails
   }
 
-  // Determine status based on time adjustments
-  if (!timeOut) {
+  // Determine status based on conditions
+  if (!timeIn) {
+    status = "Absent";
+  } else if (!timeOut) {
     status = "Undertime";
   } else if (lateMinutes > 0 && undertimeMinutes > 0) {
     status = "Late/Undertime";
@@ -612,21 +655,26 @@ function calculateTimeAdjustments(
 // Function to save new time log to Supabase with duplicate prevention
 async function saveNewTimeLog(timeLogData, selectedEmployee) {
   try {
-    console.log("Saving new time log to Supabase...", timeLogData);
+    console.log(" Saving new time log to Supabase...", timeLogData);
 
-    // First, check if a time log already exists for this employee on the same date
-    const logDate = timeLogData.timeIn.split(" ")[0]; // Extract date part from timeIn
+    const logDate = timeLogData.timeIn.split(' ')[0];
+    
+    // Validate date is not in the future - FIXED: Allow today's date
+    const selectedDate = new Date(logDate);
+    const currentDate = new Date();
+    currentDate.setHours(0, 0, 0, 0); // Reset time part for accurate date comparison
+    selectedDate.setHours(0, 0, 0, 0); // Also reset selected date time part
+    
+    if (selectedDate > currentDate) {
+      throw new Error(`Cannot add time logs for future dates. Selected date: ${logDate}`);
+    }
+    
+    console.log(" Checking for duplicates for employee:", timeLogData.employeeId, "on date:", logDate);
 
-    console.log(
-      "Checking for duplicates for employee:",
-      timeLogData.employeeId,
-      "on date:",
-      logDate
-    );
-
-    const startOfDay = logDate + " 00:00:00";
-    const endOfDay = logDate + " 23:59:59";
-
+    const startOfDay = logDate + ' 00:00:00';
+    const endOfDay = logDate + ' 23:59:59';
+    
+    // Check for existing time logs
     const { data: existingLogs, error: checkError } = await supabaseClient
       .from("raw_time_logs")
       .select("time_in")
@@ -635,13 +683,11 @@ async function saveNewTimeLog(timeLogData, selectedEmployee) {
       .lte("time_in", endOfDay);
 
     if (checkError) {
-      console.error("Error checking for existing time logs:", checkError);
-      throw new Error(
-        `Failed to check for existing time logs: ${checkError.message}`
-      );
+      console.error(" Error checking for existing time logs:", checkError);
+      throw new Error(`Failed to check for existing time logs: ${checkError.message}`);
     }
 
-    console.log("Found existing logs for date:", existingLogs);
+    console.log(" Found existing logs for date:", existingLogs);
 
     if (existingLogs && existingLogs.length > 0) {
       throw new Error(
@@ -649,7 +695,8 @@ async function saveNewTimeLog(timeLogData, selectedEmployee) {
       );
     }
 
-    // If no existing log, proceed with insertion
+    // Fetch official_time_id from employees table using employee_id
+    console.log("Fetching official_time_id from employees table for emp_id:", timeLogData.employeeId);
     const { data: employeeData, error: employeeError } = await supabaseClient
       .from("employees")
       .select("official_time_id")
@@ -659,14 +706,16 @@ async function saveNewTimeLog(timeLogData, selectedEmployee) {
     let officialTimeId = 1; // Default fallback
 
     if (employeeError) {
-      console.warn(
-        "Error fetching employee official_time_id, using default:",
-        employeeError
-      );
+      console.warn(" Error fetching employee official_time_id, using default:", employeeError);
     } else if (employeeData && employeeData.official_time_id) {
       officialTimeId = employeeData.official_time_id;
+      console.log(" Found official_time_id:", officialTimeId);
+    } else {
+      console.warn(" No official_time_id found for employee, using default:", officialTimeId);
     }
 
+    // Insert into raw_time_logs
+    console.log(" Inserting into raw_time_logs with official_time_id:", officialTimeId);
     const { data, error } = await supabaseClient
       .from("raw_time_logs")
       .insert([
@@ -683,30 +732,63 @@ async function saveNewTimeLog(timeLogData, selectedEmployee) {
       .select();
 
     if (error) {
-      console.error("Error saving new time log:", error);
+      console.error(" Error saving new time log:", error);
       throw error;
     }
 
-    console.log("Successfully saved new time log:", data);
+    console.log(" Successfully saved new time log:", data);
     return data;
   } catch (error) {
-    console.error("Unexpected error saving time log:", error);
+    console.error(" Unexpected error saving time log:", error);
     throw error;
   }
 }
 
-// Helper function to create warning element
+// Helper function to create warning element - FIXED VERSION
 function createDateWarningElement() {
-  const warningElement = document.createElement("div");
-  warningElement.id = "dateWarning";
-  warningElement.className =
-    "text-warning text-sm mt-2 bg-warning/10 p-2 rounded hidden";
-
-  const form = document.getElementById("addTimeLogForm");
-  const dateInput = document.getElementById("logDate");
-  form.insertBefore(warningElement, dateInput.nextSibling);
-
+  const warningElement = document.createElement('div');
+  warningElement.id = 'dateWarning';
+  warningElement.className = 'text-warning text-sm mt-2 bg-warning/10 p-2 rounded hidden';
+  
+  const form = document.getElementById('addTimeLogForm');
+  const dateInput = document.getElementById('logDate');
+  
+  // Safe insertion - append to form instead of using insertBefore
+  if (form && dateInput) {
+    // Find the date input container and insert after it
+    const dateContainer = dateInput.closest('.form-control') || dateInput.parentElement;
+    if (dateContainer && dateContainer.parentNode) {
+      dateContainer.parentNode.insertBefore(warningElement, dateContainer.nextSibling);
+    } else {
+      // Fallback: append to form
+      form.appendChild(warningElement);
+    }
+  }
+  
   return warningElement;
+}
+
+// Function to validate date and show warnings - FIXED: Allow today's date
+function validateDateSelection(date) {
+  const selectedDate = new Date(date);
+  const currentDate = new Date();
+  
+  // Reset both dates to start of day for accurate comparison
+  selectedDate.setHours(0, 0, 0, 0);
+  currentDate.setHours(0, 0, 0, 0);
+  
+  const warningElement = document.getElementById('dateWarning') || createDateWarningElement();
+  
+  // Only show warning for FUTURE dates (selectedDate > currentDate)
+  // Allow today (selectedDate.getTime() === currentDate.getTime()) and past dates
+  if (selectedDate > currentDate) {
+    warningElement.textContent = ` Cannot add time logs for future dates. Selected date: ${date}`;
+    warningElement.classList.remove('hidden');
+    return false;
+  } else {
+    warningElement.classList.add('hidden');
+    return true;
+  }
 }
 
 // Function to initialize time log modal
@@ -719,20 +801,33 @@ function initializeTimeLogModal() {
   const undertimeMinutesInput = document.getElementById("undertimeMinutes");
   const statusSelect = document.getElementById("logStatus");
 
-  // Set default date to today
-  const today = new Date().toISOString().split("T")[0];
+  if (!addTimeLogForm || !logDateInput) {
+    console.error("Required modal elements not found");
+    return;
+  }
+
+  // Set max date to today to prevent future date selection in the date picker
+  const today = new Date().toISOString().split('T')[0];
+  logDateInput.max = today;
   logDateInput.value = today;
 
-  // Enhanced date change listener with duplicate checking
-  logDateInput.addEventListener("change", async function () {
+  logDateInput.addEventListener('change', async function() {
     const date = this.value;
-    timeInInput.value = date + "T08:00";
-    timeOutInput.value = date + "T17:00";
-
-    // Auto-calculate times when date changes
+    
+    // Validate date immediately when changed - FIXED: Allow today's date
+    const isValidDate = validateDateSelection(date);
+    
+    if (!isValidDate) {
+      // If invalid date (future), reset to today
+      this.value = today;
+      return;
+    }
+    
+    timeInInput.value = date + 'T08:00';
+    timeOutInput.value = date + 'T17:00';
+    
     await autoCalculateTimes();
 
-    // If an employee is selected, check if they already have a log for this date
     if (selectedEmployees.length === 1) {
       const selectedEmployee = selectedEmployees[0];
       try {
@@ -747,15 +842,13 @@ function initializeTimeLogModal() {
           .lte("time_in", endOfDay);
 
         if (!error && existingLogs && existingLogs.length > 0) {
-          const warningElement =
-            document.getElementById("dateWarning") ||
-            createDateWarningElement();
-          warningElement.textContent = `⚠️ This employee already has a time log for ${date}. Adding a new one will be blocked.`;
-          warningElement.classList.remove("hidden");
+          const warningElement = document.getElementById('dateWarning') || createDateWarningElement();
+          warningElement.textContent = ` This employee already has a time log for ${date}. Adding a new one will be blocked.`;
+          warningElement.classList.remove('hidden');
         } else {
-          const warningElement = document.getElementById("dateWarning");
-          if (warningElement) {
-            warningElement.classList.add("hidden");
+          const warningElement = document.getElementById('dateWarning');
+          if (warningElement && !warningElement.textContent.includes('future dates')) {
+            warningElement.classList.add('hidden');
           }
         }
       } catch (err) {
@@ -764,15 +857,13 @@ function initializeTimeLogModal() {
     }
   });
 
-  // Set initial times
-  timeInInput.value = today + "T08:00";
-  timeOutInput.value = today + "T17:00";
+  timeInInput.value = today + 'T08:00';
+  timeOutInput.value = today + 'T17:00';
 
-  // Auto-calculate when time inputs change
-  timeInInput.addEventListener("change", autoCalculateTimes);
-  timeOutInput.addEventListener("change", autoCalculateTimes);
+  // Add event listeners for automatic status calculation
+  timeInInput.addEventListener('change', autoCalculateTimes);
+  timeOutInput.addEventListener('change', autoCalculateTimes);
 
-  // Function to auto-calculate late, undertime, and status
   async function autoCalculateTimes() {
     if (selectedEmployees.length !== 1) return;
 
@@ -780,7 +871,13 @@ function initializeTimeLogModal() {
     const timeOut = timeOutInput.value;
     const logDate = logDateInput.value;
 
-    if (!timeIn) return;
+    if (!timeIn) {
+      // If no time in, set to absent
+      lateMinutesInput.value = 0;
+      undertimeMinutesInput.value = 0;
+      statusSelect.value = "Absent";
+      return;
+    }
 
     try {
       const selectedEmployee = selectedEmployees[0];
@@ -800,20 +897,33 @@ function initializeTimeLogModal() {
       lateMinutesInput.value = lateMinutes;
       undertimeMinutesInput.value = undertimeMinutes;
       statusSelect.value = status;
+
+      console.log(" Auto-calculated status:", {
+        timeIn,
+        timeOut,
+        officialStart: officialTime.startTime,
+        officialEnd: officialTime.endTime,
+        lateMinutes,
+        undertimeMinutes,
+        status
+      });
+
     } catch (error) {
       console.warn("Error auto-calculating times:", error);
+      // Fallback to default values if calculation fails
+      lateMinutesInput.value = 0;
+      undertimeMinutesInput.value = 0;
+      statusSelect.value = "Present";
     }
   }
 
-  // Also auto-calculate when employee selection changes
   const originalUpdateSelectedEmployeeInfo = updateSelectedEmployeeInfo;
   updateSelectedEmployeeInfo = function (employee) {
     originalUpdateSelectedEmployeeInfo(employee);
     autoCalculateTimes();
   };
 
-  // Form submission handler
-  addTimeLogForm.addEventListener("submit", async function (e) {
+  addTimeLogForm.addEventListener('submit', async function(e) {
     e.preventDefault();
 
     if (selectedEmployees.length !== 1) {
@@ -825,13 +935,14 @@ function initializeTimeLogModal() {
 
     try {
       const selectedDateStr = logDateInput.value;
-      const currentDateStr = new Date().toISOString().split("T")[0];
-
-      if (selectedDateStr > currentDateStr) {
-        alert("Cannot add time logs for future dates.");
+      
+      // Final validation before submission - FIXED: Allow today's date
+      if (!validateDateSelection(selectedDateStr)) {
+        alert("Cannot add time logs for future dates. Please select today's date or a past date.");
         return;
       }
 
+      // Ensure calculations are up to date before submission
       await autoCalculateTimes();
 
       const timeLogData = {
@@ -848,8 +959,11 @@ function initializeTimeLogModal() {
       await saveNewTimeLog(timeLogData, selectedEmployee);
 
       alert("Time log added successfully!");
-      document.getElementById("addTimeLogModal").close();
-      await refreshGridData();
+      document.getElementById('addTimeLogModal').close();
+      
+      if (currentView === "raw") {
+        await refreshGridData();
+      }
 
       addTimeLogForm.reset();
       const todayStr = new Date().toISOString().split("T")[0];
@@ -871,7 +985,7 @@ async function refreshGridData() {
   }
 }
 
-// Function to generate cutoff periods from dates in format "2025-10-1 to 2025-10-15"
+// Function to generate cutoff periods from dates
 function generateCutoffPeriodsFromDates(dates) {
   const cutoffPeriods = new Set();
 
@@ -924,19 +1038,19 @@ function isDateInCutoffPeriod(dateStr, cutoffPeriod) {
   }
 }
 
-// Updated CSV and PDF Export Functions with date-based cutoff periods
-function exportToCSVAndPDF() {
-  const cutoffFilter =
-    document.getElementById("csvCutoffFilter")?.value || "all";
-  const departmentFilter =
-    document.getElementById("csvDepartmentFilter")?.value || "all";
-
-  console.log("=== CSV EXPORT DEBUG ===");
+// UPDATED: Main Export Function with Format Selection
+function exportAttendanceData() {
+  const cutoffFilter = document.getElementById("csvCutoffFilter")?.value || "all";
+  const departmentFilter = document.getElementById("csvDepartmentFilter")?.value || "all";
+  const exportFormat = document.querySelector('input[name="exportFormat"]:checked')?.value || "csv";
+  
+  console.log("=== EXPORT DEBUG ===");
   console.log("Export parameters:", {
     cutoffFilter,
     departmentFilter,
     currentView,
-    totalRecords: currentData.length,
+    exportFormat,
+    totalRecords: currentData.length
   });
 
   let filteredData = currentData;
@@ -948,13 +1062,9 @@ function exportToCSVAndPDF() {
         const rowDate = row["Date"];
         return isDateInCutoffPeriod(rowDate, cutoffFilter);
       });
-    } else {
-      filteredData = filteredData.filter((row) => {
-        const rowCutoff =
-          row["Cutoff Period"] ||
-          row["Cutoff ID"] ||
-          row.cutoff_period ||
-          row.cutoff_id;
+    } else if (currentView === "summary") {
+      filteredData = filteredData.filter(row => {
+        const rowCutoff = row["Cutoff Period"] || row["Cutoff ID"] || row.cutoff_period || row.cutoff_id;
         return rowCutoff === cutoffFilter;
       });
     }
@@ -973,28 +1083,13 @@ function exportToCSVAndPDF() {
     if (currentView === "raw") {
       const dates = currentData.map((row) => row["Date"]).filter(Boolean);
       availableCutoffs = generateCutoffPeriodsFromDates(dates);
-      availableDepts = [
-        ...new Set(
-          currentData
-            .map((row) => row["Department"] || row.department)
-            .filter(Boolean)
-        ),
-      ];
+      availableDepts = [...new Set(currentData.map(row => row["Department"] || row.department).filter(Boolean))];
+    } else if (currentView === "summary") {
+      availableCutoffs = [...new Set(currentData.map(row => row["Cutoff Period"] || row["Cutoff ID"]).filter(Boolean))];
+      availableDepts = [...new Set(currentData.map(row => row["Department"] || row.department).filter(Boolean))];
     } else {
-      availableCutoffs = [
-        ...new Set(
-          currentData
-            .map((row) => row["Cutoff Period"] || row["Cutoff ID"])
-            .filter(Boolean)
-        ),
-      ];
-      availableDepts = [
-        ...new Set(
-          currentData
-            .map((row) => row["Department"] || row.department)
-            .filter(Boolean)
-        ),
-      ];
+      availableCutoffs = [];
+      availableDepts = [...new Set(currentData.map(row => row["Department"] || row.department).filter(Boolean))];
     }
 
     alert(
@@ -1006,15 +1101,38 @@ function exportToCSVAndPDF() {
     );
     return;
   }
-
-  // Generate CSV
-  generateCSVFile(filteredData, cutoffFilter, departmentFilter);
-
-  // Generate PDF
-  generatePDFFile(filteredData, cutoffFilter, departmentFilter);
-
-  // Close modal
-  document.getElementById("generateCSV").close();
+  
+  // Generate based on selected format
+  try {
+    switch(exportFormat) {
+      case 'csv':
+        generateCSVFile(filteredData, cutoffFilter, departmentFilter);
+        console.log(' CSV file generated successfully!');
+        break;
+      
+      case 'pdf':
+        generatePDFFile(filteredData, cutoffFilter, departmentFilter);
+        console.log(' PDF file generated successfully!');
+        break;
+      
+      case 'both':
+        generateCSVFile(filteredData, cutoffFilter, departmentFilter);
+        generatePDFFile(filteredData, cutoffFilter, departmentFilter);
+        console.log(' CSV and PDF files generated successfully!');
+        break;
+      
+      default:
+        generateCSVFile(filteredData, cutoffFilter, departmentFilter);
+        console.log(' CSV file generated successfully!');
+    }
+    
+    // Close modal after successful export
+    document.getElementById('generateCSV').close();
+    
+  } catch (error) {
+    console.error('Export error:', error);
+    alert(`Failed to generate export: ${error.message}`);
+  }
 }
 
 async function generateCSVFile(data, cutoffFilter, departmentFilter) {
@@ -1042,19 +1160,12 @@ async function generateCSVFile(data, cutoffFilter, departmentFilter) {
   const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
   const link = document.createElement("a");
   const url = URL.createObjectURL(blob);
-
-  const viewName =
-    currentView === "raw" ? "Raw_Time_Logs" : "Attendance_Summary";
-  const cutoffLabel =
-    cutoffFilter === "all"
-      ? "All_Cutoff"
-      : cutoffFilter.replace(/[^a-zA-Z0-9]/g, "_");
-  const deptLabel =
-    departmentFilter === "all"
-      ? "All_Departments"
-      : departmentFilter.replace(/[^a-zA-Z0-9]/g, "_");
-  const timestamp = new Date().toISOString().split("T")[0];
-
+  
+  const viewName = currentView === "raw" ? "Raw_Time_Logs" : currentView === "addTimeLogs" ? "All_Employees" : "Attendance_Summary";
+  const cutoffLabel = cutoffFilter === "all" ? "All_Cutoff" : cutoffFilter.replace(/[^a-zA-Z0-9]/g, "_");
+  const deptLabel = departmentFilter === "all" ? "All_Departments" : departmentFilter.replace(/[^a-zA-Z0-9]/g, "_");
+  const timestamp = new Date().toISOString().split('T')[0];
+  
   const filename = `${viewName}_${cutoffLabel}_${deptLabel}_${timestamp}.csv`;
 
   link.setAttribute("href", url);
@@ -1085,12 +1196,11 @@ async function generateCSVFile(data, cutoffFilter, departmentFilter) {
   }
 }
 
-// FIXED PDF GENERATION FOR BOTH VIEWS
-async function generatePDFFile(data, cutoffFilter, departmentFilter) {
+// PDF Generation Function
+function generatePDFFile(data, cutoffFilter, departmentFilter) {
   try {
     const { jsPDF } = window.jspdf;
-
-    // Create landscape PDF for better table display
+    
     const doc = new jsPDF({
       orientation: "landscape",
       unit: "mm",
@@ -1098,46 +1208,31 @@ async function generatePDFFile(data, cutoffFilter, departmentFilter) {
     });
 
     const columns = gridApi.getColumnDefs();
-
-    // Filter out hidden columns and get visible ones only
-    const visibleColumns = columns.filter((col) => !col.hide);
-    const headers = visibleColumns
-      .map((col) => col.headerName || col.field)
-      .filter(Boolean);
-
-    // Add title and metadata
-    const viewName =
-      currentView === "raw"
-        ? "Raw Time Logs Report"
-        : "Attendance Summary Report";
-    const cutoffLabel =
-      cutoffFilter === "all" ? "All Cutoff Periods" : cutoffFilter;
-    const deptLabel =
-      departmentFilter === "all" ? "All Departments" : departmentFilter;
-
-    // Title
+    const visibleColumns = columns.filter(col => !col.hide);
+    const headers = visibleColumns.map(col => col.headerName || col.field).filter(Boolean);
+    
+    const viewName = currentView === "raw" ? "Raw Time Logs Report" : currentView === "addTimeLogs" ? "All Employees Report" : "Attendance Summary Report";
+    const cutoffLabel = cutoffFilter === "all" ? "All Cutoff Periods" : cutoffFilter;
+    const deptLabel = departmentFilter === "all" ? "All Departments" : departmentFilter;
+    
     doc.setFontSize(16);
     doc.setFont(undefined, "bold");
     doc.text(viewName, 14, 20);
-
-    // Metadata
+    
     doc.setFontSize(10);
     doc.setFont(undefined, "normal");
     doc.text(`Cutoff Period: ${cutoffLabel}`, 14, 30);
     doc.text(`Department: ${deptLabel}`, 14, 37);
     doc.text(`Generated on: ${new Date().toLocaleDateString()}`, 14, 44);
     doc.text(`Total Records: ${data.length}`, 14, 51);
-
-    // Prepare table data with proper formatting - FIXED DATA ACCESS
-    const displayData = data.slice(0, 50); // Limit records for readability
-
-    const tableData = displayData.map((row) =>
-      visibleColumns.map((col) => {
-        // FIX: Use the actual field name to get the value
+    
+    const displayData = data.slice(0, 50);
+    
+    const tableData = displayData.map(row => 
+      visibleColumns.map(col => {
         const fieldName = col.field || col.headerName;
-        let value = row[fieldName] || "";
-
-        // If value is still empty, try alternative field names
+        let value = row[fieldName] || '';
+        
         if (!value && fieldName === "Last Name") {
           value = row["Last Name"] || row["last_name"] || row["lastName"] || "";
         } else if (!value && fieldName === "First Name") {
@@ -1147,56 +1242,34 @@ async function generatePDFFile(data, cutoffFilter, departmentFilter) {
           value =
             row["Middle Name"] || row["middle_name"] || row["middleName"] || "";
         }
-
-        // Format data for better readability
-        if (value === null || value === undefined || value === "") {
-          return "-";
+        
+        if (value === null || value === undefined || value === '') {
+          return '-';
         }
-
-        // Convert to string to ensure all characters are preserved
+        
         const stringValue = String(value);
-
-        // Format datetime values (only if it looks like a datetime with pattern YYYY-MM-DDTHH:MM)
-        if (
-          typeof value === "string" &&
-          /\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/.test(value)
-        ) {
-          return value.replace("T", " ").substring(0, 16);
+        
+        if (typeof value === 'string' && /\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/.test(value)) {
+          return value.replace('T', ' ').substring(0, 16);
         }
-
-        // Format numeric values
-        if (
-          (fieldName === "Late (m)" ||
-            fieldName === "Late Minutes" ||
-            fieldName === "Undertime" ||
-            fieldName === "Undertime Minutes") &&
-          (value === 0 || value === "0")
-        ) {
-          return "-";
+        
+        if ((fieldName === 'Late (m)' || fieldName === 'Late Minutes' || 
+             fieldName === 'Undertime' || fieldName === 'Undertime Minutes') && 
+            (value === 0 || value === '0')) {
+          return '-';
         }
-
-        // Capitalize status values
-        if (fieldName === "Status") {
-          return stringValue
-            .split(" ")
-            .map(
-              (word) =>
-                word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
-            )
-            .join(" ");
+        
+        if (fieldName === 'Status') {
+          return stringValue.split(' ').map(word => 
+            word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
+          ).join(' ');
         }
-
-        // For name fields, ensure we return the complete string including 'T'
-        if (
-          fieldName === "Last Name" ||
-          fieldName === "First Name" ||
-          fieldName === "Middle Name"
-        ) {
-          return stringValue; // Return the complete string as-is
+        
+        if (fieldName === 'Last Name' || fieldName === 'First Name' || fieldName === 'Middle Name') {
+          return stringValue;
         }
-
-        // For department, ensure proper spelling
-        if (fieldName === "Department") {
+        
+        if (fieldName === 'Department') {
           const dept = stringValue.toLowerCase();
           if (dept.includes("information") || dept.includes("ech")) {
             return "Information Technology";
@@ -1206,47 +1279,52 @@ async function generatePDFFile(data, cutoffFilter, departmentFilter) {
         return stringValue;
       })
     );
-
-    // Configure column styles based on view type
+    
     let columnStyles = {};
 
     if (currentView === "raw") {
-      // Raw Time Logs column widths
       columnStyles = {
-        0: { cellWidth: 20 }, // Date
-        1: { cellWidth: 20 }, // Employee ID
-        2: { cellWidth: 25 }, // Last Name
-        3: { cellWidth: 25 }, // First Name
-        4: { cellWidth: 20 }, // Middle Name
-        5: { cellWidth: 25 }, // Official Time
-        6: { cellWidth: 25 }, // Time In
-        7: { cellWidth: 25 }, // Time Out
-        8: { cellWidth: 15 }, // Late (m)
-        9: { cellWidth: 18 }, // Undertime
-        10: { cellWidth: 20 }, // Status
-        11: { cellWidth: 30 }, // Department
+        0: { cellWidth: 20 },
+        1: { cellWidth: 20 },
+        2: { cellWidth: 25 },
+        3: { cellWidth: 25 },
+        4: { cellWidth: 20 },
+        5: { cellWidth: 25 },
+        6: { cellWidth: 25 },
+        7: { cellWidth: 25 },
+        8: { cellWidth: 15 },
+        9: { cellWidth: 18 },
+        10: { cellWidth: 20 },
+        11: { cellWidth: 30 }
+      };
+    } else if (currentView === "addTimeLogs") {
+      columnStyles = {
+        0: { cellWidth: 20 },
+        1: { cellWidth: 30 },
+        2: { cellWidth: 30 },
+        3: { cellWidth: 25 },
+        4: { cellWidth: 35 },
+        5: { cellWidth: 35 }
       };
     } else {
-      // Attendance Summary column widths
       columnStyles = {
-        0: { cellWidth: 15 }, // Cutoff ID
-        1: { cellWidth: 20 }, // Employee ID
-        2: { cellWidth: 20 }, // First Name
-        3: { cellWidth: 20 }, // Middle Name
-        4: { cellWidth: 20 }, // Last Name
-        5: { cellWidth: 20 }, // Regular Hours
-        6: { cellWidth: 20 }, // Overtime Hours
-        7: { cellWidth: 15 }, // Late
-        8: { cellWidth: 18 }, // Undertime
-        9: { cellWidth: 20 }, // Leave W/ Pay
-        10: { cellWidth: 20 }, // Leave W/O Pay
-        11: { cellWidth: 15 }, // Absences
-        12: { cellWidth: 30 }, // Cutoff Period
-        13: { cellWidth: 25 }, // Department
+        0: { cellWidth: 15 },
+        1: { cellWidth: 20 },
+        2: { cellWidth: 20 },
+        3: { cellWidth: 20 },
+        4: { cellWidth: 20 },
+        5: { cellWidth: 20 },
+        6: { cellWidth: 20 },
+        7: { cellWidth: 15 },
+        8: { cellWidth: 18 },
+        9: { cellWidth: 20 },
+        10: { cellWidth: 20 },
+        11: { cellWidth: 15 },
+        12: { cellWidth: 30 },
+        13: { cellWidth: 25 }
       };
     }
-
-    // Generate table with proper formatting
+    
     doc.autoTable({
       head: [headers],
       body: tableData,
@@ -1274,8 +1352,7 @@ async function generatePDFFile(data, cutoffFilter, departmentFilter) {
       tableWidth: "wrap",
       theme: "grid",
     });
-
-    // Add page numbers
+    
     const pageCount = doc.internal.getNumberOfPages();
     for (let i = 1; i <= pageCount; i++) {
       doc.setPage(i);
@@ -1287,8 +1364,7 @@ async function generatePDFFile(data, cutoffFilter, departmentFilter) {
         doc.internal.pageSize.height - 10
       );
     }
-
-    // Add truncation note if needed
+    
     if (data.length > 50) {
       const finalY = doc.lastAutoTable.finalY || 60;
       doc.setFontSize(8);
@@ -1299,20 +1375,12 @@ async function generatePDFFile(data, cutoffFilter, departmentFilter) {
         finalY + 10
       );
     }
-
-    // Generate filename
-    const viewNameFile =
-      currentView === "raw" ? "Raw_Time_Logs" : "Attendance_Summary";
-    const cutoffLabelFile =
-      cutoffFilter === "all"
-        ? "All_Cutoff"
-        : cutoffFilter.replace(/[^a-zA-Z0-9]/g, "_");
-    const deptLabelFile =
-      departmentFilter === "all"
-        ? "All_Departments"
-        : departmentFilter.replace(/[^a-zA-Z0-9]/g, "_");
-    const timestamp = new Date().toISOString().split("T")[0];
-
+    
+    const viewNameFile = currentView === "raw" ? "Raw_Time_Logs" : currentView === "addTimeLogs" ? "All_Employees" : "Attendance_Summary";
+    const cutoffLabelFile = cutoffFilter === "all" ? "All_Cutoff" : cutoffFilter.replace(/[^a-zA-Z0-9]/g, "_");
+    const deptLabelFile = departmentFilter === "all" ? "All_Departments" : departmentFilter.replace(/[^a-zA-Z0-9]/g, "_");
+    const timestamp = new Date().toISOString().split('T')[0];
+    
     const filename = `${viewNameFile}_${cutoffLabelFile}_${deptLabelFile}_${timestamp}.pdf`;
 
     doc.save(filename);
@@ -1349,7 +1417,7 @@ async function generatePDFFile(data, cutoffFilter, departmentFilter) {
   }
 }
 
-// Enhanced function to populate CSV modal dropdowns with date-based cutoff periods
+// Function to populate CSV modal dropdowns
 function populateCSVModalDropdowns() {
   const cutoffSelect = document.getElementById("csvCutoffFilter");
   const departmentSelect = document.getElementById("csvDepartmentFilter");
@@ -1358,12 +1426,10 @@ function populateCSVModalDropdowns() {
     console.error("CSV modal dropdown elements not found");
     return;
   }
-
-  // Clear existing options
+  
   cutoffSelect.innerHTML = "";
   departmentSelect.innerHTML = "";
-
-  // Add "All" options
+  
   const allCutoffOption = document.createElement("option");
   allCutoffOption.value = "all";
   allCutoffOption.textContent = "All Cutoff Periods";
@@ -1377,11 +1443,9 @@ function populateCSVModalDropdowns() {
   console.log("=== POPULATING CSV DROPDOWNS ===");
   console.log("Current view:", currentView);
   console.log("Total records:", currentData.length);
-
-  // Handle cutoff periods based on current view
+  
   if (currentView === "raw") {
-    // For raw time logs, generate cutoff periods from dates
-    const dates = currentData.map((row) => row["Date"]).filter(Boolean);
+    const dates = currentData.map(row => row["Date"]).filter(Boolean);
     console.log("Unique dates found:", [...new Set(dates)].sort());
 
     const cutoffPeriods = generateCutoffPeriodsFromDates(dates);
@@ -1399,7 +1463,6 @@ function populateCSVModalDropdowns() {
       );
     } else {
       console.warn("No cutoff periods generated from dates");
-      // Generate some example cutoff periods based on current date
       const currentDate = new Date();
       const year = currentDate.getFullYear();
       const month = currentDate.getMonth() + 1;
@@ -1420,8 +1483,7 @@ function populateCSVModalDropdowns() {
         cutoffSelect.appendChild(option);
       });
     }
-  } else {
-    // For summary view, use existing cutoff periods from data
+  } else if (currentView === "summary") {
     const uniqueCutoffPeriods = new Set();
     currentData.forEach((row) => {
       const cutoffPeriod =
@@ -1443,8 +1505,7 @@ function populateCSVModalDropdowns() {
       );
     }
   }
-
-  // Populate department dropdown (same for both views)
+  
   const uniqueDepartments = new Set();
   currentData.forEach((row) => {
     const department = row["Department"] || row.department || row.dept;
@@ -1462,14 +1523,8 @@ function populateCSVModalDropdowns() {
       });
     console.log(`Added ${uniqueDepartments.size} departments to dropdown`);
   } else {
-    // Fallback departments
-    const fallbackDepts = [
-      "Information Technology",
-      "Human Resources",
-      "Accounting",
-      "Sales",
-    ];
-    fallbackDepts.forEach((dept) => {
+    const fallbackDepts = ["Information Technology", "Human Resources", "Accounting", "Sales"];
+    fallbackDepts.forEach(dept => {
       const option = document.createElement("option");
       option.value = dept;
       option.textContent = dept;
@@ -1478,7 +1533,7 @@ function populateCSVModalDropdowns() {
   }
 }
 
-// grid initialization
+// Grid initialization
 let currentData = [];
 let currentView = "raw";
 let currentCutoffInfo = null;
@@ -1491,86 +1546,126 @@ const gridOptions = {
   defaultColDef: {
     filter: true,
     sortable: true,
-    resizable: true,
     cellClass: "text-sm",
   },
   suppressFieldDotNotation: true,
   enableCellTextSelection: true,
   overlayNoRowsTemplate: "<span style='padding:10px;'></span>",
   onCellValueChanged: (event) => {
-    console.log("📝 Cell value changed:", {
+    console.log(" Cell value changed:", {
       field: event.colDef.field,
       oldValue: event.oldValue,
       newValue: event.newValue,
       rowData: event.data,
     });
-
-    // Save the edited row data
+    
     saveEditedRow(event.data, event.colDef.field);
   },
-  // Add this new callback for row selection
   onSelectionChanged: (event) => {
-    updateSelectedEmployees();
-  },
+    if (currentView === "addTimeLogs") {
+      updateSelectedEmployeesForTimeLog();
+    }
+  }
 };
 
 export const gridApi = agGrid.createGrid(gridDiv, gridOptions);
-window.gridApi = gridApi; //  Make available for CSV export
+window.gridApi = gridApi;
 
 // Loaders
 
 async function loadRawTimeLogs() {
   try {
     const data = await getEmployeeAttendanceTable();
-    console.log("📊 Raw time logs loaded:", data.length);
+    console.log(" Raw time logs loaded:", data.length);
     if (data.length > 0) {
       console.log("Sample raw time log record:", data[0]);
-      // Log the actual name values to debug the missing 'T' issue
-      const sampleNames = data.slice(0, 5).map((row) => ({
+      const sampleNames = data.slice(0, 5).map(row => ({
         firstName: row["First Name"],
         lastName: row["Last Name"],
         fullName: `${row["First Name"]} ${row["Last Name"]}`,
       }));
       console.log("Sample names in data:", sampleNames);
-
-      // Log unique dates for debugging
-      const uniqueDates = [
-        ...new Set(data.map((row) => row["Date"]).filter(Boolean)),
-      ].sort();
+      
+      const uniqueDates = [...new Set(data.map(row => row["Date"]).filter(Boolean))].sort();
       console.log("Unique dates in raw time logs:", uniqueDates);
     }
     return data;
   } catch (error) {
-    console.error("❌ Failed to load raw time logs:", error);
+    console.error(" Failed to load raw time logs:", error);
     return [];
   }
 }
 
 async function loadAttendanceSummary() {
   try {
-    // Load data from multiple cutoff periods and combine them
-    const cutoffIds = [1, 2]; // Add more cutoff IDs as needed
+    const cutoffIds = [1, 2];
     let allData = [];
 
     for (const cutoffId of cutoffIds) {
       try {
         const { data } = await getPayrollSummaryReport(cutoffId);
         allData = allData.concat(data);
-        console.log(`📊 Loaded cutoff ${cutoffId}:`, data.length, "rows");
+        console.log(` Loaded cutoff ${cutoffId}:`, data.length, "rows");
       } catch (err) {
-        console.warn(`⚠️ Could not load cutoff ${cutoffId}:`, err);
+        console.warn(` Could not load cutoff ${cutoffId}:`, err);
       }
     }
-
-    console.log("📊 Total attendance summary loaded:", allData.length, "rows");
+    
+    console.log("Total attendance summary loaded:", allData.length, "rows");
     if (allData.length > 0) {
       console.log("🔍 First row:", allData[0]);
-      console.log("🔑 All keys in first row:", Object.keys(allData[0]));
+      console.log(" All keys in first row:", Object.keys(allData[0]));
     }
 
     return allData;
   } catch (error) {
-    console.error("❌ Failed to load attendance summary:", error);
+    console.error(" Failed to load attendance summary:", error);
+    return [];
+  }
+}
+
+// Load all employees for Add Time Logs tab - Using employee_full_details view
+async function loadAllEmployees() {
+  try {
+    console.log(" Loading employees from employee_full_details view...");
+    
+    const { data, error } = await supabaseClient
+      .from("employee_full_details")
+      .select(`
+        emp_id,
+        first_name,
+        middle_name,
+        last_name,
+        position_name,
+        department_name
+      `)
+      .order('last_name', { ascending: true });
+
+    if (error) {
+      console.error(" Error loading employees from employee_full_details:", error);
+      console.log(" Error details:", JSON.stringify(error, null, 2));
+      return [];
+    }
+
+    console.log(" Raw data from employee_full_details:", data);
+
+    const transformedData = data.map(emp => ({
+      "Employee ID": emp.emp_id,
+      "First Name": emp.first_name,
+      "Middle Name": emp.middle_name,
+      "Last Name": emp.last_name,
+      "Position": emp.position_name,
+      "Department": emp.department_name
+    }));
+
+    console.log(" All employees loaded from employee_full_details:", transformedData.length);
+    if (transformedData.length > 0) {
+      console.log("Sample transformed employee:", transformedData[0]);
+    }
+    return transformedData;
+  } catch (error) {
+    console.error(" Failed to load employees:", error);
+    console.log(" Detailed error:", error);
     return [];
   }
 }
@@ -1581,9 +1676,8 @@ async function initializeGrid() {
   const rawData = await loadRawTimeLogs();
   currentData = rawData;
   gridApi.setGridOption("rowData", rawData);
-  console.log("✅ Raw Time Logs Table Displayed");
-
-  // Initialize the time log modal
+  console.log("Raw Time Logs Table Displayed");
+  
   initializeTimeLogModal();
 }
 
@@ -1593,47 +1687,67 @@ initializeGrid();
 
 export async function switchView(view) {
   currentView = view;
-  const generateButtonsDiv = document.getElementById("generateButtonsDiv");
+  const generateButtonsContainer = document.getElementById("generateButtonsContainer");
+  const addTimeLogButtonContainer = document.getElementById("addTimeLogButtonContainer");
   const cutoffContainer = document.getElementById("cutoffPeriodContainer");
 
+  // Reset column state before switching views
+  gridApi.resetColumnState();
+
   if (view === "raw") {
-    // Hide cutoff filter in raw view
     if (cutoffContainer) cutoffContainer.classList.add("hidden");
-    if (generateButtonsDiv) generateButtonsDiv.classList.remove("hidden");
+    if (generateButtonsContainer) generateButtonsContainer.classList.remove("hidden");
+    if (addTimeLogButtonContainer) addTimeLogButtonContainer.classList.add("hidden");
 
     const data = await loadRawTimeLogs();
     currentData = data;
     gridApi.setGridOption("columnDefs", rawTimeLogsColumns);
     gridApi.setGridOption("rowData", data);
-    console.log("✅ Switched to Raw Time Logs");
-
-    // Update button visibility based on current selection
-    updateSelectedEmployees();
+    gridApi.setGridOption("rowSelection", { mode: "multiRow", headerCheckbox: true });
+    console.log(" Switched to Raw Time Logs");
+    
   } else if (view === "summary") {
-    // Show cutoff filter in summary view
     if (cutoffContainer) cutoffContainer.classList.remove("hidden");
-    if (generateButtonsDiv) generateButtonsDiv.classList.add("hidden");
+    if (generateButtonsContainer) generateButtonsContainer.classList.remove("hidden");
+    if (addTimeLogButtonContainer) addTimeLogButtonContainer.classList.add("hidden");
 
     const data = await loadAttendanceSummary();
     currentData = data;
-
-    // Populate dropdown with cutoff periods from data
+    
     populateCutoffDropdown(data);
 
     gridApi.setGridOption("columnDefs", summaryColumns);
     gridApi.setGridOption("rowData", data);
-    console.log("✅ Switched to Attendance Summary");
+    gridApi.setGridOption("rowSelection", { mode: "singleRow", headerCheckbox: false });
+    console.log(" Switched to Attendance Summary");
+    
+  } else if (view === "addTimeLogs") {
+    if (cutoffContainer) cutoffContainer.classList.add("hidden");
+    if (generateButtonsContainer) generateButtonsContainer.classList.add("hidden");
+    if (addTimeLogButtonContainer) addTimeLogButtonContainer.classList.remove("hidden");
 
-    // Force hide add time log button in summary view
-    addTimeLogContainer.classList.add("hidden");
+    const data = await loadAllEmployees();
+    currentData = data;
+    
+    gridApi.setGridOption("columnDefs", addTimeLogsColumns);
+    gridApi.setGridOption("rowData", data);
+    // Single row selection without checkboxes
+    gridApi.setGridOption("rowSelection", { mode: "singleRow" });
+    console.log(" Switched to Add Time Logs - All Employees:", data.length);
   }
 
   gridApi.setFilterModel(null);
   gridApi.setGridOption("quickFilterText", "");
-
-  // Clear selection when switching views
+  
   gridApi.deselectAll();
   selectedEmployees = [];
+  
+  // Size columns to fit for Add Time Logs view only
+  if (view === "addTimeLogs") {
+    setTimeout(() => {
+      gridApi.sizeColumnsToFit();
+    }, 100);
+  }
 }
 
 // Cutoff Period Handling
@@ -1642,23 +1756,19 @@ function populateCutoffDropdown(data) {
   const cutoffSelect = document.getElementById("cutoffFilter");
   if (!cutoffSelect) return;
 
-  // Clear existing options
   cutoffSelect.innerHTML = "";
 
-  // Add "All Cutoff" option
   const allOption = document.createElement("option");
   allOption.value = "";
   allOption.textContent = "All Cutoff";
   cutoffSelect.appendChild(allOption);
 
-  // Get unique cutoff periods
   const uniquePeriods = new Set();
   data.forEach((row) => {
     const period = row.cutoff_period || row["Cutoff Period"];
     if (period) uniquePeriods.add(period);
   });
 
-  // Add options for each unique period
   Array.from(uniquePeriods)
     .sort()
     .forEach((period) => {
@@ -1674,15 +1784,11 @@ export function applyDataFilter(searchValue, cutoffValue) {
   const search = (searchValue || "").trim();
   const cutoff = (cutoffValue || "").trim();
 
-  // Apply quick filter for search (searches across all columns)
   gridApi.setGridOption("quickFilterText", search);
 
-  // Apply cutoff period filter
   if (cutoff === "" || cutoff === "All Cutoff") {
-    // Clear filter if "All Cutoff" selected
     gridApi.setColumnFilterModel("Cutoff Period", null);
   } else {
-    // Apply filter to the "Cutoff Period" column
     gridApi.setColumnFilterModel("Cutoff Period", {
       filterType: "text",
       type: "equals",
@@ -1690,7 +1796,6 @@ export function applyDataFilter(searchValue, cutoffValue) {
     });
   }
 
-  // Refresh grid to apply the changes
   gridApi.onFilterChanged();
 }
 
@@ -1722,29 +1827,54 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // Add event listener for the Add Time Log button
+  const addTimeLogBtn = document.getElementById("addTimeLogBtn");
   if (addTimeLogBtn) {
-    addTimeLogBtn.addEventListener("click", function () {
-      if (selectedEmployees.length === 1 && currentView === "raw") {
-        document.getElementById("addTimeLogModal").showModal();
+    addTimeLogBtn.addEventListener('click', function() {
+      if (selectedEmployees.length === 1) {
+        document.getElementById('addTimeLogModal').showModal();
+      } else {
+        alert("Please select an employee first from the table.");
       }
     });
   }
 
   // Add event listener for CSV generation button
   if (generateCSVBtn) {
-    generateCSVBtn.addEventListener("click", () => {
-      // Populate dropdowns with current data before showing modal
+    generateCSVBtn.addEventListener('click', () => {
       populateCSVModalDropdowns();
       document.getElementById("generateCSV").showModal();
     });
   }
 
-  // Handle CSV generation from modal
-  const modalGenerateCSVBtn = document.getElementById("modalGenerateCSVBtn");
-  if (modalGenerateCSVBtn) {
-    modalGenerateCSVBtn.addEventListener("click", exportToCSVAndPDF);
+  // Handle export generation from modal with format selection
+  const modalGenerateExportBtn = document.getElementById("modalGenerateExportBtn");
+  if (modalGenerateExportBtn) {
+    modalGenerateExportBtn.addEventListener('click', exportAttendanceData);
+  }
+
+  // Add radio button listener for dynamic button text
+  const radioButtons = document.querySelectorAll('input[name="exportFormat"]');
+  const exportButtonText = document.getElementById('exportButtonText');
+
+  if (radioButtons.length > 0 && exportButtonText) {
+    radioButtons.forEach(radio => {
+      radio.addEventListener('change', (e) => {
+        const format = e.target.value;
+        switch(format) {
+          case 'csv':
+            exportButtonText.textContent = 'Export CSV';
+            break;
+          case 'pdf':
+            exportButtonText.textContent = 'Export PDF';
+            break;
+          case 'both':
+            exportButtonText.textContent = 'Export Both';
+            break;
+        }
+      });
+    });
   }
 });
 
 // Export functions to global scope for HTML access
-window.exportToCSVAndPDF = exportToCSVAndPDF;
+window.exportAttendanceData = exportAttendanceData;

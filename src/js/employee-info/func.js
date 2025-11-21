@@ -501,16 +501,16 @@ function showEmployeeDetails(employeeId) {
     <div class="shadow-xl/20 rounded-box p-8 mb-6">
       <div class="flex items-start justify-between">
         <div>
-          <h3 class="text-2xl font-bold text-gray-800 mb-2">
+          <h3 class="text-2xl font-bold mb-2">
             ${employee["First Name"]} ${
     employee["Middle Initial"] ? employee["Middle Initial"] + "." : ""
   } ${employee["Last Name"]}
           </h3>
-          <div class="flex items-center gap-3 text-gray-600">
+          <div class="flex items-center gap-3">
             <span class="text-sm font-medium">ID: ${
               employee["Employee ID"]
             }</span>
-            <span class="text-gray-400">•</span>
+            <span class="opacity-50">•</span>
             <span class="font-semibold" style="color: ${statusColor};">
               ${statusText}
             </span>
@@ -524,15 +524,15 @@ function showEmployeeDetails(employeeId) {
       <div class="shadow-xl/20 rounded-box p-8">
         <h4 class="text-xl font-semibold mb-4">Personal Information</h4>
         <div class="space-y-3">
-          <div class="flex justify-between items-center py-3 border-b border-gray-100">
-            <span class="text-gray-600 text-sm">Contact:</span>
-            <span class="font-medium text-gray-800">${
+          <div class="flex justify-between items-center py-3 border-b border-base-300">
+            <span class="opacity-70 text-sm">Contact:</span>
+            <span class="font-medium">${
               employee.Contact || "N/A"
             }</span>
           </div>
-          <div class="flex justify-between items-start py-3 border-b border-gray-100">
-            <span class="text-gray-600 text-sm">Address:</span>
-            <span class="font-medium text-gray-800 text-right max-w-xs">${
+          <div class="flex justify-between items-start py-3 border-b border-base-300">
+            <span class="opacity-70 text-sm">Address:</span>
+            <span class="font-medium text-right max-w-xs">${
               employee.Address || "N/A"
             }</span>
           </div>
@@ -543,19 +543,19 @@ function showEmployeeDetails(employeeId) {
       <div class="shadow-xl/20 rounded-box p-8">
         <h4 class="text-xl font-semibold mb-4">Role Information</h4>
         <div class="space-y-3">
-          <div class="flex justify-between items-center py-3 border-b border-gray-100">
-            <span class="text-gray-600 text-sm">Position:</span>
-            <span class="font-medium text-gray-800">${employee.Position}</span>
+          <div class="flex justify-between items-center py-3 border-b border-base-300">
+            <span class="opacity-70 text-sm">Position:</span>
+            <span class="font-medium">${employee.Position}</span>
           </div>
-          <div class="flex justify-between items-center py-3 border-b border-gray-100">
-            <span class="text-gray-600 text-sm">Department:</span>
-            <span class="font-medium text-gray-800">${
+          <div class="flex justify-between items-center py-3 border-b border-base-300">
+            <span class="opacity-70 text-sm">Department:</span>
+            <span class="font-medium">${
               employee.Department
             }</span>
           </div>
-          <div class="flex justify-between items-center py-3 border-b border-gray-100">
-            <span class="text-gray-600 text-sm">Date Hired:</span>
-            <span class="font-medium text-gray-800">${
+          <div class="flex justify-between items-center py-3 border-b border-base-300">
+            <span class="opacity-70 text-sm">Date Hired:</span>
+            <span class="font-medium">${
               employee.DateHired
                 ? new Date(employee.DateHired).toLocaleDateString()
                 : "N/A"
@@ -568,21 +568,21 @@ function showEmployeeDetails(employeeId) {
       <div class="shadow-xl/20 rounded-box p-8">
         <h4 class="text-xl font-semibold mb-4">Schedule</h4>
         <div class="space-y-3">
-          <div class="flex justify-between items-center py-3 border-b border-gray-100">
-            <span class="text-gray-600 text-sm">Official Time:</span>
-            <span class="font-medium text-gray-800">${
+          <div class="flex justify-between items-center py-3 border-b border-base-300">
+            <span class="opacity-70 text-sm">Official Time:</span>
+            <span class="font-medium">${
               employee.ScheduleName || "N/A"
             }</span>
           </div>
-          <div class="flex justify-between items-center py-3 border-b border-gray-100">
-            <span class="text-gray-600 text-sm">Start Time:</span>
-            <span class="font-medium text-gray-800">${
+          <div class="flex justify-between items-center py-3 border-b border-base-300">
+            <span class="opacity-70 text-sm">Start Time:</span>
+            <span class="font-medium">${
               employee.StartTime ? formatTime(employee.StartTime) : "N/A"
             }</span>
           </div>
-          <div class="flex justify-between items-center py-3 border-b border-gray-100">
-            <span class="text-gray-600 text-sm">End Time:</span>
-            <span class="font-medium text-gray-800">${
+          <div class="flex justify-between items-center py-3 border-b border-base-300">
+            <span class="opacity-70 text-sm">End Time:</span>
+            <span class="font-medium">${
               employee.EndTime ? formatTime(employee.EndTime) : "N/A"
             }</span>
           </div>
@@ -593,27 +593,27 @@ function showEmployeeDetails(employeeId) {
       <div class="shadow-xl/20 rounded-box p-8 md:col-span-2">
         <h4 class="text-xl font-semibold mb-4">Government IDs</h4>
         <div class="space-y-3">
-          <div class="flex justify-between items-center py-3 border-b border-gray-100">
-            <span class="text-gray-600 text-sm">SSS ID:</span>
-            <span class="font-medium text-gray-800">${
+          <div class="flex justify-between items-center py-3 border-b border-base-300">
+            <span class="opacity-70 text-sm">SSS ID:</span>
+            <span class="font-medium">${
               employee.SSSID || "N/A"
             }</span>
           </div>
-          <div class="flex justify-between items-center py-3 border-b border-gray-100">
-            <span class="text-gray-600 text-sm">PhilHealth ID:</span>
-            <span class="font-medium text-gray-800">${
+          <div class="flex justify-between items-center py-3 border-b border-base-300">
+            <span class="opacity-70 text-sm">PhilHealth ID:</span>
+            <span class="font-medium">${
               employee.PhilhealthID || "N/A"
             }</span>
           </div>
-          <div class="flex justify-between items-center py-3 border-b border-gray-100">
-            <span class="text-gray-600 text-sm">Pag-IBIG ID:</span>
-            <span class="font-medium text-gray-800">${
+          <div class="flex justify-between items-center py-3 border-b border-base-300">
+            <span class="opacity-70 text-sm">Pag-IBIG ID:</span>
+            <span class="font-medium">${
               employee.PagIBIGID || "N/A"
             }</span>
           </div>
-          <div class="flex justify-between items-center py-3 border-b border-gray-100">
-            <span class="text-gray-600 text-sm">TIN ID:</span>
-            <span class="font-medium text-gray-800">${
+          <div class="flex justify-between items-center py-3 border-b border-base-300">
+            <span class="opacity-70 text-sm">TIN ID:</span>
+            <span class="font-medium">${
               employee.TINID || "N/A"
             }</span>
           </div>
@@ -625,8 +625,8 @@ function showEmployeeDetails(employeeId) {
     <div class="shadow-xl/20 rounded-box p-8 mt-6">
       <h4 class="text-xl font-semibold mb-4">Salary Information</h4>
       <div class="flex justify-between items-center py-3">
-        <span class="text-gray-600 text-sm">Base Rate:</span>
-        <span class="text-2xl font-bold text-gray-800">₱${parseInt(
+        <span class="opacity-70 text-sm">Base Rate:</span>
+        <span class="text-2xl font-bold">₱${parseInt(
           employee.Rate
         ).toLocaleString()}</span>
       </div>
