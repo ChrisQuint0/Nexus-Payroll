@@ -45,6 +45,7 @@ userTypeInput.addEventListener("change", (e) => {
 
 addUserBtn.addEventListener("click", async (e) => {
   e.preventDefault();
+
   const username = usernameInput.value.trim();
   const firstName = firstNameInput.value.trim();
   const lastName = lastNameInput.value.trim();
@@ -90,10 +91,13 @@ addUserBtn.addEventListener("click", async (e) => {
     if (userType === "Employee") {
       const { data: existingUsers, error: checkError } =
         await supabaseAdmin.auth.admin.listUsers();
+
       if (checkError) throw checkError;
+
       const employeeIdExists = existingUsers.users.some(
         (user) => user.user_metadata?.employee_id === employeeId
       );
+
       if (employeeIdExists) {
         showDialogAlert(
           "error",
@@ -129,29 +133,9 @@ addUserBtn.addEventListener("click", async (e) => {
     if (signUpError) throw signUpError;
     if (!signUpData.user) throw new Error("User creation failed.");
 
-    // Log to Audit Trail
-    const {
-      data: { user: currentUser },
-    } = await supabaseClient.auth.getUser();
-
-    const newUserName = `${firstName} ${lastName}`;
-    const description =
-      userType === "Employee"
-        ? `Created a new user account: ${newUserName} (${username}) - Employee ID: ${employeeId}`
-        : `Created a new user account: ${newUserName} (${username}) - ${userType}`;
-
-    await supabaseClient.from("audit_trail").insert({
-      user_id: currentUser?.id,
-      action: "create",
-      description: description,
-      module_affected: "User Management",
-      record_id: null, // Could use signUpData.user.id if you want to track the new user's UUID
-      user_agent: navigator.userAgent,
-      timestamp: new Date().toISOString(),
-    });
-
     // Refresh the grid after adding a new user
     await fetchUsers();
+
     showGlobalAlert("success", "User successfully added!");
 
     // Clear and close modal
@@ -166,6 +150,7 @@ addUserBtn.addEventListener("click", async (e) => {
     // Hide employee ID field
     employeeIdContainer.classList.add("hidden");
     employeeIdBr.classList.add("hidden");
+
     setTimeout(() => modal.close(), 1500);
   } catch (error) {
     console.error("Error adding user:", error);
