@@ -5,16 +5,14 @@ import { getPayrollSummaryReport } from "./attendance-summary-data-retrieval.js"
 
 const gridDiv = document.getElementById("attendanceGrid");
 
-// Theme detection
+// Theme detection 
 const isDarkMode = window.matchMedia("(prefers-color-scheme: dark)").matches;
 gridDiv.classList.add(isDarkMode ? "ag-theme-quartz-dark" : "ag-theme-quartz");
 
-window
-  .matchMedia("(prefers-color-scheme: dark)")
-  .addEventListener("change", (e) => {
-    gridDiv.classList.toggle("ag-theme-quartz-dark", e.matches);
-    gridDiv.classList.toggle("ag-theme-quartz", !e.matches);
-  });
+window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", (e) => {
+  gridDiv.classList.toggle("ag-theme-quartz-dark", e.matches);
+  gridDiv.classList.toggle("ag-theme-quartz", !e.matches);
+});
 
 // Status to Color Mapping
 const statusColorMap = {
@@ -44,27 +42,27 @@ class CustomStatusEditor {
   init(params) {
     this.params = params;
     this.value = params.value || "Present";
-
+    
     // Create container
-    const container = document.createElement("div");
-    container.className = "w-full h-full flex items-center";
-
-    this.eSelect = document.createElement("select");
-    this.eSelect.className = "select select-accent w-full";
-
+    const container = document.createElement('div');
+    container.className = 'w-full h-full flex items-center';
+    
+    this.eSelect = document.createElement('select');
+    this.eSelect.className = 'select select-accent w-full';
+    
     // Add status options
     const statuses = [
       "Present",
-      "Absent",
+      "Absent", 
       "Undertime",
       "Late",
       "Official Business",
       "Leave with Pay",
-      "Leave w/o Pay",
+      "Leave w/o Pay"
     ];
-
-    statuses.forEach((status) => {
-      const option = document.createElement("option");
+    
+    statuses.forEach(status => {
+      const option = document.createElement('option');
       option.value = status;
       option.textContent = status;
       if (status === this.value) {
@@ -72,41 +70,41 @@ class CustomStatusEditor {
       }
       this.eSelect.appendChild(option);
     });
-
+    
     // Listen for changes
-    this.eSelect.addEventListener("change", (e) => {
+    this.eSelect.addEventListener('change', (e) => {
       this.value = e.target.value;
       params.stopEditing();
     });
-
+    
     // Add keydown handler for Enter and Escape
-    this.eSelect.addEventListener("keydown", (e) => {
-      if (e.key === "Enter") {
+    this.eSelect.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
         this.value = this.eSelect.value;
         params.stopEditing();
-      } else if (e.key === "Escape") {
-        params.stopEditing(true);
+      } else if (e.key === 'Escape') {
+        params.stopEditing(true); 
       }
     });
-
+    
     container.appendChild(this.eSelect);
     this.eGui = container;
   }
-
+  
   getGui() {
     return this.eGui;
   }
-
+  
   getValue() {
     return this.value;
   }
-
+  
   afterGuiAttached() {
     if (this.eSelect) {
       this.eSelect.focus();
     }
   }
-
+  
   isPopup() {
     return false;
   }
@@ -142,7 +140,7 @@ const rawTimeLogsColumns = [
     valueFormatter: (params) => {
       if (!params.value) return '';
       return params.value.toString();
-    },
+    }
   },
   { 
     field: "First Name", 
@@ -152,7 +150,7 @@ const rawTimeLogsColumns = [
     valueFormatter: (params) => {
       if (!params.value) return '';
       return params.value.toString();
-    },
+    }
   },
   { 
     field: "Middle Name", 
@@ -160,15 +158,15 @@ const rawTimeLogsColumns = [
     filter: true, 
     width: 140,
     valueFormatter: (params) => {
-      if (!params.value) return "";
+      if (!params.value) return '';
       return params.value.toString().toUpperCase();
-    },
+    }
   },
   { field: "Official Time", sortable: true, filter: true, width: 160 },
 
-  {
-    field: "Time In",
-    sortable: true,
+  { 
+    field: "Time In", 
+    sortable: true, 
     filter: true,
     editable: true,
     cellEditor: "agTextCellEditor",
@@ -180,9 +178,9 @@ const rawTimeLogsColumns = [
     },
   },
 
-  {
-    field: "Time Out",
-    sortable: true,
+  { 
+    field: "Time Out", 
+    sortable: true, 
     filter: true,
     editable: true,
     cellEditor: "agTextCellEditor",
@@ -194,9 +192,9 @@ const rawTimeLogsColumns = [
     },
   },
 
-  {
-    field: "Late (m)",
-    sortable: true,
+  { 
+    field: "Late (m)", 
+    sortable: true, 
     filter: true,
     editable: true,
     cellEditor: "agNumberCellEditor",
@@ -204,9 +202,9 @@ const rawTimeLogsColumns = [
     singleClickEdit: true,
     width: 100
   },
-  {
-    field: "Undertime",
-    sortable: true,
+  { 
+    field: "Undertime", 
+    sortable: true, 
     filter: true,
     editable: true,
     cellEditor: "agNumberCellEditor",
@@ -228,9 +226,7 @@ const rawTimeLogsColumns = [
       const colorClass = statusColorMap[value] || "text-gray-400";
       const capitalizedValue = value
         .split(" ")
-        .map(
-          (word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
-        )
+        .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
         .join(" ");
       return `
         <div class="flex items-center justify-between w-full h-full px-2">
@@ -251,11 +247,11 @@ const rawTimeLogsColumns = [
     valueFormatter: (params) => {
       if (!params.value) return '';
       const dept = params.value.toString().toLowerCase();
-      if (dept.includes("information") || dept.includes("ech")) {
-        return "Information Technology";
+      if (dept.includes('information') || dept.includes('ech')) {
+        return 'Information Technology';
       }
       return params.value;
-    },
+    }
   },
 ];
 
@@ -271,9 +267,9 @@ const summaryColumns = [
     resizable: true, 
     width: 160,
     valueFormatter: (params) => {
-      if (!params.value) return "";
+      if (!params.value) return '';
       return params.value.toString();
-    },
+    }
   },
   { 
     headerName: "Middle Name", 
@@ -283,9 +279,9 @@ const summaryColumns = [
     resizable: true, 
     width: 140,
     valueFormatter: (params) => {
-      if (!params.value) return "";
+      if (!params.value) return '';
       return params.value.toString().toUpperCase();
-    },
+    }
   },
   { 
     headerName: "Last Name", 
@@ -295,57 +291,9 @@ const summaryColumns = [
     resizable: true, 
     width: 160,
     valueFormatter: (params) => {
-      if (!params.value) return "";
+      if (!params.value) return '';
       return params.value.toString();
-    },
-  },
-  {
-    headerName: "Regular Hours",
-    field: "Regular Hours",
-    sortable: true,
-    filter: true,
-    resizable: true,
-    width: 120,
-  },
-  {
-    headerName: "Overtime Hours",
-    field: "Overtime Hours",
-    sortable: true,
-    filter: true,
-    resizable: true,
-    width: 120,
-  },
-  {
-    headerName: "Late",
-    field: "Late Minutes",
-    sortable: true,
-    filter: true,
-    resizable: true,
-    width: 80,
-  },
-  {
-    headerName: "Undertime",
-    field: "Undertime Minutes",
-    sortable: true,
-    filter: true,
-    resizable: true,
-    width: 100,
-  },
-  {
-    headerName: "Leave W/ Pay",
-    field: "Leave W/ Pay",
-    sortable: true,
-    filter: true,
-    resizable: true,
-    width: 120,
-  },
-  {
-    headerName: "Leave W/O Pay",
-    field: "Leave W/O Pay",
-    sortable: true,
-    filter: true,
-    resizable: true,
-    width: 120,
+    }
   },
   { headerName: "Regular Hours", field: "Regular Hours", sortable: true, filter: true, resizable: true, width: 150 },
   { headerName: "Overtime Hours", field: "Overtime Hours", sortable: true, filter: true, resizable: true, width: 160 },
@@ -363,13 +311,13 @@ const summaryColumns = [
     resizable: true, 
     width: 200,
     valueFormatter: (params) => {
-      if (!params.value) return "";
+      if (!params.value) return '';
       const dept = params.value.toString().toLowerCase();
-      if (dept.includes("information") || dept.includes("ech")) {
-        return "Information Technology";
+      if (dept.includes('information') || dept.includes('ech')) {
+        return 'Information Technology';
       }
       return params.value;
-    },
+    }
   },
 ];
 
@@ -453,19 +401,19 @@ async function saveEditedRow(rowData, fieldChanged) {
       "Time In": "time_in",
       "Time Out": "time_out",
       "Late (m)": "late",
-      Undertime: "undertime",
-      Status: "status",
+      "Undertime": "undertime",
+      "Status": "status"
     };
-
+    
     const dbField = fieldMapping[fieldChanged];
-
+    
     if (!dbField) {
       console.warn(" Field not mapped for saving:", fieldChanged);
       return;
     }
     
     const updateData = {
-      [dbField]: rowData[fieldChanged],
+      [dbField]: rowData[fieldChanged]
     };
     
     if (dbField === "time_in" || dbField === "time_out") {
@@ -485,13 +433,13 @@ async function saveEditedRow(rowData, fieldChanged) {
       .gte("time_in", rowData["Date"] + "T00:00:00")
       .lt("time_in", rowData["Date"] + "T23:59:59")
       .select();
-
+    
     if (error) {
       console.error(" Error saving to Supabase:", error);
       alert(`Failed to save changes: ${error.message}`);
       return;
     }
-
+    
     if (!data || data.length === 0) {
       console.warn(" No records updated. Check if employee ID and date match.");
       alert("No matching record found to update. Please refresh and try again.");
@@ -532,12 +480,8 @@ function updateSelectedEmployeeInfo(employee) {
   const selectedEmployeeInfo = document.getElementById("selectedEmployeeInfo");
   if (selectedEmployeeInfo) {
     selectedEmployeeInfo.innerHTML = `
-      <div class="font-medium">${employee["First Name"]} ${
-      employee["Last Name"]
-    }</div>
-      <div class="text-gray-600">ID: ${employee["Employee ID"]} | Department: ${
-      employee["Department"] || "N/A"
-    }</div>
+      <div class="font-medium">${employee["First Name"]} ${employee["Last Name"]}</div>
+      <div class="text-gray-600">ID: ${employee["Employee ID"]} | Department: ${employee["Department"] || "N/A"}</div>
     `;
   }
 }
@@ -547,58 +491,47 @@ async function getEmployeeOfficialTime(employeeId) {
   try {
     const { data: employeeData, error } = await supabaseClient
       .from("employees")
-      .select(
-        `
+      .select(`
         official_time_id,
         official_time!inner (
           official_time_id,
           start_time,
           end_time
         )
-      `
-      )
+      `)
       .eq("emp_id", employeeId)
       .single();
 
     if (error) {
-      console.warn(
-        "Error fetching employee official_time, using default:",
-        error
-      );
+      console.warn("Error fetching employee official_time, using default:", error);
       return {
         startTime: "08:00:00",
-        endTime: "17:00:00",
+        endTime: "17:00:00"
       };
     }
 
     if (employeeData && employeeData.official_time) {
       return {
         startTime: employeeData.official_time.start_time,
-        endTime: employeeData.official_time.end_time,
+        endTime: employeeData.official_time.end_time
       };
     }
 
     return {
       startTime: "08:00:00",
-      endTime: "17:00:00",
+      endTime: "17:00:00"
     };
   } catch (error) {
     console.warn("Error getting official time:", error);
     return {
       startTime: "08:00:00",
-      endTime: "17:00:00",
+      endTime: "17:00:00"
     };
   }
 }
 
 // Function to calculate late and undertime based on official time
-function calculateTimeAdjustments(
-  timeIn,
-  timeOut,
-  officialStartTime,
-  officialEndTime,
-  logDate
-) {
+function calculateTimeAdjustments(timeIn, timeOut, officialStartTime, officialEndTime, logDate) {
   if (!timeIn) {
     return { lateMinutes: 0, undertimeMinutes: 0, status: "Absent" };
   }
@@ -606,7 +539,7 @@ function calculateTimeAdjustments(
   const timeInDate = new Date(timeIn);
   const officialStartDate = new Date(`${logDate}T${officialStartTime}`);
   const officialEndDate = new Date(`${logDate}T${officialEndTime}`);
-
+  
   let lateMinutes = 0;
   let undertimeMinutes = 0;
   let status = "Present";
@@ -620,9 +553,7 @@ function calculateTimeAdjustments(
   if (timeOut) {
     const timeOutDate = new Date(timeOut);
     if (timeOutDate < officialEndDate) {
-      undertimeMinutes = Math.round(
-        (officialEndDate - timeOutDate) / (1000 * 60)
-      );
+      undertimeMinutes = Math.round((officialEndDate - timeOutDate) / (1000 * 60));
     }
   } else {
     // If no time out, calculate undertime as the entire afternoon duration
@@ -648,7 +579,7 @@ function calculateTimeAdjustments(
   return {
     lateMinutes: Math.max(0, lateMinutes),
     undertimeMinutes: Math.max(0, undertimeMinutes),
-    status,
+    status
   };
 }
 
@@ -690,9 +621,7 @@ async function saveNewTimeLog(timeLogData, selectedEmployee) {
     console.log(" Found existing logs for date:", existingLogs);
 
     if (existingLogs && existingLogs.length > 0) {
-      throw new Error(
-        `This employee already has a time log for ${logDate}. Please edit the existing record instead.`
-      );
+      throw new Error(`This employee already has a time log for ${logDate}. Please edit the existing record instead.`);
     }
 
     // Fetch official_time_id from employees table using employee_id
@@ -727,7 +656,7 @@ async function saveNewTimeLog(timeLogData, selectedEmployee) {
           undertime: timeLogData.undertimeMinutes,
           status: timeLogData.status,
           official_time_id: officialTimeId,
-        },
+        }
       ])
       .select();
 
@@ -831,9 +760,9 @@ function initializeTimeLogModal() {
     if (selectedEmployees.length === 1) {
       const selectedEmployee = selectedEmployees[0];
       try {
-        const startOfDay = date + " 00:00:00";
-        const endOfDay = date + " 23:59:59";
-
+        const startOfDay = date + ' 00:00:00';
+        const endOfDay = date + ' 23:59:59';
+        
         const { data: existingLogs, error } = await supabaseClient
           .from("raw_time_logs")
           .select("time_in")
@@ -881,18 +810,15 @@ function initializeTimeLogModal() {
 
     try {
       const selectedEmployee = selectedEmployees[0];
-      const officialTime = await getEmployeeOfficialTime(
-        selectedEmployee["Employee ID"]
+      const officialTime = await getEmployeeOfficialTime(selectedEmployee["Employee ID"]);
+      
+      const { lateMinutes, undertimeMinutes, status } = calculateTimeAdjustments(
+        timeIn ? timeIn.replace('T', ' ') + ':00' : null,
+        timeOut ? timeOut.replace('T', ' ') + ':00' : null,
+        officialTime.startTime,
+        officialTime.endTime,
+        logDate
       );
-
-      const { lateMinutes, undertimeMinutes, status } =
-        calculateTimeAdjustments(
-          timeIn ? timeIn.replace("T", " ") + ":00" : null,
-          timeOut ? timeOut.replace("T", " ") + ":00" : null,
-          officialTime.startTime,
-          officialTime.endTime,
-          logDate
-        );
 
       lateMinutesInput.value = lateMinutes;
       undertimeMinutesInput.value = undertimeMinutes;
@@ -918,21 +844,21 @@ function initializeTimeLogModal() {
   }
 
   const originalUpdateSelectedEmployeeInfo = updateSelectedEmployeeInfo;
-  updateSelectedEmployeeInfo = function (employee) {
+  updateSelectedEmployeeInfo = function(employee) {
     originalUpdateSelectedEmployeeInfo(employee);
     autoCalculateTimes();
   };
 
   addTimeLogForm.addEventListener('submit', async function(e) {
     e.preventDefault();
-
+    
     if (selectedEmployees.length !== 1) {
       alert("Please select exactly one employee.");
       return;
     }
 
     const selectedEmployee = selectedEmployees[0];
-
+    
     try {
       const selectedDateStr = logDateInput.value;
       
@@ -947,13 +873,11 @@ function initializeTimeLogModal() {
 
       const timeLogData = {
         employeeId: selectedEmployee["Employee ID"],
-        timeIn: timeInInput.value.replace("T", " ") + ":00",
-        timeOut: timeOutInput.value
-          ? timeOutInput.value.replace("T", " ") + ":00"
-          : null,
+        timeIn: timeInInput.value.replace('T', ' ') + ':00',
+        timeOut: timeOutInput.value ? timeOutInput.value.replace('T', ' ') + ':00' : null,
         lateMinutes: parseInt(lateMinutesInput.value) || 0,
         undertimeMinutes: parseInt(undertimeMinutesInput.value) || 0,
-        status: statusSelect.value,
+        status: statusSelect.value
       };
 
       await saveNewTimeLog(timeLogData, selectedEmployee);
@@ -966,10 +890,11 @@ function initializeTimeLogModal() {
       }
 
       addTimeLogForm.reset();
-      const todayStr = new Date().toISOString().split("T")[0];
+      const todayStr = new Date().toISOString().split('T')[0];
       logDateInput.value = todayStr;
-      timeInInput.value = todayStr + "T08:00";
-      timeOutInput.value = todayStr + "T17:00";
+      timeInInput.value = todayStr + 'T08:00';
+      timeOutInput.value = todayStr + 'T17:00';
+
     } catch (error) {
       alert(`Failed to add time log: ${error.message}`);
     }
@@ -988,52 +913,53 @@ async function refreshGridData() {
 // Function to generate cutoff periods from dates
 function generateCutoffPeriodsFromDates(dates) {
   const cutoffPeriods = new Set();
-
-  dates.forEach((dateStr) => {
+  
+  dates.forEach(dateStr => {
     if (!dateStr) return;
-
+    
     try {
       const date = new Date(dateStr);
       if (isNaN(date.getTime())) return;
-
+      
       const year = date.getFullYear();
       const month = date.getMonth() + 1;
       const day = date.getDate();
-
+      
       let startDate, endDate;
-
+      
       if (day <= 15) {
-        startDate = `${year}-${month.toString().padStart(2, "0")}-01`;
-        endDate = `${year}-${month.toString().padStart(2, "0")}-15`;
+        startDate = `${year}-${month.toString().padStart(2, '0')}-01`;
+        endDate = `${year}-${month.toString().padStart(2, '0')}-15`;
       } else {
         const lastDay = new Date(year, month, 0).getDate();
-        startDate = `${year}-${month.toString().padStart(2, "0")}-16`;
-        endDate = `${year}-${month.toString().padStart(2, "0")}-${lastDay}`;
+        startDate = `${year}-${month.toString().padStart(2, '0')}-16`;
+        endDate = `${year}-${month.toString().padStart(2, '0')}-${lastDay}`;
       }
-
+      
       const cutoffPeriod = `${startDate} to ${endDate}`;
       cutoffPeriods.add(cutoffPeriod);
+      
     } catch (error) {
       console.warn(`Invalid date format: ${dateStr}`, error);
     }
   });
-
+  
   return Array.from(cutoffPeriods).sort();
 }
 
 // Function to check if a date falls within a cutoff period
 function isDateInCutoffPeriod(dateStr, cutoffPeriod) {
   if (!dateStr || !cutoffPeriod) return false;
-
+  
   try {
-    const [startStr, endStr] = cutoffPeriod.split(" to ");
+    const [startStr, endStr] = cutoffPeriod.split(' to ');
     const date = new Date(dateStr);
     const startDate = new Date(startStr);
     const endDate = new Date(endStr);
-
+    
     return date >= startDate && date <= endDate;
   } catch (error) {
-    console.warn("Error checking date in cutoff period:", error);
+    console.warn('Error checking date in cutoff period:', error);
     return false;
   }
 }
@@ -1052,13 +978,13 @@ function exportAttendanceData() {
     exportFormat,
     totalRecords: currentData.length
   });
-
+  
   let filteredData = currentData;
-
+  
   // Apply filters if needed
   if (cutoffFilter !== "all") {
     if (currentView === "raw") {
-      filteredData = filteredData.filter((row) => {
+      filteredData = filteredData.filter(row => {
         const rowDate = row["Date"];
         return isDateInCutoffPeriod(rowDate, cutoffFilter);
       });
@@ -1069,19 +995,19 @@ function exportAttendanceData() {
       });
     }
   }
-
+  
   if (departmentFilter !== "all") {
-    filteredData = filteredData.filter((row) => {
+    filteredData = filteredData.filter(row => {
       const rowDept = row["Department"] || row.department || row.dept;
       return rowDept === departmentFilter;
     });
   }
-
+  
   if (filteredData.length === 0) {
     let availableCutoffs, availableDepts;
-
+    
     if (currentView === "raw") {
-      const dates = currentData.map((row) => row["Date"]).filter(Boolean);
+      const dates = currentData.map(row => row["Date"]).filter(Boolean);
       availableCutoffs = generateCutoffPeriodsFromDates(dates);
       availableDepts = [...new Set(currentData.map(row => row["Department"] || row.department).filter(Boolean))];
     } else if (currentView === "summary") {
@@ -1091,14 +1017,8 @@ function exportAttendanceData() {
       availableCutoffs = [];
       availableDepts = [...new Set(currentData.map(row => row["Department"] || row.department).filter(Boolean))];
     }
-
-    alert(
-      `No data to export with the selected filters.\n\nSelected Filters:\n• Cutoff Period: ${cutoffFilter}\n• Department: ${departmentFilter}\n\nAvailable in Data:\n• Cutoff Periods: ${
-        availableCutoffs.length > 0 ? availableCutoffs.join(", ") : "None found"
-      }\n• Departments: ${
-        availableDepts.length > 0 ? availableDepts.join(", ") : "None found"
-      }\n\nTotal records available: ${currentData.length}`
-    );
+    
+    alert(`No data to export with the selected filters.\n\nSelected Filters:\n• Cutoff Period: ${cutoffFilter}\n• Department: ${departmentFilter}\n\nAvailable in Data:\n• Cutoff Periods: ${availableCutoffs.length > 0 ? availableCutoffs.join(', ') : 'None found'}\n• Departments: ${availableDepts.length > 0 ? availableDepts.join(', ') : 'None found'}\n\nTotal records available: ${currentData.length}`);
     return;
   }
   
@@ -1135,29 +1055,25 @@ function exportAttendanceData() {
   }
 }
 
-async function generateCSVFile(data, cutoffFilter, departmentFilter) {
+function generateCSVFile(data, cutoffFilter, departmentFilter) {
   const columns = gridApi.getColumnDefs();
-  const headers = columns
-    .map((col) => col.field || col.headerName)
-    .filter(Boolean);
-
+  const headers = columns.map(col => col.field || col.headerName).filter(Boolean);
+  
   const csvContent = [
     headers.join(","),
-    ...data.map((row) =>
-      headers
-        .map((header) => {
-          const value = row[header];
-          if (value === null || value === undefined) return "";
-          const stringValue = String(value);
-          return stringValue.includes(",") || stringValue.includes('"')
-            ? `"${stringValue.replace(/"/g, '""')}"`
-            : stringValue;
-        })
-        .join(",")
-    ),
+    ...data.map(row => 
+      headers.map(header => {
+        const value = row[header];
+        if (value === null || value === undefined) return '';
+        const stringValue = String(value);
+        return stringValue.includes(',') || stringValue.includes('"') 
+          ? `"${stringValue.replace(/"/g, '""')}"` 
+          : stringValue;
+      }).join(",")
+    )
   ].join("\n");
-
-  const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+  
+  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
   const link = document.createElement("a");
   const url = URL.createObjectURL(blob);
   
@@ -1167,33 +1083,13 @@ async function generateCSVFile(data, cutoffFilter, departmentFilter) {
   const timestamp = new Date().toISOString().split('T')[0];
   
   const filename = `${viewName}_${cutoffLabel}_${deptLabel}_${timestamp}.csv`;
-
+  
   link.setAttribute("href", url);
   link.setAttribute("download", filename);
-  link.style.visibility = "hidden";
+  link.style.visibility = 'hidden';
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
-
-  // Log to Audit Trail
-  try {
-    const {
-      data: { user },
-    } = await supabaseClient.auth.getUser();
-
-    await supabaseClient.from("audit_trail").insert({
-      user_id: user?.id,
-      action: "view",
-      description: `Exported Raw Time Logs to CSV and PDF file (${data.length} employee(s))`,
-      module_affected: "Attendance Management",
-      record_id: null,
-      user_agent: navigator.userAgent,
-      timestamp: new Date().toISOString(),
-    });
-  } catch (auditError) {
-    console.error("Error logging audit trail:", auditError);
-    // Don't throw error - CSV export was successful
-  }
 }
 
 // PDF Generation Function
@@ -1202,11 +1098,11 @@ function generatePDFFile(data, cutoffFilter, departmentFilter) {
     const { jsPDF } = window.jspdf;
     
     const doc = new jsPDF({
-      orientation: "landscape",
-      unit: "mm",
-      format: "a4",
+      orientation: 'landscape',
+      unit: 'mm',
+      format: 'a4'
     });
-
+    
     const columns = gridApi.getColumnDefs();
     const visibleColumns = columns.filter(col => !col.hide);
     const headers = visibleColumns.map(col => col.headerName || col.field).filter(Boolean);
@@ -1216,11 +1112,11 @@ function generatePDFFile(data, cutoffFilter, departmentFilter) {
     const deptLabel = departmentFilter === "all" ? "All Departments" : departmentFilter;
     
     doc.setFontSize(16);
-    doc.setFont(undefined, "bold");
+    doc.setFont(undefined, 'bold');
     doc.text(viewName, 14, 20);
     
     doc.setFontSize(10);
-    doc.setFont(undefined, "normal");
+    doc.setFont(undefined, 'normal');
     doc.text(`Cutoff Period: ${cutoffLabel}`, 14, 30);
     doc.text(`Department: ${deptLabel}`, 14, 37);
     doc.text(`Generated on: ${new Date().toLocaleDateString()}`, 14, 44);
@@ -1234,13 +1130,11 @@ function generatePDFFile(data, cutoffFilter, departmentFilter) {
         let value = row[fieldName] || '';
         
         if (!value && fieldName === "Last Name") {
-          value = row["Last Name"] || row["last_name"] || row["lastName"] || "";
+          value = row["Last Name"] || row["last_name"] || row["lastName"] || '';
         } else if (!value && fieldName === "First Name") {
-          value =
-            row["First Name"] || row["first_name"] || row["firstName"] || "";
+          value = row["First Name"] || row["first_name"] || row["firstName"] || '';
         } else if (!value && fieldName === "Middle Name") {
-          value =
-            row["Middle Name"] || row["middle_name"] || row["middleName"] || "";
+          value = row["Middle Name"] || row["middle_name"] || row["middleName"] || '';
         }
         
         if (value === null || value === undefined || value === '') {
@@ -1271,17 +1165,17 @@ function generatePDFFile(data, cutoffFilter, departmentFilter) {
         
         if (fieldName === 'Department') {
           const dept = stringValue.toLowerCase();
-          if (dept.includes("information") || dept.includes("ech")) {
-            return "Information Technology";
+          if (dept.includes('information') || dept.includes('ech')) {
+            return 'Information Technology';
           }
         }
-
+        
         return stringValue;
       })
     );
     
     let columnStyles = {};
-
+    
     if (currentView === "raw") {
       columnStyles = {
         0: { cellWidth: 20 },
@@ -1329,28 +1223,28 @@ function generatePDFFile(data, cutoffFilter, departmentFilter) {
       head: [headers],
       body: tableData,
       startY: 60,
-      styles: {
+      styles: { 
         fontSize: 7,
         cellPadding: 2,
-        overflow: "linebreak",
+        overflow: 'linebreak',
         lineColor: [200, 200, 200],
-        lineWidth: 0.1,
+        lineWidth: 0.1
       },
-      headStyles: {
+      headStyles: { 
         fillColor: [59, 130, 246],
         textColor: 255,
-        fontStyle: "bold",
+        fontStyle: 'bold',
         fontSize: 8,
-        cellPadding: 3,
+        cellPadding: 3
       },
       alternateRowStyles: {
-        fillColor: [248, 250, 252],
+        fillColor: [248, 250, 252]
       },
       columnStyles: columnStyles,
       margin: { top: 60, right: 10, bottom: 20, left: 10 },
-      pageBreak: "auto",
-      tableWidth: "wrap",
-      theme: "grid",
+      pageBreak: 'auto',
+      tableWidth: 'wrap',
+      theme: 'grid'
     });
     
     const pageCount = doc.internal.getNumberOfPages();
@@ -1382,38 +1276,13 @@ function generatePDFFile(data, cutoffFilter, departmentFilter) {
     const timestamp = new Date().toISOString().split('T')[0];
     
     const filename = `${viewNameFile}_${cutoffLabelFile}_${deptLabelFile}_${timestamp}.pdf`;
-
+    
     doc.save(filename);
-    console.log(
-      `PDF file generated: ${filename} with ${Math.min(
-        data.length,
-        50
-      )} records displayed`
-    );
-    // Log to Audit Trail
-    try {
-      const {
-        data: { user },
-      } = await supabaseClient.auth.getUser();
-
-      await supabaseClient.from("audit_trail").insert({
-        user_id: user?.id,
-        action: "view",
-        description: `Generated DTR files of (${data.length} employee(s))`,
-        module_affected: "Attendance Management",
-        record_id: null,
-        user_agent: navigator.userAgent,
-        timestamp: new Date().toISOString(),
-      });
-    } catch (auditError) {
-      console.error("Error logging audit trail:", auditError);
-      // Don't throw error - CSV export was successful
-    }
+    console.log(`PDF file generated: ${filename} with ${Math.min(data.length, 50)} records displayed`);
+    
   } catch (error) {
     console.error("Error generating PDF:", error);
-    alert(
-      `Error generating PDF: ${error.message}. Please try generating CSV instead.`
-    );
+    alert(`Error generating PDF: ${error.message}. Please try generating CSV instead.`);
   }
 }
 
@@ -1421,7 +1290,7 @@ function generatePDFFile(data, cutoffFilter, departmentFilter) {
 function populateCSVModalDropdowns() {
   const cutoffSelect = document.getElementById("csvCutoffFilter");
   const departmentSelect = document.getElementById("csvDepartmentFilter");
-
+  
   if (!cutoffSelect || !departmentSelect) {
     console.error("CSV modal dropdown elements not found");
     return;
@@ -1434,12 +1303,12 @@ function populateCSVModalDropdowns() {
   allCutoffOption.value = "all";
   allCutoffOption.textContent = "All Cutoff Periods";
   cutoffSelect.appendChild(allCutoffOption);
-
+  
   const allDeptOption = document.createElement("option");
   allDeptOption.value = "all";
   allDeptOption.textContent = "All Departments";
   departmentSelect.appendChild(allDeptOption);
-
+  
   console.log("=== POPULATING CSV DROPDOWNS ===");
   console.log("Current view:", currentView);
   console.log("Total records:", currentData.length);
@@ -1447,36 +1316,30 @@ function populateCSVModalDropdowns() {
   if (currentView === "raw") {
     const dates = currentData.map(row => row["Date"]).filter(Boolean);
     console.log("Unique dates found:", [...new Set(dates)].sort());
-
+    
     const cutoffPeriods = generateCutoffPeriodsFromDates(dates);
     console.log("Generated cutoff periods:", cutoffPeriods);
-
+    
     if (cutoffPeriods.length > 0) {
-      cutoffPeriods.forEach((period) => {
+      cutoffPeriods.forEach(period => {
         const option = document.createElement("option");
         option.value = period;
         option.textContent = period;
         cutoffSelect.appendChild(option);
       });
-      console.log(
-        `Added ${cutoffPeriods.length} date-based cutoff periods to dropdown`
-      );
+      console.log(`Added ${cutoffPeriods.length} date-based cutoff periods to dropdown`);
     } else {
       console.warn("No cutoff periods generated from dates");
       const currentDate = new Date();
       const year = currentDate.getFullYear();
       const month = currentDate.getMonth() + 1;
-
+      
       const examplePeriods = [
-        `${year}-${month.toString().padStart(2, "0")}-01 to ${year}-${month
-          .toString()
-          .padStart(2, "0")}-15`,
-        `${year}-${month.toString().padStart(2, "0")}-16 to ${year}-${month
-          .toString()
-          .padStart(2, "0")}-${new Date(year, month, 0).getDate()}`,
+        `${year}-${month.toString().padStart(2, '0')}-01 to ${year}-${month.toString().padStart(2, '0')}-15`,
+        `${year}-${month.toString().padStart(2, '0')}-16 to ${year}-${month.toString().padStart(2, '0')}-${new Date(year, month, 0).getDate()}`
       ];
-
-      examplePeriods.forEach((period) => {
+      
+      examplePeriods.forEach(period => {
         const option = document.createElement("option");
         option.value = period;
         option.textContent = period;
@@ -1485,42 +1348,35 @@ function populateCSVModalDropdowns() {
     }
   } else if (currentView === "summary") {
     const uniqueCutoffPeriods = new Set();
-    currentData.forEach((row) => {
-      const cutoffPeriod =
-        row["Cutoff Period"] || row["Cutoff ID"] || row.cutoff_period;
+    currentData.forEach(row => {
+      const cutoffPeriod = row["Cutoff Period"] || row["Cutoff ID"] || row.cutoff_period;
       if (cutoffPeriod) uniqueCutoffPeriods.add(cutoffPeriod);
     });
-
+    
     if (uniqueCutoffPeriods.size > 0) {
-      Array.from(uniqueCutoffPeriods)
-        .sort()
-        .forEach((period) => {
-          const option = document.createElement("option");
-          option.value = period;
-          option.textContent = period;
-          cutoffSelect.appendChild(option);
-        });
-      console.log(
-        `Added ${uniqueCutoffPeriods.size} summary cutoff periods to dropdown`
-      );
+      Array.from(uniqueCutoffPeriods).sort().forEach(period => {
+        const option = document.createElement("option");
+        option.value = period;
+        option.textContent = period;
+        cutoffSelect.appendChild(option);
+      });
+      console.log(`Added ${uniqueCutoffPeriods.size} summary cutoff periods to dropdown`);
     }
   }
   
   const uniqueDepartments = new Set();
-  currentData.forEach((row) => {
+  currentData.forEach(row => {
     const department = row["Department"] || row.department || row.dept;
     if (department) uniqueDepartments.add(department);
   });
-
+  
   if (uniqueDepartments.size > 0) {
-    Array.from(uniqueDepartments)
-      .sort()
-      .forEach((dept) => {
-        const option = document.createElement("option");
-        option.value = dept;
-        option.textContent = dept;
-        departmentSelect.appendChild(option);
-      });
+    Array.from(uniqueDepartments).sort().forEach(dept => {
+      const option = document.createElement("option");
+      option.value = dept;
+      option.textContent = dept;
+      departmentSelect.appendChild(option);
+    });
     console.log(`Added ${uniqueDepartments.size} departments to dropdown`);
   } else {
     const fallbackDepts = ["Information Technology", "Human Resources", "Accounting", "Sales"];
@@ -1535,8 +1391,8 @@ function populateCSVModalDropdowns() {
 
 // Grid initialization
 let currentData = [];
-let currentView = "raw";
-let currentCutoffInfo = null;
+let currentView = "raw"; 
+let currentCutoffInfo = null; 
 
 const gridOptions = {
   columnDefs: rawTimeLogsColumns,
@@ -1556,7 +1412,7 @@ const gridOptions = {
       field: event.colDef.field,
       oldValue: event.oldValue,
       newValue: event.newValue,
-      rowData: event.data,
+      rowData: event.data
     });
     
     saveEditedRow(event.data, event.colDef.field);
@@ -1582,7 +1438,7 @@ async function loadRawTimeLogs() {
       const sampleNames = data.slice(0, 5).map(row => ({
         firstName: row["First Name"],
         lastName: row["Last Name"],
-        fullName: `${row["First Name"]} ${row["Last Name"]}`,
+        fullName: `${row["First Name"]} ${row["Last Name"]}`
       }));
       console.log("Sample names in data:", sampleNames);
       
@@ -1600,7 +1456,7 @@ async function loadAttendanceSummary() {
   try {
     const cutoffIds = [1, 2];
     let allData = [];
-
+    
     for (const cutoffId of cutoffIds) {
       try {
         const { data } = await getPayrollSummaryReport(cutoffId);
@@ -1616,7 +1472,7 @@ async function loadAttendanceSummary() {
       console.log("🔍 First row:", allData[0]);
       console.log(" All keys in first row:", Object.keys(allData[0]));
     }
-
+    
     return allData;
   } catch (error) {
     console.error(" Failed to load attendance summary:", error);
@@ -1715,7 +1571,7 @@ export async function switchView(view) {
     currentData = data;
     
     populateCutoffDropdown(data);
-
+    
     gridApi.setGridOption("columnDefs", summaryColumns);
     gridApi.setGridOption("rowData", data);
     gridApi.setGridOption("rowSelection", { mode: "singleRow", headerCheckbox: false });
@@ -1764,14 +1620,14 @@ function populateCutoffDropdown(data) {
   cutoffSelect.appendChild(allOption);
 
   const uniquePeriods = new Set();
-  data.forEach((row) => {
+  data.forEach(row => {
     const period = row.cutoff_period || row["Cutoff Period"];
     if (period) uniquePeriods.add(period);
   });
 
   Array.from(uniquePeriods)
     .sort()
-    .forEach((period) => {
+    .forEach(period => {
       const option = document.createElement("option");
       option.value = period;
       option.textContent = period;
@@ -1842,7 +1698,7 @@ document.addEventListener("DOMContentLoaded", () => {
   if (generateCSVBtn) {
     generateCSVBtn.addEventListener('click', () => {
       populateCSVModalDropdowns();
-      document.getElementById("generateCSV").showModal();
+      document.getElementById('generateCSV').showModal();
     });
   }
 
