@@ -191,7 +191,12 @@ function initializePositionChange() {
 
       if (salary) {
         const numValue = parseFloat(salary);
-        rateInput.value = '₱' + numValue.toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        rateInput.value =
+          "₱" +
+          numValue.toLocaleString("en-PH", {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2,
+          });
       } else {
         rateInput.value = "";
       }
@@ -348,44 +353,57 @@ function initializeSearch() {
 async function handleArchiveSelected() {
   const selectedRows = getSelectedRows();
   if (selectedRows.length === 0) return;
-
   const action = currentView === "active" ? "archive" : "restore";
   const actionText = currentView === "active" ? "Archive" : "Restore";
   const newStatusId = action === "archive" ? 2 : 1;
-
   const confirmed = await showArchiveConfirm(
     `Are you sure you want to ${actionText.toLowerCase()} ${
       selectedRows.length
     } employee(s)? This action can be reversed later.`,
     `${actionText} Employees`
   );
-
   if (confirmed) {
     try {
       const selectedIds = selectedRows.map((row) =>
         parseInt(row["Employee ID"])
       );
-
       const { error } = await supabaseClient
         .from("employees")
         .update({ status_id: newStatusId })
         .in("emp_id", selectedIds);
-
       if (error) throw error;
-
       await refreshData();
-
       const archiveBtn = document.getElementById("archiveBtn");
       if (archiveBtn) {
         archiveBtn.disabled = true;
       }
-
       showGlobalAlert(
         "success",
         `${
           selectedRows.length
         } employee(s) ${actionText.toLowerCase()}d successfully!`
       );
+      // Log the archive/restore in audit logs
+      const {
+        data: { user },
+      } = await supabaseClient.auth.getUser();
+
+      for (const empId of selectedIds) {
+        const description =
+          action === "archive"
+            ? `Archived an employee with ID ${empId}`
+            : `Restored an employee with ID ${empId}`;
+
+        await supabaseClient.from("audit_trail").insert({
+          user_id: user?.id,
+          action: "edit",
+          description: description,
+          module_affected: "Employee Information",
+          record_id: empId,
+          user_agent: navigator.userAgent,
+          timestamp: new Date().toISOString(),
+        });
+      }
     } catch (error) {
       console.error("Error updating employee status:", error);
       showGlobalAlert(
@@ -767,7 +785,6 @@ async function addEmployeeToSupabase(formData, officialTimeId) {
     })
     .select()
     .single();
-
   if (govError) throw govError;
 
   // Get department ID
@@ -776,7 +793,6 @@ async function addEmployeeToSupabase(formData, officialTimeId) {
     .select("department_id")
     .eq("department_name", formData.get("department"))
     .single();
-
   if (deptError) throw deptError;
 
   // Get position ID
@@ -785,25 +801,47 @@ async function addEmployeeToSupabase(formData, officialTimeId) {
     .select("position_id")
     .eq("position_name", formData.get("position"))
     .single();
-
   if (posError) throw posError;
 
   // Then create employee record
-  const { error: empError } = await supabaseClient.from("employees").insert({
-    first_name: formData.get("firstName"),
-    last_name: formData.get("lastName"),
-    middle_name: formData.get("middleInitial") || null,
-    phone_number: formData.get("contact") || null,
-    address: formData.get("address") || null,
-    date_hired: formData.get("dateHired"),
-    department_id: department.department_id,
-    position_id: position.position_id,
-    gov_info_id: govInfo.gov_info_id,
-    official_time_id: parseInt(officialTimeId),
-    status_id: 1,
-  });
+  const { data: newEmployee, error: empError } = await supabaseClient
+    .from("employees")
+    .insert({
+      first_name: formData.get("firstName"),
+      last_name: formData.get("lastName"),
+      middle_name: formData.get("middleInitial") || null,
+      phone_number: formData.get("contact") || null,
+      address: formData.get("address") || null,
+      date_hired: formData.get("dateHired"),
+      department_id: department.department_id,
+      position_id: position.position_id,
+      gov_info_id: govInfo.gov_info_id,
+      official_time_id: parseInt(officialTimeId),
+      status_id: 1,
+    })
+    .select()
+    .single();
 
   if (empError) throw empError;
+
+  // Log to Audit Logs
+  const {
+    data: { user },
+  } = await supabaseClient.auth.getUser();
+
+  const employeeName = `${formData.get("firstName")} ${formData.get(
+    "lastName"
+  )}`;
+
+  await supabaseClient.from("audit_trail").insert({
+    user_id: user?.id,
+    action: "create",
+    description: `Created a new employee: ${employeeName} with ID ${newEmployee.emp_id}`,
+    module_affected: "Employee Information",
+    record_id: newEmployee.emp_id,
+    user_agent: navigator.userAgent,
+    timestamp: new Date().toISOString(),
+  });
 }
 
 // Update employee in Supabase
@@ -887,6 +925,25 @@ async function updateEmployeeInSupabase(formData, employeeId, officialTimeId) {
     })
     .eq("emp_id", parseInt(employeeId));
   if (empError) throw empError;
+
+  // Log to Audit Logs
+  const {
+    data: { user },
+  } = await supabaseClient.auth.getUser();
+
+  const employeeName = `${formData.get("firstName")} ${formData.get(
+    "lastName"
+  )}`;
+
+  await supabaseClient.from("audit_trail").insert({
+    user_id: user?.id,
+    action: "edit",
+    description: `Updated employee information: ${employeeName} with ID ${employeeId}`,
+    module_affected: "Employee Information",
+    record_id: parseInt(employeeId),
+    user_agent: navigator.userAgent,
+    timestamp: new Date().toISOString(),
+  });
 }
 
 // ============================================================================
@@ -952,7 +1009,7 @@ function handleGenerateCSV() {
 }
 
 // Generate and download CSV file
-function generateCSVFile(data) {
+async function generateCSVFile(data) {
   console.log("Generating CSV from data:", data);
 
   // Define CSV headers
@@ -1016,6 +1073,26 @@ function generateCSVFile(data) {
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
+
+  // Log to Audit Trail
+  try {
+    const {
+      data: { user },
+    } = await supabaseClient.auth.getUser();
+
+    await supabaseClient.from("audit_trail").insert({
+      user_id: user?.id,
+      action: "view",
+      description: `Exported employee data to CSV file (${data.length} employee(s))`,
+      module_affected: "Employee Information",
+      record_id: null,
+      user_agent: navigator.userAgent,
+      timestamp: new Date().toISOString(),
+    });
+  } catch (auditError) {
+    console.error("Error logging audit trail:", auditError);
+    // Don't throw error - CSV export was successful
+  }
 
   showGlobalAlert(
     "success",

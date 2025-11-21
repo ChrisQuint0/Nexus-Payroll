@@ -1,5 +1,6 @@
-import { rowData } from "./reports-data.js";
-
+import { getAuditTrailData } from "./reports-data.js";
+import { supabaseClient } from "../supabase/supabaseClient.js";
+const rowData = await getAuditTrailData();
 const filterParams = {
   comparator: (filterLocalDateAtMidnight, cellValue) => {
     const dateAsString = cellValue;
@@ -60,7 +61,6 @@ const gridOptions = {
     { field: "Description", filter: true },
     { field: "Module_Affected", filter: true },
     { field: "RecordID", filter: true },
-    { field: "IP", filter: true },
     { field: "UserAgent", filter: true },
     { field: "Time", filter: true },
   ],
@@ -107,4 +107,52 @@ filterBtn.addEventListener("change", (e) => {
 
   // Apply the filter changes
   gridApi.onFilterChanged();
+});
+
+function getCSVExportParams() {
+  const now = new Date();
+
+  // Format: YYYY-MM-DD_HH-MM-SS
+  const formatted =
+    now.getFullYear() +
+    "-" +
+    String(now.getMonth() + 1).padStart(2, "0") +
+    "-" +
+    String(now.getDate()).padStart(2, "0") +
+    "_" +
+    String(now.getHours()).padStart(2, "0") +
+    "-" +
+    String(now.getMinutes()).padStart(2, "0") +
+    "-" +
+    String(now.getSeconds()).padStart(2, "0");
+
+  return {
+    fileName: `Audit Logs Report ${formatted}`,
+  };
+}
+
+async function exportLogsCSV() {
+  gridApi.exportDataAsCsv(getCSVExportParams());
+  try {
+    const {
+      data: { user },
+    } = await supabaseClient.auth.getUser();
+
+    await supabaseClient.from("audit_trail").insert({
+      user_id: user?.id,
+      action: "view",
+      description: `Exported Audit Log data to CSV file `,
+      module_affected: "Audit Logs",
+      record_id: null,
+      user_agent: navigator.userAgent,
+      timestamp: new Date().toISOString(),
+    });
+  } catch (auditError) {
+    console.error("Error logging audit trail:", auditError);
+    // Don't throw error - CSV export was successful
+  }
+}
+const csvExportBtn = document.getElementById("generateCsvBtn");
+csvExportBtn.addEventListener("click", (e) => {
+  exportLogsCSV();
 });
