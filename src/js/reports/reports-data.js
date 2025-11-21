@@ -1,59 +1,202 @@
-import { supabaseClient } from "../supabase/supabaseClient.js";
-
-async function getAuditTrailData() {
-  try {
-    // Fetch audit trail data
-    const { data: auditData, error: auditError } = await supabaseClient
-      .from("audit_trail")
-      .select("*")
-      .order("timestamp", { ascending: false });
-
-    if (auditError) throw auditError;
-
-    /* // Get unique user IDs
-    const userIds = [
-      ...new Set(auditData.map((record) => record.user_id).filter(Boolean)),
-    ];
-
-    // Fetch user data separately
-    const { data: userData, error: userError } = await supabaseClient
-      .from("employees") // or whatever your users table is called
-      .select("emp_id, first_name, last_name")
-      .in("emp_id", userIds);
-
-    if (userError) throw userError;
-
-    // Create a user lookup map
-    const userMap = {};
-    userData?.forEach((user) => {
-      userMap[user.emp_id] = `${user.last_name}, ${user.first_name}`;
-    }); */
-
-    // Transform the data to match the required shape
-    return auditData.map((record) => {
-      // Get the user name from the map
-      /*  const userName = userMap[record.user_id] || "Unknown User"; */
-      const userName = "Unknown User";
-
-      // Format the timestamp to YYYY-MM-DD HH:MM:SS
-      const date = new Date(record.timestamp);
-      const formattedTime = date.toISOString().slice(0, 19).replace("T", " ");
-
-      return {
-        Name: userName,
-        Action: record.action.charAt(0).toUpperCase() + record.action.slice(1),
-        Description: record.description,
-        Module_Affected: record.module_affected,
-        RecordID: record.audit_id,
-        UserAgent: record.user_agent,
-        Time: formattedTime,
-      };
-    });
-  } catch (error) {
-    console.error("Error fetching audit trail data:", error);
-    throw error;
-  }
-}
-
-// Export for use in other files
-export { getAuditTrailData };
+export const rowData = [
+  {
+    Name: "Dela Cruz, Juan",
+    Action: "Edit",
+    Description: "Dela Cruz Juan edited...",
+    Module_Affected: "Payroll",
+    RecordID: 4,
+    IP: "192.168.0.1",
+    UserAgent: "Mozilla/5.0",
+    Time: "2025-09-25 09:05:27",
+  },
+  {
+    Name: "Garcia, Maria",
+    Action: "Create",
+    Description: "Created new employee record...",
+    Module_Affected: "HR",
+    RecordID: 12,
+    IP: "192.168.0.2",
+    UserAgent: "Mozilla/5.0",
+    Time: "2025-09-25 09:10:14",
+  },
+  {
+    Name: "Santos, Pedro",
+    Action: "Delete",
+    Description: "Deleted payroll entry...",
+    Module_Affected: "Payroll",
+    RecordID: 7,
+    IP: "192.168.0.3",
+    UserAgent: "Chrome/118.0",
+    Time: "2025-09-25 09:15:50",
+  },
+  {
+    Name: "Reyes, Ana",
+    Action: "View",
+    Description: "Viewed employee profile...",
+    Module_Affected: "HR",
+    RecordID: 15,
+    IP: "192.168.0.4",
+    UserAgent: "Safari/17.0",
+    Time: "2025-09-25 09:20:33",
+  },
+  {
+    Name: "Lopez, Carlos",
+    Action: "Edit",
+    Description: "Updated attendance data...",
+    Module_Affected: "Attendance",
+    RecordID: 23,
+    IP: "192.168.0.5",
+    UserAgent: "Mozilla/5.0",
+    Time: "2025-09-25 09:22:11",
+  },
+  {
+    Name: "Cruz, Jose",
+    Action: "Create",
+    Description: "Added new leave request...",
+    Module_Affected: "Leave",
+    RecordID: 31,
+    IP: "192.168.0.6",
+    UserAgent: "Chrome/118.0",
+    Time: "2025-09-25 09:25:42",
+  },
+  {
+    Name: "Torres, Elena",
+    Action: "Delete",
+    Description: "Removed outdated report...",
+    Module_Affected: "Reports",
+    RecordID: 19,
+    IP: "192.168.0.7",
+    UserAgent: "Mozilla/5.0",
+    Time: "2025-09-25 09:27:08",
+  },
+  {
+    Name: "Mendoza, Luis",
+    Action: "View",
+    Description: "Viewed permissions list...",
+    Module_Affected: "Settings",
+    RecordID: 5,
+    IP: "192.168.0.8",
+    UserAgent: "Edge/117.0",
+    Time: "2025-09-25 09:30:55",
+  },
+  {
+    Name: "Pascual, Rosa",
+    Action: "Create",
+    Description: "Added new schedule...",
+    Module_Affected: "Scheduling",
+    RecordID: 44,
+    IP: "192.168.0.9",
+    UserAgent: "Mozilla/5.0",
+    Time: "2025-09-25 09:33:21",
+  },
+  {
+    Name: "Valdez, Mark",
+    Action: "Edit",
+    Description: "Modified benefits info...",
+    Module_Affected: "HR",
+    RecordID: 28,
+    IP: "192.168.0.10",
+    UserAgent: "Chrome/118.0",
+    Time: "2025-09-25 09:35:18",
+  },
+  {
+    Name: "Navarro, Kim",
+    Action: "Delete",
+    Description: "Archived old leave records...",
+    Module_Affected: "Leave",
+    RecordID: 36,
+    IP: "192.168.0.11",
+    UserAgent: "Mozilla/5.0",
+    Time: "2025-09-25 09:37:45",
+  },
+  {
+    Name: "Diaz, Rafael",
+    Action: "View",
+    Description: "Viewed payroll summary...",
+    Module_Affected: "Payroll",
+    RecordID: 11,
+    IP: "192.168.0.12",
+    UserAgent: "Safari/17.0",
+    Time: "2025-09-25 09:40:03",
+  },
+  {
+    Name: "Bautista, Liza",
+    Action: "Create",
+    Description: "Registered new department...",
+    Module_Affected: "Settings",
+    RecordID: 2,
+    IP: "192.168.0.13",
+    UserAgent: "Edge/117.0",
+    Time: "2025-09-25 09:42:30",
+  },
+  {
+    Name: "Santiago, Noel",
+    Action: "Edit",
+    Description: "Adjusted overtime rates...",
+    Module_Affected: "Payroll",
+    RecordID: 9,
+    IP: "192.168.0.14",
+    UserAgent: "Mozilla/5.0",
+    Time: "2025-09-25 09:44:55",
+  },
+  {
+    Name: "Castillo, Erika",
+    Action: "Delete",
+    Description: "Removed unused user...",
+    Module_Affected: "User Management",
+    RecordID: 17,
+    IP: "192.168.0.15",
+    UserAgent: "Chrome/118.0",
+    Time: "2025-09-25 09:46:22",
+  },
+  {
+    Name: "Vargas, Paul",
+    Action: "View",
+    Description: "Viewed audit logs...",
+    Module_Affected: "Reports",
+    RecordID: 20,
+    IP: "192.168.0.16",
+    UserAgent: "Mozilla/5.0",
+    Time: "2025-09-25 09:48:40",
+  },
+  {
+    Name: "Del Rosario, Hannah",
+    Action: "Create",
+    Description: "Added bonus entry...",
+    Module_Affected: "Payroll",
+    RecordID: 14,
+    IP: "192.168.0.17",
+    UserAgent: "Safari/17.0",
+    Time: "2025-09-25 09:50:27",
+  },
+  {
+    Name: "Aquino, John",
+    Action: "Edit",
+    Description: "Updated personal info...",
+    Module_Affected: "Profile",
+    RecordID: 3,
+    IP: "192.168.0.18",
+    UserAgent: "Mozilla/5.0",
+    Time: "2025-09-25 09:52:11",
+  },
+  {
+    Name: "Villanueva, Mia",
+    Action: "Delete",
+    Description: "Deleted task assignment...",
+    Module_Affected: "Scheduling",
+    RecordID: 40,
+    IP: "192.168.0.19",
+    UserAgent: "Edge/117.0",
+    Time: "2025-09-25 09:54:05",
+  },
+  {
+    Name: "Lim, Patrick",
+    Action: "View",
+    Description: "Viewed system settings...",
+    Module_Affected: "Settings",
+    RecordID: 6,
+    IP: "192.168.0.20",
+    UserAgent: "Chrome/118.0",
+    Time: "2025-09-25 09:56:31",
+  },
+];

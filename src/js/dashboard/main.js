@@ -503,17 +503,11 @@ async function saveGovDeadlines() {
   const dateInputs = document.querySelectorAll(
     '#deadlines-list-values input[type="date"]'
   );
-  const updates = [];
-  const auditLogs = [];
 
-  // Get current user for audit logging
-  const {
-    data: { user },
-  } = await supabaseClient.auth.getUser();
+  const updates = [];
 
   dateInputs.forEach((input) => {
     const deadlineId = input.dataset.deadlineId;
-    const deadlineName = input.dataset.deadlineName || "Government Deadline"; // Add data-deadline-name to your inputs if available
     const newDate = input.value;
 
     updates.push(
@@ -522,28 +516,10 @@ async function saveGovDeadlines() {
         .update({ deadline: newDate })
         .eq("id", deadlineId)
     );
-
-    // Prepare audit log entry
-    auditLogs.push({
-      user_id: user?.id,
-      action: "edit",
-      description: `Updated government deadline "${deadlineName}" to ${newDate}`,
-      module_affected: "Dashboard - Government Deadlines",
-      record_id: parseInt(deadlineId),
-      user_agent: navigator.userAgent,
-      timestamp: new Date().toISOString(),
-    });
   });
 
   try {
-    // Update all deadlines
     await Promise.all(updates);
-
-    // Log all changes to audit trail
-    if (auditLogs.length > 0) {
-      await supabaseClient.from("audit_trail").insert(auditLogs);
-    }
-
     console.log("All deadlines updated successfully");
 
     // Refresh the list in view mode
