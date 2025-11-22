@@ -1,4 +1,6 @@
-import { rowData } from "./reports-data.js";
+import { getAuditTrailData } from "./reports-data.js";
+import { supabaseClient } from "../supabase/supabaseClient.js";
+const rowData = await getAuditTrailData();
 
 const filterParams = {
   comparator: (filterLocalDateAtMidnight, cellValue) => {
