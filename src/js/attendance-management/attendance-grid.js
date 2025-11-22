@@ -115,47 +115,47 @@ class CustomStatusEditor {
 // Raw Time Logs Columns
 const rawTimeLogsColumns = [
   { field: "Date", sortable: true, filter: true, width: 130 },
-  { 
-    field: "Employee ID", 
-    sortable: true, 
-    filter: true, 
+  {
+    field: "Employee ID",
+    sortable: true,
+    filter: true,
     width: 140,
     valueFormatter: (params) => {
-      if (!params.value) return '';
+      if (!params.value) return "";
       // Ensure Employee ID is treated as string
       return String(params.value);
     },
     comparator: (valueA, valueB) => {
       // String comparison for Employee IDs
-      const strA = String(valueA || '');
-      const strB = String(valueB || '');
+      const strA = String(valueA || "");
+      const strB = String(valueB || "");
       return strA.localeCompare(strB);
-    }
+    },
   },
-  { 
-    field: "Last Name", 
-    sortable: true, 
-    filter: true, 
+  {
+    field: "Last Name",
+    sortable: true,
+    filter: true,
     width: 160,
     valueFormatter: (params) => {
-      if (!params.value) return '';
+      if (!params.value) return "";
       return params.value.toString();
     }
   },
-  { 
-    field: "First Name", 
-    sortable: true, 
-    filter: true, 
+  {
+    field: "First Name",
+    sortable: true,
+    filter: true,
     width: 160,
     valueFormatter: (params) => {
-      if (!params.value) return '';
+      if (!params.value) return "";
       return params.value.toString();
     }
   },
-  { 
-    field: "Middle Name", 
-    sortable: true, 
-    filter: true, 
+  {
+    field: "Middle Name",
+    sortable: true,
+    filter: true,
     width: 140,
     valueFormatter: (params) => {
       if (!params.value) return '';
@@ -200,7 +200,7 @@ const rawTimeLogsColumns = [
     cellEditor: "agNumberCellEditor",
     cellEditorParams: { min: 0, precision: 0 },
     singleClickEdit: true,
-    width: 100
+    width: 100,
   },
   { 
     field: "Undertime", 
@@ -210,7 +210,7 @@ const rawTimeLogsColumns = [
     cellEditor: "agNumberCellEditor",
     cellEditorParams: { min: 0, precision: 0 },
     singleClickEdit: true,
-    width: 120
+    width: 120,
   },
   {
     field: "Status",
@@ -219,7 +219,7 @@ const rawTimeLogsColumns = [
     editable: true,
     cellEditor: CustomStatusEditor,
     singleClickEdit: true,
-    cellStyle: { cursor: 'pointer' },
+    cellStyle: { cursor: "pointer" },
     width: 180,
     cellRenderer: (params) => {
       const value = params.value || "N/A";
@@ -239,13 +239,13 @@ const rawTimeLogsColumns = [
     },
   },
   { field: "Cutoff Period", sortable: true, filter: true, hide: true },
-  { 
-    field: "Department", 
-    sortable: true, 
-    filter: true, 
+  {
+    field: "Department",
+    sortable: true,
+    filter: true,
     width: 200,
     valueFormatter: (params) => {
-      if (!params.value) return '';
+      if (!params.value) return "";
       const dept = params.value.toString().toLowerCase();
       if (dept.includes('information') || dept.includes('ech')) {
         return 'Information Technology';
@@ -257,58 +257,82 @@ const rawTimeLogsColumns = [
 
 // Attendance Summary Columns
 const summaryColumns = [
-  { headerName: "Cutoff ID", field: "Cutoff ID", sortable: true, filter: true, resizable: true, width: 130 },
-  { headerName: "Employee ID", field: "Employee ID", sortable: true, filter: true, resizable: true, width: 140 },
-  { 
-    headerName: "First Name", 
-    field: "First Name", 
-    sortable: true, 
-    filter: true, 
-    resizable: true, 
+  {
+    headerName: "Cutoff ID",
+    field: "Cutoff ID",
+    sortable: true,
+    filter: true,
+    resizable: true,
+    width: 130,
+  },
+  {
+    headerName: "Employee ID",
+    field: "Employee ID",
+    sortable: true,
+    filter: true,
+    resizable: true,
+    width: 140,
+  },
+  {
+    headerName: "First Name",
+    field: "First Name",
+    sortable: true,
+    filter: true,
+    resizable: true,
     width: 160,
     valueFormatter: (params) => {
       if (!params.value) return '';
       return params.value.toString();
     }
   },
-  { 
-    headerName: "Middle Name", 
-    field: "Middle Name", 
-    sortable: true, 
-    filter: true, 
-    resizable: true, 
+  {
+    headerName: "Middle Name",
+    field: "Middle Name",
+    sortable: true,
+    filter: true,
+    resizable: true,
     width: 140,
     valueFormatter: (params) => {
       if (!params.value) return '';
       return params.value.toString().toUpperCase();
     }
   },
-  { 
-    headerName: "Last Name", 
-    field: "Last Name", 
-    sortable: true, 
-    filter: true, 
-    resizable: true, 
+  {
+    headerName: "Last Name",
+    field: "Last Name",
+    sortable: true,
+    filter: true,
+    resizable: true,
     width: 160,
     valueFormatter: (params) => {
       if (!params.value) return '';
       return params.value.toString();
     }
   },
-  { headerName: "Regular Hours", field: "Regular Hours", sortable: true, filter: true, resizable: true, width: 150 },
-  { headerName: "Overtime Hours", field: "Overtime Hours", sortable: true, filter: true, resizable: true, width: 160 },
-  { headerName: "Late", field: "Late Minutes", sortable: true, filter: true, resizable: true, width: 110 },
-  { headerName: "Undertime", field: "Undertime Minutes", sortable: true, filter: true, resizable: true, width: 140 },
-  { headerName: "Leave W/ Pay", field: "Leave W/ Pay", sortable: true, filter: true, resizable: true, width: 150 },
-  { headerName: "Leave W/O Pay", field: "Leave W/O Pay", sortable: true, filter: true, resizable: true, width: 160 },
-  { headerName: "Absences", field: "Absences", sortable: true, filter: true, resizable: true, width: 130 },
-  { headerName: "Cutoff Period", field: "Cutoff Period", sortable: true, filter: true, resizable: true, width: 220, pinned: null, hide: false },
-  { 
-    headerName: "Department", 
-    field: "Department", 
-    sortable: true, 
-    filter: true, 
-    resizable: true, 
+  {
+    headerName: "Absences",
+    field: "Absences",
+    sortable: true,
+    filter: true,
+    resizable: true,
+    width: 130,
+  },
+  {
+    headerName: "Cutoff Period",
+    field: "Cutoff Period",
+    sortable: true,
+    filter: true,
+    resizable: true,
+    width: 220,
+    pinned: null,
+    hide: false,
+  },
+  {
+    headerName: "Department",
+    field: "Department",
+    sortable: true,
+    filter: true,
+    resizable: true,
     width: 200,
     valueFormatter: (params) => {
       if (!params.value) return '';
@@ -323,80 +347,80 @@ const summaryColumns = [
 
 // Add Time Logs Tab - Employee List Columns
 const addTimeLogsColumns = [
-  { 
-    field: "Employee ID", 
-    sortable: true, 
-    filter: true, 
+  {
+    field: "Employee ID",
+    sortable: true,
+    filter: true,
     width: 130,
     valueFormatter: (params) => {
-      if (!params.value) return '';
+      if (!params.value) return "";
       // Ensure Employee ID is treated as string to prevent "invalid number" error
       return String(params.value);
     },
     comparator: (valueA, valueB) => {
       // String comparison for Employee IDs
-      const strA = String(valueA || '');
-      const strB = String(valueB || '');
+      const strA = String(valueA || "");
+      const strB = String(valueB || "");
       return strA.localeCompare(strB);
-    }
+    },
   },
-  { 
-    field: "First Name", 
-    sortable: true, 
-    filter: true, 
+  {
+    field: "First Name",
+    sortable: true,
+    filter: true,
     width: 200,
     valueFormatter: (params) => {
-      if (!params.value) return '';
+      if (!params.value) return "";
       return params.value.toString();
-    }
+    },
   },
-  { 
-    field: "Last Name", 
-    sortable: true, 
-    filter: true, 
+  {
+    field: "Last Name",
+    sortable: true,
+    filter: true,
     width: 200,
     valueFormatter: (params) => {
-      if (!params.value) return '';
+      if (!params.value) return "";
       return params.value.toString();
-    }
+    },
   },
-  { 
-    field: "Middle Name", 
-    sortable: true, 
-    filter: true, 
+  {
+    field: "Middle Name",
+    sortable: true,
+    filter: true,
     width: 140,
     valueFormatter: (params) => {
-      if (!params.value) return '';
+      if (!params.value) return "";
       return params.value.toString().toUpperCase();
-    }
+    },
   },
-  { 
-    field: "Department", 
-    sortable: true, 
-    filter: true, 
+  {
+    field: "Department",
+    sortable: true,
+    filter: true,
     width: 220,
     valueFormatter: (params) => {
-      if (!params.value) return '';
+      if (!params.value) return "";
       const dept = params.value.toString().toLowerCase();
-      if (dept.includes('information') || dept.includes('ech')) {
-        return 'Information Technology';
+      if (dept.includes("information") || dept.includes("ech")) {
+        return "Information Technology";
       }
       return params.value;
-    }
+    },
   },
-  { 
-    field: "Position", 
-    sortable: true, 
-    filter: true, 
-    width: 220
-  }
+  {
+    field: "Position",
+    sortable: true,
+    filter: true,
+    width: 220,
+  },
 ];
 
 // Save Edited Row Function
 async function saveEditedRow(rowData, fieldChanged) {
   try {
     console.log(" Saving edited row to Supabase...", { rowData, fieldChanged });
-    
+
     const fieldMapping = {
       "Time In": "time_in",
       "Time Out": "time_out",
@@ -411,21 +435,26 @@ async function saveEditedRow(rowData, fieldChanged) {
       console.warn(" Field not mapped for saving:", fieldChanged);
       return;
     }
-    
+
     const updateData = {
       [dbField]: rowData[fieldChanged]
     };
-    
+
     if (dbField === "time_in" || dbField === "time_out") {
       const value = rowData[fieldChanged];
       if (value && !value.includes("T")) {
         updateData[dbField] = value.replace(" ", "T");
       }
     }
-    
+
     console.log(" Update data:", updateData);
-    console.log("Matching on emp_id:", rowData["Employee ID"], "and date:", rowData["Date"]);
-    
+    console.log(
+      "Matching on emp_id:",
+      rowData["Employee ID"],
+      "and date:",
+      rowData["Date"]
+    );
+
     const { data, error } = await supabaseClient
       .from("raw_time_logs")
       .update(updateData)
@@ -442,12 +471,13 @@ async function saveEditedRow(rowData, fieldChanged) {
     
     if (!data || data.length === 0) {
       console.warn(" No records updated. Check if employee ID and date match.");
-      alert("No matching record found to update. Please refresh and try again.");
+      alert(
+        "No matching record found to update. Please refresh and try again."
+      );
       return;
     }
-    
+
     console.log(" Successfully saved to Supabase:", data);
-    
   } catch (err) {
     console.error(" Unexpected error saving row:", err);
     alert(`An error occurred while saving: ${err.message}`);
@@ -460,12 +490,14 @@ let selectedEmployees = [];
 // Function to update selected employees for Add Time Logs tab
 function updateSelectedEmployeesForTimeLog() {
   selectedEmployees = gridApi.getSelectedRows();
-  const addTimeLogButtonContainer = document.getElementById("addTimeLogButtonContainer");
-  
+  const addTimeLogButtonContainer = document.getElementById(
+    "addTimeLogButtonContainer"
+  );
+
   // Always show button in Add Time Logs view
   if (currentView === "addTimeLogs") {
     addTimeLogButtonContainer.classList.remove("hidden");
-    
+
     // Update employee info if one is selected
     if (selectedEmployees.length === 1) {
       updateSelectedEmployeeInfo(selectedEmployees[0]);
@@ -557,7 +589,9 @@ function calculateTimeAdjustments(timeIn, timeOut, officialStartTime, officialEn
     }
   } else {
     // If no time out, calculate undertime as the entire afternoon duration
-    const afternoonDuration = Math.round((officialEndDate - new Date(`${logDate}T12:00:00`)) / (1000 * 60));
+    const afternoonDuration = Math.round(
+      (officialEndDate - new Date(`${logDate}T12:00:00`)) / (1000 * 60)
+    );
     undertimeMinutes = afternoonDuration > 0 ? afternoonDuration : 240; // Default to 4 hours if calculation fails
   }
 
@@ -588,23 +622,30 @@ async function saveNewTimeLog(timeLogData, selectedEmployee) {
   try {
     console.log(" Saving new time log to Supabase...", timeLogData);
 
-    const logDate = timeLogData.timeIn.split(' ')[0];
-    
+    const logDate = timeLogData.timeIn.split(" ")[0];
+
     // Validate date is not in the future - FIXED: Allow today's date
     const selectedDate = new Date(logDate);
     const currentDate = new Date();
     currentDate.setHours(0, 0, 0, 0); // Reset time part for accurate date comparison
     selectedDate.setHours(0, 0, 0, 0); // Also reset selected date time part
-    
-    if (selectedDate > currentDate) {
-      throw new Error(`Cannot add time logs for future dates. Selected date: ${logDate}`);
-    }
-    
-    console.log(" Checking for duplicates for employee:", timeLogData.employeeId, "on date:", logDate);
 
-    const startOfDay = logDate + ' 00:00:00';
-    const endOfDay = logDate + ' 23:59:59';
-    
+    if (selectedDate > currentDate) {
+      throw new Error(
+        `Cannot add time logs for future dates. Selected date: ${logDate}`
+      );
+    }
+
+    console.log(
+      " Checking for duplicates for employee:",
+      timeLogData.employeeId,
+      "on date:",
+      logDate
+    );
+
+    const startOfDay = logDate + " 00:00:00";
+    const endOfDay = logDate + " 23:59:59";
+
     // Check for existing time logs
     const { data: existingLogs, error: checkError } = await supabaseClient
       .from("raw_time_logs")
@@ -615,7 +656,9 @@ async function saveNewTimeLog(timeLogData, selectedEmployee) {
 
     if (checkError) {
       console.error(" Error checking for existing time logs:", checkError);
-      throw new Error(`Failed to check for existing time logs: ${checkError.message}`);
+      throw new Error(
+        `Failed to check for existing time logs: ${checkError.message}`
+      );
     }
 
     console.log(" Found existing logs for date:", existingLogs);
@@ -625,7 +668,10 @@ async function saveNewTimeLog(timeLogData, selectedEmployee) {
     }
 
     // Fetch official_time_id from employees table using employee_id
-    console.log("Fetching official_time_id from employees table for emp_id:", timeLogData.employeeId);
+    console.log(
+      "Fetching official_time_id from employees table for emp_id:",
+      timeLogData.employeeId
+    );
     const { data: employeeData, error: employeeError } = await supabaseClient
       .from("employees")
       .select("official_time_id")
@@ -635,16 +681,25 @@ async function saveNewTimeLog(timeLogData, selectedEmployee) {
     let officialTimeId = 1; // Default fallback
 
     if (employeeError) {
-      console.warn(" Error fetching employee official_time_id, using default:", employeeError);
+      console.warn(
+        " Error fetching employee official_time_id, using default:",
+        employeeError
+      );
     } else if (employeeData && employeeData.official_time_id) {
       officialTimeId = employeeData.official_time_id;
       console.log(" Found official_time_id:", officialTimeId);
     } else {
-      console.warn(" No official_time_id found for employee, using default:", officialTimeId);
+      console.warn(
+        " No official_time_id found for employee, using default:",
+        officialTimeId
+      );
     }
 
     // Insert into raw_time_logs
-    console.log(" Inserting into raw_time_logs with official_time_id:", officialTimeId);
+    console.log(
+      " Inserting into raw_time_logs with official_time_id:",
+      officialTimeId
+    );
     const { data, error } = await supabaseClient
       .from("raw_time_logs")
       .insert([
@@ -675,25 +730,30 @@ async function saveNewTimeLog(timeLogData, selectedEmployee) {
 
 // Helper function to create warning element - FIXED VERSION
 function createDateWarningElement() {
-  const warningElement = document.createElement('div');
-  warningElement.id = 'dateWarning';
-  warningElement.className = 'text-warning text-sm mt-2 bg-warning/10 p-2 rounded hidden';
-  
-  const form = document.getElementById('addTimeLogForm');
-  const dateInput = document.getElementById('logDate');
-  
+  const warningElement = document.createElement("div");
+  warningElement.id = "dateWarning";
+  warningElement.className =
+    "text-warning text-sm mt-2 bg-warning/10 p-2 rounded hidden";
+
+  const form = document.getElementById("addTimeLogForm");
+  const dateInput = document.getElementById("logDate");
+
   // Safe insertion - append to form instead of using insertBefore
   if (form && dateInput) {
     // Find the date input container and insert after it
-    const dateContainer = dateInput.closest('.form-control') || dateInput.parentElement;
+    const dateContainer =
+      dateInput.closest(".form-control") || dateInput.parentElement;
     if (dateContainer && dateContainer.parentNode) {
-      dateContainer.parentNode.insertBefore(warningElement, dateContainer.nextSibling);
+      dateContainer.parentNode.insertBefore(
+        warningElement,
+        dateContainer.nextSibling
+      );
     } else {
       // Fallback: append to form
       form.appendChild(warningElement);
     }
   }
-  
+
   return warningElement;
 }
 
@@ -701,21 +761,22 @@ function createDateWarningElement() {
 function validateDateSelection(date) {
   const selectedDate = new Date(date);
   const currentDate = new Date();
-  
+
   // Reset both dates to start of day for accurate comparison
   selectedDate.setHours(0, 0, 0, 0);
   currentDate.setHours(0, 0, 0, 0);
-  
-  const warningElement = document.getElementById('dateWarning') || createDateWarningElement();
-  
+
+  const warningElement =
+    document.getElementById("dateWarning") || createDateWarningElement();
+
   // Only show warning for FUTURE dates (selectedDate > currentDate)
   // Allow today (selectedDate.getTime() === currentDate.getTime()) and past dates
   if (selectedDate > currentDate) {
     warningElement.textContent = ` Cannot add time logs for future dates. Selected date: ${date}`;
-    warningElement.classList.remove('hidden');
+    warningElement.classList.remove("hidden");
     return false;
   } else {
-    warningElement.classList.add('hidden');
+    warningElement.classList.add("hidden");
     return true;
   }
 }
@@ -736,25 +797,25 @@ function initializeTimeLogModal() {
   }
 
   // Set max date to today to prevent future date selection in the date picker
-  const today = new Date().toISOString().split('T')[0];
+  const today = new Date().toISOString().split("T")[0];
   logDateInput.max = today;
   logDateInput.value = today;
 
-  logDateInput.addEventListener('change', async function() {
+  logDateInput.addEventListener("change", async function () {
     const date = this.value;
-    
+
     // Validate date immediately when changed - FIXED: Allow today's date
     const isValidDate = validateDateSelection(date);
-    
+
     if (!isValidDate) {
       // If invalid date (future), reset to today
       this.value = today;
       return;
     }
-    
-    timeInInput.value = date + 'T08:00';
-    timeOutInput.value = date + 'T17:00';
-    
+
+    timeInInput.value = date + "T08:00";
+    timeOutInput.value = date + "T17:00";
+
     await autoCalculateTimes();
 
     if (selectedEmployees.length === 1) {
@@ -771,13 +832,18 @@ function initializeTimeLogModal() {
           .lte("time_in", endOfDay);
 
         if (!error && existingLogs && existingLogs.length > 0) {
-          const warningElement = document.getElementById('dateWarning') || createDateWarningElement();
+          const warningElement =
+            document.getElementById("dateWarning") ||
+            createDateWarningElement();
           warningElement.textContent = ` This employee already has a time log for ${date}. Adding a new one will be blocked.`;
-          warningElement.classList.remove('hidden');
+          warningElement.classList.remove("hidden");
         } else {
-          const warningElement = document.getElementById('dateWarning');
-          if (warningElement && !warningElement.textContent.includes('future dates')) {
-            warningElement.classList.add('hidden');
+          const warningElement = document.getElementById("dateWarning");
+          if (
+            warningElement &&
+            !warningElement.textContent.includes("future dates")
+          ) {
+            warningElement.classList.add("hidden");
           }
         }
       } catch (err) {
@@ -786,12 +852,12 @@ function initializeTimeLogModal() {
     }
   });
 
-  timeInInput.value = today + 'T08:00';
-  timeOutInput.value = today + 'T17:00';
+  timeInInput.value = today + "T08:00";
+  timeOutInput.value = today + "T17:00";
 
   // Add event listeners for automatic status calculation
-  timeInInput.addEventListener('change', autoCalculateTimes);
-  timeOutInput.addEventListener('change', autoCalculateTimes);
+  timeInInput.addEventListener("change", autoCalculateTimes);
+  timeOutInput.addEventListener("change", autoCalculateTimes);
 
   async function autoCalculateTimes() {
     if (selectedEmployees.length !== 1) return;
@@ -831,9 +897,8 @@ function initializeTimeLogModal() {
         officialEnd: officialTime.endTime,
         lateMinutes,
         undertimeMinutes,
-        status
+        status,
       });
-
     } catch (error) {
       console.warn("Error auto-calculating times:", error);
       // Fallback to default values if calculation fails
@@ -849,7 +914,7 @@ function initializeTimeLogModal() {
     autoCalculateTimes();
   };
 
-  addTimeLogForm.addEventListener('submit', async function(e) {
+  addTimeLogForm.addEventListener("submit", async function (e) {
     e.preventDefault();
     
     if (selectedEmployees.length !== 1) {
@@ -861,10 +926,12 @@ function initializeTimeLogModal() {
     
     try {
       const selectedDateStr = logDateInput.value;
-      
+
       // Final validation before submission - FIXED: Allow today's date
       if (!validateDateSelection(selectedDateStr)) {
-        alert("Cannot add time logs for future dates. Please select today's date or a past date.");
+        alert(
+          "Cannot add time logs for future dates. Please select today's date or a past date."
+        );
         return;
       }
 
@@ -883,8 +950,8 @@ function initializeTimeLogModal() {
       await saveNewTimeLog(timeLogData, selectedEmployee);
 
       alert("Time log added successfully!");
-      document.getElementById('addTimeLogModal').close();
-      
+      document.getElementById("addTimeLogModal").close();
+
       if (currentView === "raw") {
         await refreshGridData();
       }
@@ -966,17 +1033,21 @@ function isDateInCutoffPeriod(dateStr, cutoffPeriod) {
 
 // UPDATED: Main Export Function with Format Selection
 function exportAttendanceData() {
-  const cutoffFilter = document.getElementById("csvCutoffFilter")?.value || "all";
-  const departmentFilter = document.getElementById("csvDepartmentFilter")?.value || "all";
-  const exportFormat = document.querySelector('input[name="exportFormat"]:checked')?.value || "csv";
-  
+  const cutoffFilter =
+    document.getElementById("csvCutoffFilter")?.value || "all";
+  const departmentFilter =
+    document.getElementById("csvDepartmentFilter")?.value || "all";
+  const exportFormat =
+    document.querySelector('input[name="exportFormat"]:checked')?.value ||
+    "csv";
+
   console.log("=== EXPORT DEBUG ===");
   console.log("Export parameters:", {
     cutoffFilter,
     departmentFilter,
     currentView,
     exportFormat,
-    totalRecords: currentData.length
+    totalRecords: currentData.length,
   });
   
   let filteredData = currentData;
@@ -989,8 +1060,12 @@ function exportAttendanceData() {
         return isDateInCutoffPeriod(rowDate, cutoffFilter);
       });
     } else if (currentView === "summary") {
-      filteredData = filteredData.filter(row => {
-        const rowCutoff = row["Cutoff Period"] || row["Cutoff ID"] || row.cutoff_period || row.cutoff_id;
+      filteredData = filteredData.filter((row) => {
+        const rowCutoff =
+          row["Cutoff Period"] ||
+          row["Cutoff ID"] ||
+          row.cutoff_period ||
+          row.cutoff_id;
         return rowCutoff === cutoffFilter;
       });
     }
@@ -1009,48 +1084,71 @@ function exportAttendanceData() {
     if (currentView === "raw") {
       const dates = currentData.map(row => row["Date"]).filter(Boolean);
       availableCutoffs = generateCutoffPeriodsFromDates(dates);
-      availableDepts = [...new Set(currentData.map(row => row["Department"] || row.department).filter(Boolean))];
+      availableDepts = [
+        ...new Set(
+          currentData
+            .map((row) => row["Department"] || row.department)
+            .filter(Boolean)
+        ),
+      ];
     } else if (currentView === "summary") {
-      availableCutoffs = [...new Set(currentData.map(row => row["Cutoff Period"] || row["Cutoff ID"]).filter(Boolean))];
-      availableDepts = [...new Set(currentData.map(row => row["Department"] || row.department).filter(Boolean))];
+      availableCutoffs = [
+        ...new Set(
+          currentData
+            .map((row) => row["Cutoff Period"] || row["Cutoff ID"])
+            .filter(Boolean)
+        ),
+      ];
+      availableDepts = [
+        ...new Set(
+          currentData
+            .map((row) => row["Department"] || row.department)
+            .filter(Boolean)
+        ),
+      ];
     } else {
       availableCutoffs = [];
-      availableDepts = [...new Set(currentData.map(row => row["Department"] || row.department).filter(Boolean))];
+      availableDepts = [
+        ...new Set(
+          currentData
+            .map((row) => row["Department"] || row.department)
+            .filter(Boolean)
+        ),
+      ];
     }
     
     alert(`No data to export with the selected filters.\n\nSelected Filters:\n• Cutoff Period: ${cutoffFilter}\n• Department: ${departmentFilter}\n\nAvailable in Data:\n• Cutoff Periods: ${availableCutoffs.length > 0 ? availableCutoffs.join(', ') : 'None found'}\n• Departments: ${availableDepts.length > 0 ? availableDepts.join(', ') : 'None found'}\n\nTotal records available: ${currentData.length}`);
     return;
   }
-  
+
   // Generate based on selected format
   try {
-    switch(exportFormat) {
-      case 'csv':
+    switch (exportFormat) {
+      case "csv":
         generateCSVFile(filteredData, cutoffFilter, departmentFilter);
-        console.log(' CSV file generated successfully!');
+        console.log(" CSV file generated successfully!");
         break;
-      
-      case 'pdf':
+
+      case "pdf":
         generatePDFFile(filteredData, cutoffFilter, departmentFilter);
-        console.log(' PDF file generated successfully!');
+        console.log(" PDF file generated successfully!");
         break;
-      
-      case 'both':
+
+      case "both":
         generateCSVFile(filteredData, cutoffFilter, departmentFilter);
         generatePDFFile(filteredData, cutoffFilter, departmentFilter);
-        console.log(' CSV and PDF files generated successfully!');
+        console.log(" CSV and PDF files generated successfully!");
         break;
-      
+
       default:
         generateCSVFile(filteredData, cutoffFilter, departmentFilter);
-        console.log(' CSV file generated successfully!');
+        console.log(" CSV file generated successfully!");
     }
-    
+
     // Close modal after successful export
-    document.getElementById('generateCSV').close();
-    
+    document.getElementById("generateCSV").close();
   } catch (error) {
-    console.error('Export error:', error);
+    console.error("Export error:", error);
     alert(`Failed to generate export: ${error.message}`);
   }
 }
@@ -1076,12 +1174,23 @@ function generateCSVFile(data, cutoffFilter, departmentFilter) {
   const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
   const link = document.createElement("a");
   const url = URL.createObjectURL(blob);
-  
-  const viewName = currentView === "raw" ? "Raw_Time_Logs" : currentView === "addTimeLogs" ? "All_Employees" : "Attendance_Summary";
-  const cutoffLabel = cutoffFilter === "all" ? "All_Cutoff" : cutoffFilter.replace(/[^a-zA-Z0-9]/g, "_");
-  const deptLabel = departmentFilter === "all" ? "All_Departments" : departmentFilter.replace(/[^a-zA-Z0-9]/g, "_");
-  const timestamp = new Date().toISOString().split('T')[0];
-  
+
+  const viewName =
+    currentView === "raw"
+      ? "Raw_Time_Logs"
+      : currentView === "addTimeLogs"
+      ? "All_Employees"
+      : "Attendance_Summary";
+  const cutoffLabel =
+    cutoffFilter === "all"
+      ? "All_Cutoff"
+      : cutoffFilter.replace(/[^a-zA-Z0-9]/g, "_");
+  const deptLabel =
+    departmentFilter === "all"
+      ? "All_Departments"
+      : departmentFilter.replace(/[^a-zA-Z0-9]/g, "_");
+  const timestamp = new Date().toISOString().split("T")[0];
+
   const filename = `${viewName}_${cutoffLabel}_${deptLabel}_${timestamp}.csv`;
   
   link.setAttribute("href", url);
@@ -1096,7 +1205,7 @@ function generateCSVFile(data, cutoffFilter, departmentFilter) {
 function generatePDFFile(data, cutoffFilter, departmentFilter) {
   try {
     const { jsPDF } = window.jspdf;
-    
+
     const doc = new jsPDF({
       orientation: 'landscape',
       unit: 'mm',
@@ -1104,31 +1213,40 @@ function generatePDFFile(data, cutoffFilter, departmentFilter) {
     });
     
     const columns = gridApi.getColumnDefs();
-    const visibleColumns = columns.filter(col => !col.hide);
-    const headers = visibleColumns.map(col => col.headerName || col.field).filter(Boolean);
-    
-    const viewName = currentView === "raw" ? "Raw Time Logs Report" : currentView === "addTimeLogs" ? "All Employees Report" : "Attendance Summary Report";
-    const cutoffLabel = cutoffFilter === "all" ? "All Cutoff Periods" : cutoffFilter;
-    const deptLabel = departmentFilter === "all" ? "All Departments" : departmentFilter;
-    
+    const visibleColumns = columns.filter((col) => !col.hide);
+    const headers = visibleColumns
+      .map((col) => col.headerName || col.field)
+      .filter(Boolean);
+
+    const viewName =
+      currentView === "raw"
+        ? "Raw Time Logs Report"
+        : currentView === "addTimeLogs"
+        ? "All Employees Report"
+        : "Attendance Summary Report";
+    const cutoffLabel =
+      cutoffFilter === "all" ? "All Cutoff Periods" : cutoffFilter;
+    const deptLabel =
+      departmentFilter === "all" ? "All Departments" : departmentFilter;
+
     doc.setFontSize(16);
     doc.setFont(undefined, 'bold');
     doc.text(viewName, 14, 20);
-    
+
     doc.setFontSize(10);
     doc.setFont(undefined, 'normal');
     doc.text(`Cutoff Period: ${cutoffLabel}`, 14, 30);
     doc.text(`Department: ${deptLabel}`, 14, 37);
     doc.text(`Generated on: ${new Date().toLocaleDateString()}`, 14, 44);
     doc.text(`Total Records: ${data.length}`, 14, 51);
-    
+
     const displayData = data.slice(0, 50);
-    
-    const tableData = displayData.map(row => 
-      visibleColumns.map(col => {
+
+    const tableData = displayData.map((row) =>
+      visibleColumns.map((col) => {
         const fieldName = col.field || col.headerName;
-        let value = row[fieldName] || '';
-        
+        let value = row[fieldName] || "";
+
         if (!value && fieldName === "Last Name") {
           value = row["Last Name"] || row["last_name"] || row["lastName"] || '';
         } else if (!value && fieldName === "First Name") {
@@ -1136,34 +1254,49 @@ function generatePDFFile(data, cutoffFilter, departmentFilter) {
         } else if (!value && fieldName === "Middle Name") {
           value = row["Middle Name"] || row["middle_name"] || row["middleName"] || '';
         }
-        
-        if (value === null || value === undefined || value === '') {
-          return '-';
+
+        if (value === null || value === undefined || value === "") {
+          return "-";
         }
-        
+
         const stringValue = String(value);
-        
-        if (typeof value === 'string' && /\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/.test(value)) {
-          return value.replace('T', ' ').substring(0, 16);
+
+        if (
+          typeof value === "string" &&
+          /\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/.test(value)
+        ) {
+          return value.replace("T", " ").substring(0, 16);
         }
-        
-        if ((fieldName === 'Late (m)' || fieldName === 'Late Minutes' || 
-             fieldName === 'Undertime' || fieldName === 'Undertime Minutes') && 
-            (value === 0 || value === '0')) {
-          return '-';
+
+        if (
+          (fieldName === "Late (m)" ||
+            fieldName === "Late Minutes" ||
+            fieldName === "Undertime" ||
+            fieldName === "Undertime Minutes") &&
+          (value === 0 || value === "0")
+        ) {
+          return "-";
         }
-        
-        if (fieldName === 'Status') {
-          return stringValue.split(' ').map(word => 
-            word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
-          ).join(' ');
+
+        if (fieldName === "Status") {
+          return stringValue
+            .split(" ")
+            .map(
+              (word) =>
+                word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
+            )
+            .join(" ");
         }
-        
-        if (fieldName === 'Last Name' || fieldName === 'First Name' || fieldName === 'Middle Name') {
+
+        if (
+          fieldName === "Last Name" ||
+          fieldName === "First Name" ||
+          fieldName === "Middle Name"
+        ) {
           return stringValue;
         }
-        
-        if (fieldName === 'Department') {
+
+        if (fieldName === "Department") {
           const dept = stringValue.toLowerCase();
           if (dept.includes('information') || dept.includes('ech')) {
             return 'Information Technology';
@@ -1173,7 +1306,7 @@ function generatePDFFile(data, cutoffFilter, departmentFilter) {
         return stringValue;
       })
     );
-    
+
     let columnStyles = {};
     
     if (currentView === "raw") {
@@ -1189,7 +1322,7 @@ function generatePDFFile(data, cutoffFilter, departmentFilter) {
         8: { cellWidth: 15 },
         9: { cellWidth: 18 },
         10: { cellWidth: 20 },
-        11: { cellWidth: 30 }
+        11: { cellWidth: 30 },
       };
     } else if (currentView === "addTimeLogs") {
       columnStyles = {
@@ -1198,7 +1331,7 @@ function generatePDFFile(data, cutoffFilter, departmentFilter) {
         2: { cellWidth: 30 },
         3: { cellWidth: 25 },
         4: { cellWidth: 35 },
-        5: { cellWidth: 35 }
+        5: { cellWidth: 35 },
       };
     } else {
       columnStyles = {
@@ -1215,10 +1348,10 @@ function generatePDFFile(data, cutoffFilter, departmentFilter) {
         10: { cellWidth: 20 },
         11: { cellWidth: 15 },
         12: { cellWidth: 30 },
-        13: { cellWidth: 25 }
+        13: { cellWidth: 25 },
       };
     }
-    
+
     doc.autoTable({
       head: [headers],
       body: tableData,
@@ -1246,7 +1379,7 @@ function generatePDFFile(data, cutoffFilter, departmentFilter) {
       tableWidth: 'wrap',
       theme: 'grid'
     });
-    
+
     const pageCount = doc.internal.getNumberOfPages();
     for (let i = 1; i <= pageCount; i++) {
       doc.setPage(i);
@@ -1258,7 +1391,7 @@ function generatePDFFile(data, cutoffFilter, departmentFilter) {
         doc.internal.pageSize.height - 10
       );
     }
-    
+
     if (data.length > 50) {
       const finalY = doc.lastAutoTable.finalY || 60;
       doc.setFontSize(8);
@@ -1269,12 +1402,23 @@ function generatePDFFile(data, cutoffFilter, departmentFilter) {
         finalY + 10
       );
     }
-    
-    const viewNameFile = currentView === "raw" ? "Raw_Time_Logs" : currentView === "addTimeLogs" ? "All_Employees" : "Attendance_Summary";
-    const cutoffLabelFile = cutoffFilter === "all" ? "All_Cutoff" : cutoffFilter.replace(/[^a-zA-Z0-9]/g, "_");
-    const deptLabelFile = departmentFilter === "all" ? "All_Departments" : departmentFilter.replace(/[^a-zA-Z0-9]/g, "_");
-    const timestamp = new Date().toISOString().split('T')[0];
-    
+
+    const viewNameFile =
+      currentView === "raw"
+        ? "Raw_Time_Logs"
+        : currentView === "addTimeLogs"
+        ? "All_Employees"
+        : "Attendance_Summary";
+    const cutoffLabelFile =
+      cutoffFilter === "all"
+        ? "All_Cutoff"
+        : cutoffFilter.replace(/[^a-zA-Z0-9]/g, "_");
+    const deptLabelFile =
+      departmentFilter === "all"
+        ? "All_Departments"
+        : departmentFilter.replace(/[^a-zA-Z0-9]/g, "_");
+    const timestamp = new Date().toISOString().split("T")[0];
+
     const filename = `${viewNameFile}_${cutoffLabelFile}_${deptLabelFile}_${timestamp}.pdf`;
     
     doc.save(filename);
@@ -1295,10 +1439,10 @@ function populateCSVModalDropdowns() {
     console.error("CSV modal dropdown elements not found");
     return;
   }
-  
+
   cutoffSelect.innerHTML = "";
   departmentSelect.innerHTML = "";
-  
+
   const allCutoffOption = document.createElement("option");
   allCutoffOption.value = "all";
   allCutoffOption.textContent = "All Cutoff Periods";
@@ -1312,9 +1456,9 @@ function populateCSVModalDropdowns() {
   console.log("=== POPULATING CSV DROPDOWNS ===");
   console.log("Current view:", currentView);
   console.log("Total records:", currentData.length);
-  
+
   if (currentView === "raw") {
-    const dates = currentData.map(row => row["Date"]).filter(Boolean);
+    const dates = currentData.map((row) => row["Date"]).filter(Boolean);
     console.log("Unique dates found:", [...new Set(dates)].sort());
     
     const cutoffPeriods = generateCutoffPeriodsFromDates(dates);
@@ -1363,7 +1507,7 @@ function populateCSVModalDropdowns() {
       console.log(`Added ${uniqueCutoffPeriods.size} summary cutoff periods to dropdown`);
     }
   }
-  
+
   const uniqueDepartments = new Set();
   currentData.forEach(row => {
     const department = row["Department"] || row.department || row.dept;
@@ -1379,8 +1523,13 @@ function populateCSVModalDropdowns() {
     });
     console.log(`Added ${uniqueDepartments.size} departments to dropdown`);
   } else {
-    const fallbackDepts = ["Information Technology", "Human Resources", "Accounting", "Sales"];
-    fallbackDepts.forEach(dept => {
+    const fallbackDepts = [
+      "Information Technology",
+      "Human Resources",
+      "Accounting",
+      "Sales",
+    ];
+    fallbackDepts.forEach((dept) => {
       const option = document.createElement("option");
       option.value = dept;
       option.textContent = dept;
@@ -1414,14 +1563,14 @@ const gridOptions = {
       newValue: event.newValue,
       rowData: event.data
     });
-    
+
     saveEditedRow(event.data, event.colDef.field);
   },
   onSelectionChanged: (event) => {
     if (currentView === "addTimeLogs") {
       updateSelectedEmployeesForTimeLog();
     }
-  }
+  },
 };
 
 export const gridApi = agGrid.createGrid(gridDiv, gridOptions);
@@ -1435,14 +1584,16 @@ async function loadRawTimeLogs() {
     console.log(" Raw time logs loaded:", data.length);
     if (data.length > 0) {
       console.log("Sample raw time log record:", data[0]);
-      const sampleNames = data.slice(0, 5).map(row => ({
+      const sampleNames = data.slice(0, 5).map((row) => ({
         firstName: row["First Name"],
         lastName: row["Last Name"],
         fullName: `${row["First Name"]} ${row["Last Name"]}`
       }));
       console.log("Sample names in data:", sampleNames);
-      
-      const uniqueDates = [...new Set(data.map(row => row["Date"]).filter(Boolean))].sort();
+
+      const uniqueDates = [
+        ...new Set(data.map((row) => row["Date"]).filter(Boolean)),
+      ].sort();
       console.log("Unique dates in raw time logs:", uniqueDates);
     }
     return data;
@@ -1466,7 +1617,7 @@ async function loadAttendanceSummary() {
         console.warn(` Could not load cutoff ${cutoffId}:`, err);
       }
     }
-    
+
     console.log("Total attendance summary loaded:", allData.length, "rows");
     if (allData.length > 0) {
       console.log("🔍 First row:", allData[0]);
@@ -1484,37 +1635,45 @@ async function loadAttendanceSummary() {
 async function loadAllEmployees() {
   try {
     console.log(" Loading employees from employee_full_details view...");
-    
+
     const { data, error } = await supabaseClient
       .from("employee_full_details")
-      .select(`
+      .select(
+        `
         emp_id,
         first_name,
         middle_name,
         last_name,
         position_name,
         department_name
-      `)
-      .order('last_name', { ascending: true });
+      `
+      )
+      .order("last_name", { ascending: true });
 
     if (error) {
-      console.error(" Error loading employees from employee_full_details:", error);
+      console.error(
+        " Error loading employees from employee_full_details:",
+        error
+      );
       console.log(" Error details:", JSON.stringify(error, null, 2));
       return [];
     }
 
     console.log(" Raw data from employee_full_details:", data);
 
-    const transformedData = data.map(emp => ({
+    const transformedData = data.map((emp) => ({
       "Employee ID": emp.emp_id,
       "First Name": emp.first_name,
       "Middle Name": emp.middle_name,
       "Last Name": emp.last_name,
-      "Position": emp.position_name,
-      "Department": emp.department_name
+      Position: emp.position_name,
+      Department: emp.department_name,
     }));
 
-    console.log(" All employees loaded from employee_full_details:", transformedData.length);
+    console.log(
+      " All employees loaded from employee_full_details:",
+      transformedData.length
+    );
     if (transformedData.length > 0) {
       console.log("Sample transformed employee:", transformedData[0]);
     }
@@ -1533,7 +1692,7 @@ async function initializeGrid() {
   currentData = rawData;
   gridApi.setGridOption("rowData", rawData);
   console.log("Raw Time Logs Table Displayed");
-  
+
   initializeTimeLogModal();
 }
 
@@ -1543,8 +1702,12 @@ initializeGrid();
 
 export async function switchView(view) {
   currentView = view;
-  const generateButtonsContainer = document.getElementById("generateButtonsContainer");
-  const addTimeLogButtonContainer = document.getElementById("addTimeLogButtonContainer");
+  const generateButtonsContainer = document.getElementById(
+    "generateButtonsContainer"
+  );
+  const addTimeLogButtonContainer = document.getElementById(
+    "addTimeLogButtonContainer"
+  );
   const cutoffContainer = document.getElementById("cutoffPeriodContainer");
 
   // Reset column state before switching views
@@ -1552,39 +1715,49 @@ export async function switchView(view) {
 
   if (view === "raw") {
     if (cutoffContainer) cutoffContainer.classList.add("hidden");
-    if (generateButtonsContainer) generateButtonsContainer.classList.remove("hidden");
-    if (addTimeLogButtonContainer) addTimeLogButtonContainer.classList.add("hidden");
+    if (generateButtonsContainer)
+      generateButtonsContainer.classList.remove("hidden");
+    if (addTimeLogButtonContainer)
+      addTimeLogButtonContainer.classList.add("hidden");
 
     const data = await loadRawTimeLogs();
     currentData = data;
     gridApi.setGridOption("columnDefs", rawTimeLogsColumns);
     gridApi.setGridOption("rowData", data);
-    gridApi.setGridOption("rowSelection", { mode: "multiRow", headerCheckbox: true });
+    gridApi.setGridOption("rowSelection", {
+      mode: "multiRow",
+      headerCheckbox: true,
+    });
     console.log(" Switched to Raw Time Logs");
-    
   } else if (view === "summary") {
     if (cutoffContainer) cutoffContainer.classList.remove("hidden");
-    if (generateButtonsContainer) generateButtonsContainer.classList.remove("hidden");
-    if (addTimeLogButtonContainer) addTimeLogButtonContainer.classList.add("hidden");
+    if (generateButtonsContainer)
+      generateButtonsContainer.classList.remove("hidden");
+    if (addTimeLogButtonContainer)
+      addTimeLogButtonContainer.classList.add("hidden");
 
     const data = await loadAttendanceSummary();
     currentData = data;
-    
+
     populateCutoffDropdown(data);
     
     gridApi.setGridOption("columnDefs", summaryColumns);
     gridApi.setGridOption("rowData", data);
-    gridApi.setGridOption("rowSelection", { mode: "singleRow", headerCheckbox: false });
+    gridApi.setGridOption("rowSelection", {
+      mode: "singleRow",
+      headerCheckbox: false,
+    });
     console.log(" Switched to Attendance Summary");
-    
   } else if (view === "addTimeLogs") {
     if (cutoffContainer) cutoffContainer.classList.add("hidden");
-    if (generateButtonsContainer) generateButtonsContainer.classList.add("hidden");
-    if (addTimeLogButtonContainer) addTimeLogButtonContainer.classList.remove("hidden");
+    if (generateButtonsContainer)
+      generateButtonsContainer.classList.add("hidden");
+    if (addTimeLogButtonContainer)
+      addTimeLogButtonContainer.classList.remove("hidden");
 
     const data = await loadAllEmployees();
     currentData = data;
-    
+
     gridApi.setGridOption("columnDefs", addTimeLogsColumns);
     gridApi.setGridOption("rowData", data);
     // Single row selection without checkboxes
@@ -1594,10 +1767,10 @@ export async function switchView(view) {
 
   gridApi.setFilterModel(null);
   gridApi.setGridOption("quickFilterText", "");
-  
+
   gridApi.deselectAll();
   selectedEmployees = [];
-  
+
   // Size columns to fit for Add Time Logs view only
   if (view === "addTimeLogs") {
     setTimeout(() => {
@@ -1685,9 +1858,9 @@ document.addEventListener("DOMContentLoaded", () => {
   // Add event listener for the Add Time Log button
   const addTimeLogBtn = document.getElementById("addTimeLogBtn");
   if (addTimeLogBtn) {
-    addTimeLogBtn.addEventListener('click', function() {
+    addTimeLogBtn.addEventListener("click", function () {
       if (selectedEmployees.length === 1) {
-        document.getElementById('addTimeLogModal').showModal();
+        document.getElementById("addTimeLogModal").showModal();
       } else {
         alert("Please select an employee first from the table.");
       }
@@ -1696,35 +1869,37 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Add event listener for CSV generation button
   if (generateCSVBtn) {
-    generateCSVBtn.addEventListener('click', () => {
+    generateCSVBtn.addEventListener("click", () => {
       populateCSVModalDropdowns();
       document.getElementById('generateCSV').showModal();
     });
   }
 
   // Handle export generation from modal with format selection
-  const modalGenerateExportBtn = document.getElementById("modalGenerateExportBtn");
+  const modalGenerateExportBtn = document.getElementById(
+    "modalGenerateExportBtn"
+  );
   if (modalGenerateExportBtn) {
-    modalGenerateExportBtn.addEventListener('click', exportAttendanceData);
+    modalGenerateExportBtn.addEventListener("click", exportAttendanceData);
   }
 
   // Add radio button listener for dynamic button text
   const radioButtons = document.querySelectorAll('input[name="exportFormat"]');
-  const exportButtonText = document.getElementById('exportButtonText');
+  const exportButtonText = document.getElementById("exportButtonText");
 
   if (radioButtons.length > 0 && exportButtonText) {
-    radioButtons.forEach(radio => {
-      radio.addEventListener('change', (e) => {
+    radioButtons.forEach((radio) => {
+      radio.addEventListener("change", (e) => {
         const format = e.target.value;
-        switch(format) {
-          case 'csv':
-            exportButtonText.textContent = 'Export CSV';
+        switch (format) {
+          case "csv":
+            exportButtonText.textContent = "Export CSV";
             break;
-          case 'pdf':
-            exportButtonText.textContent = 'Export PDF';
+          case "pdf":
+            exportButtonText.textContent = "Export PDF";
             break;
-          case 'both':
-            exportButtonText.textContent = 'Export Both';
+          case "both":
+            exportButtonText.textContent = "Export Both";
             break;
         }
       });
