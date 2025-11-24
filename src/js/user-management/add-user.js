@@ -1,4 +1,5 @@
 import { supabaseAdmin } from "../supabase/adminClient.js";
+import { supabaseClient } from "../supabase/supabaseClient.js";
 import { showGlobalAlert } from "../utils/alerts.js";
 import { fetchUsers } from "./grid.js";
 
@@ -42,6 +43,91 @@ userTypeInput.addEventListener("change", (e) => {
     employeeIdInput.value = ""; // Clear the value when hidden
   }
 });
+
+async function createNewUser(userData) {
+  const {
+    username,
+    firstName,
+    lastName,
+    userType,
+    employeeId,
+    email,
+    password,
+  } = userData;
+
+  // Check if Employee ID already exists (only for Employee type)
+  if (userType === "Employee") {
+    const { data: existingUsers, error: checkError } =
+      await supabaseAdmin.auth.admin.listUsers();
+
+    if (checkError) throw checkError;
+
+    const employeeIdExists = existingUsers.users.some(
+      (user) => user.user_metadata?.employee_id === employeeId
+    );
+
+    if (employeeIdExists) {
+      throw new Error("Employee ID already exists. Please use a unique ID.");
+    }
+  }
+
+  // Prepare user metadata
+  const userMetadata = {
+    username,
+    first_name: firstName,
+    last_name: lastName,
+    user_type: userType,
+    status: "active",
+  };
+
+  // Add employee_id only if user type is Employee
+  if (userType === "Employee") {
+    userMetadata.employee_id = employeeId;
+  }
+
+  // Use Admin API to create user with metadata
+  const { data: signUpData, error: signUpError } =
+    await supabaseAdmin.auth.admin.createUser({
+      email,
+      password,
+      email_confirm: true, // Auto-confirm email
+      user_metadata: userMetadata,
+    });
+
+  if (signUpError) throw signUpError;
+  if (!signUpData.user) throw new Error("User creation failed.");
+
+  // Refresh the grid after adding a new user
+  await fetchUsers();
+
+  // Log to Audit Trail
+  try {
+    const {
+      data: { user },
+    } = await supabaseClient.auth.getUser();
+
+    // Build user details description
+    const employeeIdText =
+      userType === "Employee" ? `, Employee ID: ${employeeId}` : "";
+    const description = `Created new user: ${firstName} ${lastName} (${email}) - Type: ${userType}${employeeIdText}`;
+
+    await supabaseClient.from("audit_trail").insert({
+      user_id: user?.id,
+      action: "create",
+      description: description,
+      module_affected: "User Management",
+      record_id: signUpData.user.id,
+      user_agent: navigator.userAgent,
+      timestamp: new Date().toISOString(),
+    });
+    console.log("Here");
+  } catch (auditError) {
+    console.error("Error logging audit trail:", auditError);
+    // Don't throw error - user creation was successful
+  }
+
+  return signUpData;
+}
 
 addUserBtn.addEventListener("click", async (e) => {
   e.preventDefault();
@@ -87,54 +173,15 @@ addUserBtn.addEventListener("click", async (e) => {
   addUserBtn.disabled = true;
 
   try {
-    // Check if Employee ID already exists (only for Employee type)
-    if (userType === "Employee") {
-      const { data: existingUsers, error: checkError } =
-        await supabaseAdmin.auth.admin.listUsers();
-
-      if (checkError) throw checkError;
-
-      const employeeIdExists = existingUsers.users.some(
-        (user) => user.user_metadata?.employee_id === employeeId
-      );
-
-      if (employeeIdExists) {
-        showDialogAlert(
-          "error",
-          "Employee ID already exists. Please use a unique ID."
-        );
-        return;
-      }
-    }
-
-    // Prepare user metadata
-    const userMetadata = {
+    await createNewUser({
       username,
-      first_name: firstName,
-      last_name: lastName,
-      user_type: userType,
-      status: "active",
-    };
-
-    // Add employee_id only if user type is Employee
-    if (userType === "Employee") {
-      userMetadata.employee_id = employeeId;
-    }
-
-    // Use Admin API to create user with metadata
-    const { data: signUpData, error: signUpError } =
-      await supabaseAdmin.auth.admin.createUser({
-        email,
-        password,
-        email_confirm: true, // Auto-confirm email
-        user_metadata: userMetadata,
-      });
-
-    if (signUpError) throw signUpError;
-    if (!signUpData.user) throw new Error("User creation failed.");
-
-    // Refresh the grid after adding a new user
-    await fetchUsers();
+      firstName,
+      lastName,
+      userType,
+      employeeId,
+      email,
+      password,
+    });
 
     showGlobalAlert("success", "User successfully added!");
 
