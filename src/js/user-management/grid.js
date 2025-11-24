@@ -1,4 +1,5 @@
 import { supabaseAdmin } from "../supabase/adminClient.js";
+import { supabaseClient } from "../supabase/supabaseClient.js";
 import { showGlobalAlert } from "../utils/alerts.js";
 
 const gridDiv = document.getElementById("usersGrid");

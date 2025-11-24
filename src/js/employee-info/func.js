@@ -191,7 +191,12 @@ function initializePositionChange() {
 
       if (salary) {
         const numValue = parseFloat(salary);
-        rateInput.value = '₱' + numValue.toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        rateInput.value =
+          "₱" +
+          numValue.toLocaleString("en-PH", {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2,
+          });
       } else {
         rateInput.value = "";
       }
@@ -393,6 +398,28 @@ async function handleArchiveSelected() {
           selectedRows.length
         } employee(s) ${actionText.toLowerCase()}d successfully!`
       );
+
+      // Log the archive/restore in audit logs
+      const {
+        data: { user },
+      } = await supabaseClient.auth.getUser();
+
+      for (const empId of selectedIds) {
+        const description =
+          action === "archive"
+            ? `Archived an employee with ID ${empId}`
+            : `Restored an employee with ID ${empId}`;
+
+        await supabaseClient.from("audit_trail").insert({
+          user_id: user?.id,
+          action: "edit",
+          description: description,
+          module_affected: "Employee Information",
+          record_id: empId,
+          user_agent: navigator.userAgent,
+          timestamp: new Date().toISOString(),
+        });
+      }
     } catch (error) {
       console.error("Error updating employee status:", error);
       showGlobalAlert(
@@ -515,9 +542,7 @@ function showEmployeeDetails(employeeId) {
         <div class="space-y-3">
           <div class="flex justify-between items-center py-3 border-b border-base-300">
             <span class="opacity-70 text-sm">Contact:</span>
-            <span class="font-medium">${
-              employee.Contact || "N/A"
-            }</span>
+            <span class="font-medium">${employee.Contact || "N/A"}</span>
           </div>
           <div class="flex justify-between items-start py-3 border-b border-base-300">
             <span class="opacity-70 text-sm">Address:</span>
@@ -538,9 +563,7 @@ function showEmployeeDetails(employeeId) {
           </div>
           <div class="flex justify-between items-center py-3 border-b border-base-300">
             <span class="opacity-70 text-sm">Department:</span>
-            <span class="font-medium">${
-              employee.Department
-            }</span>
+            <span class="font-medium">${employee.Department}</span>
           </div>
           <div class="flex justify-between items-center py-3 border-b border-base-300">
             <span class="opacity-70 text-sm">Date Hired:</span>
@@ -559,9 +582,7 @@ function showEmployeeDetails(employeeId) {
         <div class="space-y-3">
           <div class="flex justify-between items-center py-3 border-b border-base-300">
             <span class="opacity-70 text-sm">Official Time:</span>
-            <span class="font-medium">${
-              employee.ScheduleName || "N/A"
-            }</span>
+            <span class="font-medium">${employee.ScheduleName || "N/A"}</span>
           </div>
           <div class="flex justify-between items-center py-3 border-b border-base-300">
             <span class="opacity-70 text-sm">Start Time:</span>
@@ -584,27 +605,19 @@ function showEmployeeDetails(employeeId) {
         <div class="space-y-3">
           <div class="flex justify-between items-center py-3 border-b border-base-300">
             <span class="opacity-70 text-sm">SSS ID:</span>
-            <span class="font-medium">${
-              employee.SSSID || "N/A"
-            }</span>
+            <span class="font-medium">${employee.SSSID || "N/A"}</span>
           </div>
           <div class="flex justify-between items-center py-3 border-b border-base-300">
             <span class="opacity-70 text-sm">PhilHealth ID:</span>
-            <span class="font-medium">${
-              employee.PhilhealthID || "N/A"
-            }</span>
+            <span class="font-medium">${employee.PhilhealthID || "N/A"}</span>
           </div>
           <div class="flex justify-between items-center py-3 border-b border-base-300">
             <span class="opacity-70 text-sm">Pag-IBIG ID:</span>
-            <span class="font-medium">${
-              employee.PagIBIGID || "N/A"
-            }</span>
+            <span class="font-medium">${employee.PagIBIGID || "N/A"}</span>
           </div>
           <div class="flex justify-between items-center py-3 border-b border-base-300">
             <span class="opacity-70 text-sm">TIN ID:</span>
-            <span class="font-medium">${
-              employee.TINID || "N/A"
-            }</span>
+            <span class="font-medium">${employee.TINID || "N/A"}</span>
           </div>
         </div>
       </div>
@@ -801,7 +814,10 @@ async function addEmployeeToSupabase(formData, officialTimeId) {
 
   if (leaveError) {
     console.error("Error creating leave_tracking:", leaveError);
-    console.error("leave_tracking error details:", JSON.stringify(leaveError, null, 2));
+    console.error(
+      "leave_tracking error details:",
+      JSON.stringify(leaveError, null, 2)
+    );
     throw leaveError;
   }
 
@@ -814,7 +830,10 @@ async function addEmployeeToSupabase(formData, officialTimeId) {
 
   if (deptError) {
     console.error("Error fetching department:", deptError);
-    console.error("Department error details:", JSON.stringify(deptError, null, 2));
+    console.error(
+      "Department error details:",
+      JSON.stringify(deptError, null, 2)
+    );
     throw deptError;
   }
 
@@ -850,7 +869,9 @@ async function addEmployeeToSupabase(formData, officialTimeId) {
   console.log("Inserting employee with data:", employeeData);
 
   // Then create employee record
-  const { error: empError } = await supabaseClient.from("employees").insert(employeeData);
+  const { error: empError } = await supabaseClient
+    .from("employees")
+    .insert(employeeData);
 
   if (empError) {
     console.error("Error creating employee:", empError);
@@ -918,6 +939,25 @@ async function updateEmployeeInSupabase(formData, employeeId, officialTimeId) {
         new_pos_rank: position.pos_rank,
       });
     if (logError) throw logError;
+
+    // Log to Audit Logs
+    const {
+      data: { user },
+    } = await supabaseClient.auth.getUser();
+
+    const employeeName = `${formData.get("firstName")} ${formData.get(
+      "lastName"
+    )}`;
+
+    await supabaseClient.from("audit_trail").insert({
+      user_id: user?.id,
+      action: "edit",
+      description: `Updated employee information: ${employeeName} with ID ${employeeId}`,
+      module_affected: "Employee Information",
+      record_id: parseInt(employeeId),
+      user_agent: navigator.userAgent,
+      timestamp: new Date().toISOString(),
+    });
 
     console.log(
       `Position change logged for employee ${employeeId}: ${previousPosition.pos_rank} -> ${position.pos_rank}`
@@ -1000,12 +1040,19 @@ function handleGenerateCSV() {
     return;
   }
 
-  generateCSVFile(filteredData);
+  // Pass filter information to generateCSVFile
+  const filterInfo = {
+    department,
+    position,
+    rateRange,
+  };
+
+  generateCSVFile(filteredData, filterInfo);
   document.getElementById("genCSV").close();
 }
 
 // Generate and download CSV file
-function generateCSVFile(data) {
+async function generateCSVFile(data, filterInfo = null) {
   console.log("Generating CSV from data:", data);
 
   // Define CSV headers
@@ -1069,6 +1116,45 @@ function generateCSVFile(data) {
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
+
+  // Log to Audit Trail
+  try {
+    const {
+      data: { user },
+    } = await supabaseClient.auth.getUser();
+
+    // Build filter description
+    let filterDescription = "";
+    if (filterInfo) {
+      const filters = [];
+      if (filterInfo.department !== "all") {
+        filters.push(`Department: ${filterInfo.department}`);
+      }
+      if (filterInfo.position !== "all") {
+        filters.push(`Position: ${filterInfo.position}`);
+      }
+      if (filterInfo.rateRange !== "all") {
+        filters.push(`Rate Range: ${filterInfo.rateRange}`);
+      }
+
+      if (filters.length > 0) {
+        filterDescription = ` with filters: ${filters.join(", ")}`;
+      }
+    }
+
+    await supabaseClient.from("audit_trail").insert({
+      user_id: user?.id,
+      action: "view",
+      description: `Exported employee data to CSV file (${data.length} employee(s))${filterDescription}`,
+      module_affected: "Employee Information",
+      record_id: null,
+      user_agent: navigator.userAgent,
+      timestamp: new Date().toISOString(),
+    });
+  } catch (auditError) {
+    console.error("Error logging audit trail:", auditError);
+    // Don't throw error - CSV export was successful
+  }
 
   showGlobalAlert(
     "success",
