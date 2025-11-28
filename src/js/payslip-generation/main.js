@@ -583,7 +583,7 @@ function openPreviewModal(employeeId) {
 }
 
 // Generate PDF matching preview design - 2 PAYSLIPS PER PAGE
-async function generateEmployeesPdf(employees) {
+function generateEmployeesPdf(employees) {
   console.log(
     "[Payslip] generateEmployeesPdf called. Count:",
     employees ? employees.length : "n/a"
@@ -980,37 +980,6 @@ async function generateEmployeesPdf(employees) {
   try {
     doc.save("payslips.pdf");
     console.log("[Payslip] PDF saved successfully.");
-
-    // Log to Audit Trail
-    try {
-      const { supabaseClient } = await import("../supabase/supabaseClient.js");
-      const {
-        data: { user },
-      } = await supabaseClient.auth.getUser();
-
-      // Build description based on number of employees
-      let description = "";
-      if (employees.length === 1) {
-        description = `Generated payslip for Employee ID ${employees[0].employee_id}`;
-      } else if (employees.length === 2) {
-        description = `Generated payslips for Employee IDs ${employees[0].employee_id} and ${employees[1].employee_id}`;
-      } else {
-        description = `Generated ${employees.length} payslips`;
-      }
-
-      await supabaseClient.from("audit_trail").insert({
-        user_id: user?.id,
-        action: "view",
-        description: description,
-        module_affected: "Payslip Generation",
-        record_id: null,
-        user_agent: navigator.userAgent,
-        timestamp: new Date().toISOString(),
-      });
-    } catch (auditError) {
-      console.error("Error logging audit trail:", auditError);
-      // Don't throw error - PDF generation was successful
-    }
   } catch (e) {
     console.error("[Payslip] Failed to save PDF:", e);
     alert("Unable to save PDF. See console for details.");
