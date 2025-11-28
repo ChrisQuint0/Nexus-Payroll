@@ -29,6 +29,7 @@
     --color-gray-500: oklch(55.1% 0.027 264.364);
     --color-gray-600: oklch(44.6% 0.03 256.802);
     --color-gray-700: oklch(37.3% 0.034 259.733);
+    --color-gray-800: oklch(27.8% 0.033 256.848);
     --color-gray-900: oklch(21% 0.034 264.665);
     --color-black: #000;
     --color-white: #fff;
@@ -36,7 +37,6 @@
     --container-2xs: 18rem;
     --container-xs: 20rem;
     --container-md: 28rem;
-    --container-lg: 32rem;
     --container-2xl: 42rem;
     --container-3xl: 48rem;
     --container-4xl: 56rem;
@@ -2358,6 +2358,9 @@
   .mt-6 {
     margin-top: calc(var(--spacing) * 6);
   }
+  .mt-8 {
+    margin-top: calc(var(--spacing) * 8);
+  }
   .mt-60 {
     margin-top: calc(var(--spacing) * 60);
   }
@@ -2393,6 +2396,9 @@
   }
   .ml-2 {
     margin-left: calc(var(--spacing) * 2);
+  }
+  .ml-3 {
+    margin-left: calc(var(--spacing) * 3);
   }
   .ml-5 {
     margin-left: calc(var(--spacing) * 5);
@@ -2650,8 +2656,16 @@
   .min-h-full {
     min-height: 100%;
   }
+  .min-h-max {
+    min-height: max-content;
+  }
   .min-h-screen {
     min-height: 100vh;
+  }
+  .btn-block {
+    @layer daisyui.modifier {
+      width: 100%;
+    }
   }
   .w-1\/2 {
     width: calc(1/2 * 100%);
@@ -2679,9 +2693,6 @@
   }
   .w-52 {
     width: calc(var(--spacing) * 52);
-  }
-  .w-56 {
-    width: calc(var(--spacing) * 56);
   }
   .w-72 {
     width: calc(var(--spacing) * 72);
@@ -2722,9 +2733,6 @@
   .max-w-4xl {
     max-width: var(--container-4xl);
   }
-  .max-w-lg {
-    max-width: var(--container-lg);
-  }
   .max-w-max {
     max-width: max-content;
   }
@@ -2733,6 +2741,9 @@
   }
   .max-w-xs {
     max-width: var(--container-xs);
+  }
+  .min-w-1\/6 {
+    min-width: calc(1/6 * 100%);
   }
   .min-w-\[100px\] {
     min-width: 100px;
@@ -2792,9 +2803,6 @@
         outline-offset: 2px;
       }
     }
-  }
-  .cursor-pointer {
-    cursor: pointer;
   }
   .resize {
     resize: both;
@@ -2974,11 +2982,11 @@
   .border-accent {
     border-color: var(--color-accent);
   }
-  .border-base-300 {
-    border-color: var(--color-base-300);
-  }
   .border-blue-500 {
     border-color: var(--color-blue-500);
+  }
+  .border-gray-100 {
+    border-color: var(--color-gray-100);
   }
   .border-gray-300 {
     border-color: var(--color-gray-300);
@@ -3317,6 +3325,9 @@
   .text-gray-700 {
     color: var(--color-gray-700);
   }
+  .text-gray-800 {
+    color: var(--color-gray-800);
+  }
   .text-gray-900 {
     color: var(--color-gray-900);
   }
@@ -3539,11 +3550,6 @@
       }
     }
   }
-  .radio-primary {
-    @layer daisyui.modifier {
-      --input-color: var(--color-primary);
-    }
-  }
   .select-accent {
     @layer daisyui.modifier {
       &, &:focus, &:focus-within {
@@ -3566,13 +3572,6 @@
     &:focus-within {
       --tw-outline-style: none;
       outline-style: none;
-    }
-  }
-  .hover\:bg-base-300 {
-    &:hover {
-      @media (hover: hover) {
-        background-color: var(--color-base-300);
-      }
     }
   }
   .hover\:text-gray-700 {
