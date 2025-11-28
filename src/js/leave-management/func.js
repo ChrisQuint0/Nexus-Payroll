@@ -510,7 +510,8 @@ async function handleAddLeave(event) {
         leave_end: leaveEnd.toISOString(),
         is_paid: isPaid,
       })
-      .select();
+      .select()
+      .single();
 
     if (leaveError) throw leaveError;
 
@@ -565,6 +566,32 @@ async function handleAddLeave(event) {
             endDate
           ).toLocaleDateString()}`
         : `starting ${new Date(startDate).toLocaleDateString()}`;
+
+    // Log to Audit Trail
+    try {
+      const {
+        data: { user },
+      } = await supabaseClient.auth.getUser();
+
+      const employeeName =
+        employee["Employee Name"] || `Employee ID ${employeeId}`;
+      const paidStatus = isPaid ? "Paid" : "Unpaid";
+
+      const description = `Created ${leaveType} request for ${employeeName} - ${duration} day(s) ${dateRangeText} (${paidStatus})`;
+
+      await supabaseClient.from("audit_trail").insert({
+        user_id: user?.id,
+        action: "create",
+        description: description,
+        module_affected: "Leave Management",
+        record_id: leaveData?.leave_id || null,
+        user_agent: navigator.userAgent,
+        timestamp: new Date().toISOString(),
+      });
+    } catch (auditError) {
+      console.error("Error logging audit trail:", auditError);
+      // Don't throw error - leave request was successful
+    }
 
     showGlobalAlert(
       "success",
@@ -988,7 +1015,7 @@ function handleGenerateCSV() {
 }
 
 // Generate and download CSV file
-function generateCSVFile(data) {
+async function generateCSVFile(data) {
   // Define CSV headers
   const headers = [
     "Employee ID",
@@ -1004,10 +1031,8 @@ function generateCSVFile(data) {
     "Maternity Leave Balance",
     "Total Leave Balance",
   ];
-
   // Convert data to CSV format
   let csvContent = headers.join(",") + "\n";
-
   data.forEach((employee) => {
     const leaveDetails = employee["Leave Details"];
     const row = [
@@ -1025,17 +1050,14 @@ function generateCSVFile(data) {
       employee["Total Leave Balance"] || 0,
     ].map((value) => {
       value = String(value);
-
       // Escape commas and quotes in values
       if (value.includes(",") || value.includes('"')) {
         value = `"${value.replace(/"/g, '""')}"`;
       }
       return value;
     });
-
     csvContent += row.join(",") + "\n";
   });
-
   // Create and download the file with UTF-8 BOM
   const BOM = "\uFEFF";
   const blob = new Blob([BOM + csvContent], {
@@ -1043,63 +1065,74 @@ function generateCSVFile(data) {
   });
   const link = document.createElement("a");
   const url = URL.createObjectURL(blob);
-
   // Create filename with timestamp
   const timestamp = new Date().toISOString().slice(0, 10);
   const filename = `employee_leave_balances_${timestamp}.csv`;
-
   link.setAttribute("href", url);
   link.setAttribute("download", filename);
   link.style.visibility = "hidden";
-
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
+
+  // Log to Audit Trail
+  try {
+    const { supabaseClient } = await import("../supabase/supabaseClient.js");
+    const {
+      data: { user },
+    } = await supabaseClient.auth.getUser();
+
+    await supabaseClient.from("audit_trail").insert({
+      user_id: user?.id,
+      action: "view",
+      description: `Exported leave balance data to CSV file (${data.length} employee(s))`,
+      module_affected: "Leave Management",
+      record_id: null,
+      user_agent: navigator.userAgent,
+      timestamp: new Date().toISOString(),
+    });
+  } catch (auditError) {
+    console.error("Error logging audit trail:", auditError);
+    // Don't throw error - CSV export was successful
+  }
 
   showGlobalAlert(
     "success",
     `CSV file "${filename}" generated successfully with ${data.length} employee(s)!`
   );
 }
-
 // ============================================================================
 // PDF Export Functionality
 // ============================================================================
 
 // Handle PDF generation with filters
-function handleGeneratePDF() {
+async function handleGeneratePDF() {
   const department = document.getElementById("pdfDepartment").value;
   const position = document.getElementById("pdfPosition").value;
-
   // Debug: Check if jsPDF is loaded
   console.log("Checking jsPDF availability...");
   console.log("window.jspdf:", typeof window.jspdf);
   console.log("window.jsPDF:", typeof window.jsPDF);
   console.log("window.jspdf?.jsPDF:", typeof window.jspdf?.jsPDF);
-
   // Filter data based on selections
   let filteredData = currentLeaveData.filter((employee) => {
     // Department filter
     if (department !== "all" && employee.Department !== department)
       return false;
-
     // Position filter
     if (position !== "all" && employee.Position !== position) return false;
-
     return true;
   });
-
   if (filteredData.length === 0) {
     showGlobalAlert("error", "No employees match the selected filters.");
     return;
   }
 
-  generatePDFFile(filteredData, department, position);
+  await generatePDFFile(filteredData, department, position);
   document.getElementById("genPDF").close();
 }
-
 // Generate and download PDF file
-function generatePDFFile(data, department, position) {
+async function generatePDFFile(data, department, position) {
   try {
     // Check if jsPDF is available - try multiple access methods
     let jsPDF;
@@ -1318,6 +1351,39 @@ function generatePDFFile(data, department, position) {
 
     // Save the PDF
     doc.save(filename);
+
+    // Log to Audit Trail
+    try {
+      const { supabaseClient } = await import("../supabase/supabaseClient.js");
+      const {
+        data: { user },
+      } = await supabaseClient.auth.getUser();
+
+      // Build filter description
+      const filters = [];
+      if (department !== "all") {
+        filters.push(`Department: ${department}`);
+      }
+      if (position !== "all") {
+        filters.push(`Position: ${position}`);
+      }
+
+      const filterDescription =
+        filters.length > 0 ? ` with filters: ${filters.join(", ")}` : "";
+
+      await supabaseClient.from("audit_trail").insert({
+        user_id: user?.id,
+        action: "view",
+        description: `Generated leave balance PDF report (${data.length} employee(s))${filterDescription}`,
+        module_affected: "Leave Management",
+        record_id: null,
+        user_agent: navigator.userAgent,
+        timestamp: new Date().toISOString(),
+      });
+    } catch (auditError) {
+      console.error("Error logging audit trail:", auditError);
+      // Don't throw error - PDF generation was successful
+    }
 
     showGlobalAlert(
       "success",
