@@ -337,7 +337,7 @@
       </form>
     </dialog>
 
-    <!-- UPDATED: Generate CSV/PDF Modal with Export Format Selection -->
+    <!-- UPDATED: Generate CSV/PDF Modal with Dynamic Date/Cutoff Selection -->
     <dialog id="generateCSV" class="modal">
       <div class="modal-box max-w-lg">
         <form method="dialog">
@@ -347,12 +347,57 @@
         <h3 class="text-lg font-bold mb-4">Export Attendance Data</h3>
         
         <div class="space-y-4">
-          <!-- Cutoff Period Filter -->
-          <div class="flex justify-between items-center">
+          <!-- Selected Employee Info (Only for Raw Time Logs) -->
+          <div id="selectedEmployeeExportInfo" class="hidden bg-base-200 p-3 rounded-lg">
+            <label class="label">
+              <span class="label-text font-semibold">Selected Employee</span>
+            </label>
+            <div id="selectedEmployeeExportDetails" class="text-sm">
+              No employee selected
+            </div>
+            <div class="form-control mt-2">
+              <label class="label cursor-pointer justify-start gap-2">
+                <input type="checkbox" id="exportSelectedOnly" class="checkbox checkbox-primary checkbox-sm" />
+                <span class="label-text">Export selected employee only</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Filter Type Selection (Only for Raw Time Logs) -->
+          <div id="filterTypeContainer" class="hidden">
+            <label class="label">
+              <span class="label-text font-semibold">Filter By</span>
+            </label>
+            <div class="flex gap-3">
+              <label class="label cursor-pointer justify-start gap-2 bg-base-200 rounded-lg p-2 flex-1 hover:bg-base-300 transition-colors">
+                <input type="radio" name="filterType" value="cutoff" class="radio radio-sm radio-primary" checked />
+                <span class="label-text">Cutoff Period</span>
+              </label>
+              <label class="label cursor-pointer justify-start gap-2 bg-base-200 rounded-lg p-2 flex-1 hover:bg-base-300 transition-colors">
+                <input type="radio" name="filterType" value="date" class="radio radio-sm radio-primary" />
+                <span class="label-text">Specific Date</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Cutoff Period Filter (Default) -->
+          <div id="cutoffFilterContainer" class="flex justify-between items-center">
             <span class="font-medium">Cutoff Period</span>
             <select id="csvCutoffFilter" class="select select-bordered w-56">
               <option value="all">All Cutoff Periods</option>
             </select>
+          </div>
+
+          <!-- Specific Date Filter (Hidden by default) -->
+          <div id="dateFilterContainer" class="hidden">
+            <div class="flex justify-between items-center mb-2">
+              <span class="font-medium">Start Date</span>
+              <input type="date" id="csvStartDate" class="input input-bordered w-56" />
+            </div>
+            <div class="flex justify-between items-center">
+              <span class="font-medium">End Date</span>
+              <input type="date" id="csvEndDate" class="input input-bordered w-56" />
+            </div>
           </div>
 
           <!-- Department Filter -->
