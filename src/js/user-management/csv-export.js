@@ -27,6 +27,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   downloadCSVBtn.addEventListener("click", () => {
+    let rowCount = 0;
     try {
       if (!window.gridApi) {
         showCSVAlert("error", "Grid not initialized. Cannot export.");
@@ -39,8 +40,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
       const rowData = [];
       window.gridApi.forEachNode((node) => rowData.push(node.data));
+      rowCount = rowData.length; // Capture row count for audit log
 
-      if (rowData.length === 0) {
+      if (rowCount === 0) {
         showCSVAlert("error", "No data to export");
         return;
       }
