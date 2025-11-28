@@ -62,6 +62,7 @@ const gridOptions = {
     { field: "Description", filter: true },
     { field: "Module_Affected", filter: true },
     { field: "RecordID", filter: true },
+    { field: "IP", filter: true },
     { field: "UserAgent", filter: true },
     { field: "Time", filter: true },
   ],
