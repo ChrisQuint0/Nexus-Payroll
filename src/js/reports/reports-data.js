@@ -1,5 +1,4 @@
 import { supabaseClient } from "../supabase/supabaseClient.js";
-import { supabaseAdmin } from "../supabase/adminClient.js";
 
 async function getAuditTrailData() {
   try {
@@ -11,35 +10,30 @@ async function getAuditTrailData() {
 
     if (auditError) throw auditError;
 
-    // Get all unique user IDs from audit trail
-    const userIds = [...new Set(auditData.map((record) => record.user_id))];
+    /* // Get unique user IDs
+    const userIds = [
+      ...new Set(auditData.map((record) => record.user_id).filter(Boolean)),
+    ];
 
-    // Fetch all users from Supabase Auth using Admin API
-    const { data: usersData, error: usersError } =
-      await supabaseAdmin.auth.admin.listUsers();
+    // Fetch user data separately
+    const { data: userData, error: userError } = await supabaseClient
+      .from("employees") // or whatever your users table is called
+      .select("emp_id, first_name, last_name")
+      .in("emp_id", userIds);
 
-    if (usersError) {
-      console.error("Error fetching users:", usersError);
-    }
+    if (userError) throw userError;
 
-    // Create a map of user_id to display name
+    // Create a user lookup map
     const userMap = {};
-    if (usersData && usersData.users) {
-      usersData.users.forEach((user) => {
-        // Try to get display name from user_metadata, fallback to email
-        const displayName =
-          user.user_metadata?.first_name && user.user_metadata?.last_name
-            ? `${user.user_metadata.first_name} ${user.user_metadata.last_name}`
-            : user.user_metadata?.username || user.email || "Unknown User";
-
-        userMap[user.id] = displayName;
-      });
-    }
+    userData?.forEach((user) => {
+      userMap[user.emp_id] = `${user.last_name}, ${user.first_name}`;
+    }); */
 
     // Transform the data to match the required shape
     return auditData.map((record) => {
       // Get the user name from the map
-      const userName = userMap[record.user_id] || "Unknown User";
+      /*  const userName = userMap[record.user_id] || "Unknown User"; */
+      const userName = "Unknown User";
 
       // Format the timestamp to YYYY-MM-DD HH:MM:SS
       const date = new Date(record.timestamp);

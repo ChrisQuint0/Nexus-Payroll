@@ -1,5 +1,4 @@
 import { supabaseAdmin } from "../supabase/adminClient.js";
-import { supabaseClient } from "../supabase/supabaseClient.js";
 import { showGlobalAlert } from "../utils/alerts.js";
 
 const gridDiv = document.getElementById("usersGrid");
@@ -224,38 +223,6 @@ const gridOptions = {
         alertMessage = `${
           fieldLabel.charAt(0).toUpperCase() + fieldLabel.slice(1)
         } updated to "${newValue}"`;
-
-        // Log to Audit Trail
-        try {
-          const { data: authData, error: authError } =
-            await supabaseClient.auth.getUser();
-
-          if (authError) throw authError;
-          if (!authData?.user) throw new Error("No authenticated user");
-
-          // Build description based on field changed
-          const userEmail = event.data.email;
-          const userName = `${event.data.first_name} ${event.data.last_name}`;
-
-          let description = "";
-          const fieldName =
-            fieldLabel.charAt(0).toUpperCase() + fieldLabel.slice(1);
-
-          description = `Updated ${fieldName} for user ${userName} (${userEmail}) from "${oldValue}" to "${newValue}"`;
-
-          await supabaseClient.from("audit_trail").insert({
-            user_id: authData.user.id,
-            action: "edit",
-            description: description,
-            module_affected: "User Management",
-            record_id: null,
-            user_agent: navigator.userAgent,
-            timestamp: new Date().toISOString(),
-          });
-        } catch (auditError) {
-          console.error("Error logging audit trail:", auditError);
-          // Don't throw error - update was successful
-        }
       } else {
         return; // Not a field we update
       }

@@ -225,32 +225,6 @@ async function handleGenerateCSV() {
     // Download CSV
     downloadCSV(csv, filename);
 
-    // Log to Audit Trail
-    try {
-      const {
-        data: { user },
-      } = await supabaseClient.auth.getUser();
-
-      // Build filter description
-      const filterDescription =
-        departmentId === "all"
-          ? `Cutoff: ${cutoffText}, Department: All Departments`
-          : `Cutoff: ${cutoffText}, Department: ${departmentText}`;
-
-      await supabaseClient.from("audit_trail").insert({
-        user_id: user?.id,
-        action: "view",
-        description: `Exported payroll data to CSV (${data.length} employee(s)) - ${filterDescription}`,
-        module_affected: "Payroll",
-        record_id: cutoffId,
-        user_agent: navigator.userAgent,
-        timestamp: new Date().toISOString(),
-      });
-    } catch (auditError) {
-      console.error("Error logging audit trail:", auditError);
-      // Don't throw error - CSV export was successful
-    }
-
     // Close modal
     document.getElementById("genCSV").close();
 
