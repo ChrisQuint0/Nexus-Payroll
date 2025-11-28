@@ -8,7 +8,8 @@ async function getEmployeeDetails() {
   // We are querying the 'employee_full_details' View
   const { data: employees, error } = await supabase
     .from("employee_full_details")
-    .select("*"); // Select all columns from the View
+    .select("*") // Select all columns from the View
+    .order("Employee ID", { ascending: true }); // Sort by Employee ID in ascending order
 
   if (error) {
     console.error("Error fetching employee data:", error);
