@@ -427,6 +427,12 @@ async function saveEditedRow(rowData, fieldChanged) {
     };
     const dbField = fieldMapping[fieldChanged];
     if (!dbField) return;
+
+    // Store old value for audit trail
+    const oldValue =
+      rowData[fieldChanged + "_original"] || rowData[fieldChanged];
+    const newValue = rowData[fieldChanged];
+
     const updateData = { [dbField]: rowData[fieldChanged] };
     if (dbField === "time_in" || dbField === "time_out") {
       const value = rowData[fieldChanged];
@@ -449,6 +455,57 @@ async function saveEditedRow(rowData, fieldChanged) {
       return;
     }
     console.log("✅ Saved to Supabase:", data);
+
+    // Log to Audit Trail
+    try {
+      console.log("Starting audit trail logging for attendance edit...");
+
+      const { data: authData, error: authError } =
+        await supabaseClient.auth.getUser();
+
+      if (authError) {
+        console.error("Error getting current user for audit:", authError);
+        throw authError;
+      }
+
+      if (!authData?.user) {
+        console.error("No authenticated user found for audit logging");
+        throw new Error("No authenticated user");
+      }
+
+      console.log("Current user ID:", authData.user.id);
+
+      // Build description with all relevant details
+      const employeeId = rowData["Employee ID"];
+      const employeeName =
+        rowData["Employee Name"] || `Employee ID: ${employeeId}`;
+      const date = rowData["Date"];
+      const description = `Edited attendance record: ${employeeName} (${employeeId}) - Date: ${date}, Field: ${fieldChanged}, Changed from "${oldValue}" to "${newValue}"`;
+
+      console.log("Inserting audit trail with description:", description);
+
+      const { data: auditData, error: auditInsertError } = await supabaseClient
+        .from("audit_trail")
+        .insert({
+          user_id: authData.user.id,
+          action: "edit",
+          description: description,
+          module_affected: "Attendance Management",
+          record_id: data[0]?.log_id || null,
+          user_agent: navigator.userAgent,
+          timestamp: new Date().toISOString(),
+        });
+
+      if (auditInsertError) {
+        console.error("Error inserting audit trail:", auditInsertError);
+        throw auditInsertError;
+      }
+
+      console.log("Audit trail logged successfully:", auditData);
+    } catch (auditError) {
+      console.error("Full audit trail error:", auditError);
+      // Don't throw error - attendance update was successful
+    }
   } catch (err) {
     showErrorAlert(`Error saving: ${err.message}`);
   }
@@ -638,7 +695,7 @@ async function saveNewTimeLog(timeLogData) {
     currentDate.setHours(0, 0, 0, 0);
     selectedDate.setHours(0, 0, 0, 0);
     if (selectedDate > currentDate)
-      throw new Error(`Cannot add time logs for future dates.`);
+      throw new Error("Cannot add time logs for future dates.");
     const startOfDay = logDate + " 00:00:00",
       endOfDay = logDate + " 23:59:59";
     const { data: existingLogs, error: checkError } = await supabaseClient
@@ -653,10 +710,14 @@ async function saveNewTimeLog(timeLogData) {
       throw new Error(`Employee already has a time log for ${logDate}.`);
     const { data: empData } = await supabaseClient
       .from("employees")
-      .select("official_time_id")
+      .select("official_time_id, first_name, last_name")
       .eq("emp_id", timeLogData.employeeId)
       .single();
     const officialTimeId = empData?.official_time_id || 1;
+    const employeeName = empData
+      ? `${empData.first_name} ${empData.last_name}`
+      : `Employee ID: ${timeLogData.employeeId}`;
+
     const { data, error } = await supabaseClient
       .from("raw_time_logs")
       .insert([
@@ -672,6 +733,54 @@ async function saveNewTimeLog(timeLogData) {
       ])
       .select();
     if (error) throw error;
+
+    // Log to Audit Trail
+    try {
+      console.log("Starting audit trail logging for new time log...");
+
+      const { data: authData, error: authError } =
+        await supabaseClient.auth.getUser();
+
+      if (authError) {
+        console.error("Error getting current user for audit:", authError);
+        throw authError;
+      }
+
+      if (!authData?.user) {
+        console.error("No authenticated user found for audit logging");
+        throw new Error("No authenticated user");
+      }
+
+      console.log("Current user ID:", authData.user.id);
+
+      // Build description with all relevant details
+      const description = `Added new time log: ${employeeName} (${timeLogData.employeeId}) - Date: ${logDate}, Time In: ${timeLogData.timeIn}, Time Out: ${timeLogData.timeOut}, Status: ${timeLogData.status}, Late: ${timeLogData.lateMinutes}m, Undertime: ${timeLogData.undertimeMinutes}m`;
+
+      console.log("Inserting audit trail with description:", description);
+
+      const { data: auditData, error: auditInsertError } = await supabaseClient
+        .from("audit_trail")
+        .insert({
+          user_id: authData.user.id,
+          action: "create",
+          description: description,
+          module_affected: "Attendance Management",
+          record_id: data && data[0] ? data[0].log_id : null,
+          user_agent: navigator.userAgent,
+          timestamp: new Date().toISOString(),
+        });
+
+      if (auditInsertError) {
+        console.error("Error inserting audit trail:", auditInsertError);
+        throw auditInsertError;
+      }
+
+      console.log("Audit trail logged successfully:", auditData);
+    } catch (auditError) {
+      console.error("Full audit trail error:", auditError);
+      // Don't throw error - time log creation was successful
+    }
+
     return data;
   } catch (error) {
     throw error;
@@ -891,7 +1000,7 @@ function isDateInRange(dateStr, startDate, endDate) {
 }
 
 // Main Export Function
-function exportAttendanceData() {
+async function exportAttendanceData() {
   const departmentFilter =
     document.getElementById("csvDepartmentFilter")?.value || "all";
   const exportFormat =
@@ -1001,6 +1110,7 @@ function exportAttendanceData() {
 
   // Generate filename suffix for selected employees
   let employeeSuffix = "";
+  let employeeInfo = "";
   if (exportSelectedOnly && selectedRows.length > 0) {
     const uniqueEmployees = [];
     const seenIds = new Set();
@@ -1016,15 +1126,17 @@ function exportAttendanceData() {
           /[^a-zA-Z0-9]/g,
           "_"
         );
+      employeeInfo = ` - Employee: ${uniqueEmployees[0]["First Name"]} ${uniqueEmployees[0]["Last Name"]}`;
     } else {
       employeeSuffix = `_${uniqueEmployees.length}_Employees`;
+      employeeInfo = ` - ${uniqueEmployees.length} selected employees`;
     }
   }
 
   try {
     switch (exportFormat) {
       case "csv":
-        generateCSVFile(
+        await generateCSVFile(
           filteredData,
           filterLabel,
           departmentFilter,
@@ -1032,7 +1144,7 @@ function exportAttendanceData() {
         );
         break;
       case "pdf":
-        generatePDFFile(
+        await generatePDFFile(
           filteredData,
           filterLabel,
           departmentFilter,
@@ -1040,13 +1152,13 @@ function exportAttendanceData() {
         );
         break;
       case "both":
-        generateCSVFile(
+        await generateCSVFile(
           filteredData,
           filterLabel,
           departmentFilter,
           employeeSuffix
         );
-        generatePDFFile(
+        await generatePDFFile(
           filteredData,
           filterLabel,
           departmentFilter,
@@ -1054,13 +1166,81 @@ function exportAttendanceData() {
         );
         break;
       default:
-        generateCSVFile(
+        await generateCSVFile(
           filteredData,
           filterLabel,
           departmentFilter,
           employeeSuffix
         );
     }
+
+    // Log to Audit Trail after successful export
+    try {
+      console.log("Starting audit trail logging for attendance data export...");
+
+      const { supabaseClient } = await import("../supabase/supabaseClient.js");
+
+      const { data: authData, error: authError } =
+        await supabaseClient.auth.getUser();
+
+      if (authError) {
+        console.error("Error getting current user for audit:", authError);
+        throw authError;
+      }
+
+      if (!authData?.user) {
+        console.error("No authenticated user found for audit logging");
+        throw new Error("No authenticated user");
+      }
+
+      console.log("Current user ID:", authData.user.id);
+
+      // Build description with all relevant details
+      const viewLabel =
+        currentView === "raw"
+          ? "Raw Time Logs"
+          : currentView === "summary"
+          ? "Attendance Summary"
+          : "All Employees";
+
+      const periodText =
+        startDate && endDate
+          ? `Date Range: ${startDate} to ${endDate}`
+          : `Cutoff: ${cutoffFilter === "all" ? "All Cutoffs" : cutoffFilter}`;
+
+      const deptText =
+        departmentFilter === "all" ? "All Departments" : departmentFilter;
+
+      const formatText =
+        exportFormat === "both" ? "CSV and PDF" : exportFormat.toUpperCase();
+
+      const description = `Exported attendance data (${formatText}): ${viewLabel} - ${periodText}, Department: ${deptText}${employeeInfo} - ${filteredData.length} record(s)`;
+
+      console.log("Inserting audit trail with description:", description);
+
+      const { data: auditData, error: auditInsertError } = await supabaseClient
+        .from("audit_trail")
+        .insert({
+          user_id: authData.user.id,
+          action: "view",
+          description: description,
+          module_affected: "Attendance Management",
+          record_id: null,
+          user_agent: navigator.userAgent,
+          timestamp: new Date().toISOString(),
+        });
+
+      if (auditInsertError) {
+        console.error("Error inserting audit trail:", auditInsertError);
+        throw auditInsertError;
+      }
+
+      console.log("Audit trail logged successfully:", auditData);
+    } catch (auditError) {
+      console.error("Full audit trail error:", auditError);
+      // Don't throw error - export was successful
+    }
+
     document.getElementById("generateCSV").close();
   } catch (error) {
     showErrorAlert(`Export failed: ${error.message}`);

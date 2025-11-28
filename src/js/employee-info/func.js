@@ -792,13 +792,11 @@ async function addEmployeeToSupabase(formData, officialTimeId) {
     })
     .select()
     .single();
-
   if (govError) {
     console.error("Error creating gov_info:", govError);
     console.error("gov_info error details:", JSON.stringify(govError, null, 2));
     throw govError;
   }
-
   // Create leave_tracking record with default values
   const { data: leaveTracking, error: leaveError } = await supabaseClient
     .from("leave_tracking")
@@ -811,7 +809,6 @@ async function addEmployeeToSupabase(formData, officialTimeId) {
     })
     .select()
     .single();
-
   if (leaveError) {
     console.error("Error creating leave_tracking:", leaveError);
     console.error(
@@ -820,14 +817,12 @@ async function addEmployeeToSupabase(formData, officialTimeId) {
     );
     throw leaveError;
   }
-
   // Get department ID
   const { data: department, error: deptError } = await supabaseClient
     .from("departments")
     .select("department_id")
     .eq("department_name", formData.get("department"))
     .single();
-
   if (deptError) {
     console.error("Error fetching department:", deptError);
     console.error(
@@ -836,20 +831,17 @@ async function addEmployeeToSupabase(formData, officialTimeId) {
     );
     throw deptError;
   }
-
   // Get position ID
   const { data: position, error: posError } = await supabaseClient
     .from("positions")
     .select("position_id")
     .eq("position_name", formData.get("position"))
     .single();
-
   if (posError) {
     console.error("Error fetching position:", posError);
     console.error("Position error details:", JSON.stringify(posError, null, 2));
     throw posError;
   }
-
   // Prepare employee data
   const employeeData = {
     first_name: formData.get("firstName"),
@@ -865,18 +857,71 @@ async function addEmployeeToSupabase(formData, officialTimeId) {
     official_time_id: parseInt(officialTimeId),
     status_id: 1,
   };
-
   console.log("Inserting employee with data:", employeeData);
-
   // Then create employee record
-  const { error: empError } = await supabaseClient
+  const { data: employeeRecord, error: empError } = await supabaseClient
     .from("employees")
-    .insert(employeeData);
-
+    .insert(employeeData)
+    .select();
   if (empError) {
     console.error("Error creating employee:", empError);
     console.error("Employee error details:", JSON.stringify(empError, null, 2));
     throw empError;
+  }
+
+  // Log to Audit Trail
+  try {
+    console.log("Starting audit trail logging for employee creation...");
+
+    const { data: authData, error: authError } =
+      await supabaseClient.auth.getUser();
+
+    if (authError) {
+      console.error("Error getting current user for audit:", authError);
+      throw authError;
+    }
+
+    if (!authData?.user) {
+      console.error("No authenticated user found for audit logging");
+      throw new Error("No authenticated user");
+    }
+
+    console.log("Current user ID:", authData.user.id);
+
+    // Build description with all relevant details
+    const fullName = `${formData.get("firstName")} ${
+      formData.get("middleInitial") ? formData.get("middleInitial") + ". " : ""
+    }${formData.get("lastName")}`;
+    const departmentName = formData.get("department");
+    const positionName = formData.get("position");
+    const dateHired = formData.get("dateHired");
+
+    const description = `Added new employee: ${fullName} - Department: ${departmentName}, Position: ${positionName}, Date Hired: ${dateHired}`;
+
+    console.log("Inserting audit trail with description:", description);
+
+    const { data: auditData, error: auditInsertError } = await supabaseClient
+      .from("audit_trail")
+      .insert({
+        user_id: authData.user.id,
+        action: "create",
+        description: description,
+        module_affected: "Employee Management",
+        record_id:
+          employeeRecord && employeeRecord[0] ? employeeRecord[0].emp_id : null,
+        user_agent: navigator.userAgent,
+        timestamp: new Date().toISOString(),
+      });
+
+    if (auditInsertError) {
+      console.error("Error inserting audit trail:", auditInsertError);
+      throw auditInsertError;
+    }
+
+    console.log("Audit trail logged successfully:", auditData);
+  } catch (auditError) {
+    console.error("Full audit trail error:", auditError);
+    // Don't throw error - employee creation was successful
   }
 }
 
@@ -886,10 +931,17 @@ async function updateEmployeeInSupabase(formData, employeeId, officialTimeId) {
   // Get current employee data to find gov_info_id and current position_id
   const { data: employee, error: empFetchError } = await supabaseClient
     .from("employees")
-    .select("gov_info_id, position_id")
+    .select(
+      "gov_info_id, position_id, department_id, first_name, last_name, middle_name"
+    )
     .eq("emp_id", parseInt(employeeId))
     .single();
   if (empFetchError) throw empFetchError;
+
+  // Store old values for audit trail
+  const oldFirstName = employee.first_name;
+  const oldLastName = employee.last_name;
+  const oldMiddleName = employee.middle_name;
 
   // Update gov_info
   const { error: govError } = await supabaseClient
@@ -903,7 +955,15 @@ async function updateEmployeeInSupabase(formData, employeeId, officialTimeId) {
     .eq("gov_info_id", employee.gov_info_id);
   if (govError) throw govError;
 
-  // Get department ID
+  // Get current department name
+  const { data: oldDepartment, error: oldDeptError } = await supabaseClient
+    .from("departments")
+    .select("department_name")
+    .eq("department_id", employee.department_id)
+    .single();
+  if (oldDeptError) throw oldDeptError;
+
+  // Get new department ID
   const { data: department, error: deptError } = await supabaseClient
     .from("departments")
     .select("department_id")
@@ -911,56 +971,67 @@ async function updateEmployeeInSupabase(formData, employeeId, officialTimeId) {
     .single();
   if (deptError) throw deptError;
 
-  // Get position ID and position rank
+  // Get current position name
+  const { data: oldPosition, error: oldPosError } = await supabaseClient
+    .from("positions")
+    .select("position_name, pos_rank")
+    .eq("position_id", employee.position_id)
+    .single();
+  if (oldPosError) throw oldPosError;
+
+  // Get new position ID and position rank
   const { data: position, error: posError } = await supabaseClient
     .from("positions")
-    .select("position_id, pos_rank")
+    .select("position_id, pos_rank, position_name")
     .eq("position_name", formData.get("position"))
     .single();
   if (posError) throw posError;
 
+  // Track what changed for audit trail
+  const changes = [];
+  const newFirstName = formData.get("firstName");
+  const newLastName = formData.get("lastName");
+  const newMiddleName = formData.get("middleInitial") || null;
+
+  if (oldFirstName !== newFirstName) {
+    changes.push(`First Name: "${oldFirstName}" → "${newFirstName}"`);
+  }
+  if (oldLastName !== newLastName) {
+    changes.push(`Last Name: "${oldLastName}" → "${newLastName}"`);
+  }
+  if (oldMiddleName !== newMiddleName) {
+    changes.push(
+      `Middle Name: "${oldMiddleName || "None"}" → "${newMiddleName || "None"}"`
+    );
+  }
+  if (oldDepartment.department_name !== formData.get("department")) {
+    changes.push(
+      `Department: "${oldDepartment.department_name}" → "${formData.get(
+        "department"
+      )}"`
+    );
+  }
+  if (employee.position_id !== position.position_id) {
+    changes.push(
+      `Position: "${oldPosition.position_name}" → "${position.position_name}"`
+    );
+  }
+
   // Check if position has changed
   if (employee.position_id !== position.position_id) {
-    // Get the previous position rank
-    const { data: previousPosition, error: prevPosError } = await supabaseClient
-      .from("positions")
-      .select("pos_rank")
-      .eq("position_id", employee.position_id)
-      .single();
-    if (prevPosError) throw prevPosError;
-
     // Insert log into employee_position_logs
     const { error: logError } = await supabaseClient
       .from("employee_position_logs")
       .insert({
         emp_id: parseInt(employeeId),
         time_changed: new Date().toISOString(),
-        previous_pos_rank: previousPosition.pos_rank,
+        previous_pos_rank: oldPosition.pos_rank,
         new_pos_rank: position.pos_rank,
       });
     if (logError) throw logError;
 
-    // Log to Audit Logs
-    const {
-      data: { user },
-    } = await supabaseClient.auth.getUser();
-
-    const employeeName = `${formData.get("firstName")} ${formData.get(
-      "lastName"
-    )}`;
-
-    await supabaseClient.from("audit_trail").insert({
-      user_id: user?.id,
-      action: "edit",
-      description: `Updated employee information: ${employeeName} with ID ${employeeId}`,
-      module_affected: "Employee Information",
-      record_id: parseInt(employeeId),
-      user_agent: navigator.userAgent,
-      timestamp: new Date().toISOString(),
-    });
-
     console.log(
-      `Position change logged for employee ${employeeId}: ${previousPosition.pos_rank} -> ${position.pos_rank}`
+      `Position change logged for employee ${employeeId}: ${oldPosition.pos_rank} -> ${position.pos_rank}`
     );
   }
 
@@ -968,9 +1039,9 @@ async function updateEmployeeInSupabase(formData, employeeId, officialTimeId) {
   const { error: empError } = await supabaseClient
     .from("employees")
     .update({
-      first_name: formData.get("firstName"),
-      last_name: formData.get("lastName"),
-      middle_name: formData.get("middleInitial") || null,
+      first_name: newFirstName,
+      last_name: newLastName,
+      middle_name: newMiddleName,
       phone_number: formData.get("contact") || null,
       address: formData.get("address") || null,
       date_hired: formData.get("dateHired"),
@@ -980,8 +1051,61 @@ async function updateEmployeeInSupabase(formData, employeeId, officialTimeId) {
     })
     .eq("emp_id", parseInt(employeeId));
   if (empError) throw empError;
-}
 
+  // Log to Audit Trail
+  try {
+    console.log("Starting audit trail logging for employee update...");
+
+    const { data: authData, error: authError } =
+      await supabaseClient.auth.getUser();
+
+    if (authError) {
+      console.error("Error getting current user for audit:", authError);
+      throw authError;
+    }
+
+    if (!authData?.user) {
+      console.error("No authenticated user found for audit logging");
+      throw new Error("No authenticated user");
+    }
+
+    console.log("Current user ID:", authData.user.id);
+
+    // Build description with all relevant details
+    const employeeName = `${newFirstName} ${
+      newMiddleName ? newMiddleName + ". " : ""
+    }${newLastName}`;
+    const changesText =
+      changes.length > 0
+        ? ` - Changes: ${changes.join("; ")}`
+        : " - No field changes detected";
+    const description = `Updated employee information: ${employeeName} (ID: ${employeeId})${changesText}`;
+
+    console.log("Inserting audit trail with description:", description);
+
+    const { data: auditData, error: auditInsertError } = await supabaseClient
+      .from("audit_trail")
+      .insert({
+        user_id: authData.user.id,
+        action: "edit",
+        description: description,
+        module_affected: "Employee Management",
+        record_id: parseInt(employeeId),
+        user_agent: navigator.userAgent,
+        timestamp: new Date().toISOString(),
+      });
+
+    if (auditInsertError) {
+      console.error("Error inserting audit trail:", auditInsertError);
+      throw auditInsertError;
+    }
+
+    console.log("Audit trail logged successfully:", auditData);
+  } catch (auditError) {
+    console.error("Full audit trail error:", auditError);
+    // Don't throw error - employee update was successful
+  }
+}
 // ============================================================================
 // CSV Export Functionality
 // ============================================================================
