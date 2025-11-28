@@ -327,28 +327,61 @@
               <label class="label">
                 <span class="label-text">Duration (days) *</span>
               </label>
-              <input type="number" name="duration" class="input input-bordered w-full" min="1" placeholder="Number of days" required />
+              <input type="number" name="duration" id="durationInput" class="input input-bordered w-full" min="1" placeholder="Number of days" required />
             </div>
           </div>
 
-          <div class="grid grid-cols-2 gap-4">
+          <!-- Date Type Selection -->
+          <div class="form-control">
+            <label class="label">
+              <span class="label-text">Leave Date Type *</span>
+            </label>
+            <div class="flex gap-6">
+              <label class="label cursor-pointer gap-2">
+                <input type="radio" name="dateType" value="range" class="radio radio-primary" checked />
+                <span class="label-text">Date Range</span>
+              </label>
+              <label class="label cursor-pointer gap-2">
+                <input type="radio" name="dateType" value="specific" class="radio radio-primary" />
+                <span class="label-text">Specific Date</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Date Range Fields (shown by default) -->
+          <div id="dateRangeFields" class="grid grid-cols-2 gap-4">
             <div class="form-control">
               <label class="label">
                 <span class="label-text">Start Date *</span>
               </label>
-              <input type="date" name="startDate" class="input input-bordered w-full" required />
+              <input type="date" name="startDate" id="startDateInput" class="input input-bordered w-full" required />
             </div>
 
             <div class="form-control">
               <label class="label">
-                <span class="label-text">Paid Leave *</span>
+                <span class="label-text">End Date *</span>
               </label>
-              <select name="paid" class="select select-bordered w-full" required>
-                <option value="">Select Option</option>
-                <option value="Yes">Yes - Paid Leave</option>
-                <option value="No">No - Unpaid Leave</option>
-              </select>
+              <input type="date" name="endDate" id="endDateInput" class="input input-bordered w-full" required />
             </div>
+          </div>
+
+          <!-- Specific Date Field (hidden by default) -->
+          <div id="specificDateField" class="form-control" style="display: none;">
+            <label class="label">
+              <span class="label-text">Leave Date *</span>
+            </label>
+            <input type="date" name="specificDate" id="specificDateInput" class="input input-bordered w-full" />
+          </div>
+
+          <div class="form-control">
+            <label class="label">
+              <span class="label-text">Paid Leave *</span>
+            </label>
+            <select name="paid" class="select select-bordered w-full" required>
+              <option value="">Select Option</option>
+              <option value="Yes">Yes - Paid Leave</option>
+              <option value="No">No - Unpaid Leave</option>
+            </select>
           </div>
 
           <div class="modal-action">

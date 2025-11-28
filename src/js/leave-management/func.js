@@ -76,6 +76,20 @@ function initializeEventListeners() {
     });
   }
   
+  // Date type radio buttons
+  const dateTypeRadios = document.querySelectorAll('input[name="dateType"]');
+  dateTypeRadios.forEach(radio => {
+    radio.addEventListener('change', handleDateTypeChange);
+  });
+  
+  // Date range inputs for automatic duration calculation
+  const startDateInput = document.getElementById('startDateInput');
+  const endDateInput = document.getElementById('endDateInput');
+  if (startDateInput && endDateInput) {
+    startDateInput.addEventListener('change', calculateDurationFromRange);
+    endDateInput.addEventListener('change', calculateDurationFromRange);
+  }
+  
   // View balance buttons (delegated event handling)
   document.addEventListener('click', function(e) {
     // Add leave buttons (delegated event handling)
@@ -85,6 +99,87 @@ function initializeEventListeners() {
       openAddLeaveModal(employeeId, employeeName);
     }
   });
+}
+
+// Handle date type change (range vs specific)
+function handleDateTypeChange(event) {
+  const dateType = event.target.value;
+  const dateRangeFields = document.getElementById('dateRangeFields');
+  const specificDateField = document.getElementById('specificDateField');
+  const startDateInput = document.getElementById('startDateInput');
+  const endDateInput = document.getElementById('endDateInput');
+  const specificDateInput = document.getElementById('specificDateInput');
+  const durationInput = document.getElementById('durationInput');
+  
+  if (dateType === 'range') {
+    // Show date range fields
+    dateRangeFields.style.display = 'grid';
+    specificDateField.style.display = 'none';
+    
+    // Set required attributes
+    startDateInput.required = true;
+    endDateInput.required = true;
+    specificDateInput.required = false;
+    
+    // Make duration read-only for range (auto-calculated)
+    durationInput.readOnly = true;
+    durationInput.classList.add('input-disabled');
+    durationInput.placeholder = 'Auto-calculated';
+    
+    // Clear specific date
+    specificDateInput.value = '';
+    
+    // Recalculate duration if dates are set
+    calculateDurationFromRange();
+  } else {
+    // Show specific date field
+    dateRangeFields.style.display = 'none';
+    specificDateField.style.display = 'block';
+    
+    // Set required attributes
+    startDateInput.required = false;
+    endDateInput.required = false;
+    specificDateInput.required = true;
+    
+    // Make duration editable for specific date
+    durationInput.readOnly = false;
+    durationInput.classList.remove('input-disabled');
+    durationInput.placeholder = 'Number of days';
+    
+    // Clear range dates
+    startDateInput.value = '';
+    endDateInput.value = '';
+    durationInput.value = '';
+  }
+}
+
+// Calculate duration from date range
+function calculateDurationFromRange() {
+  const startDateInput = document.getElementById('startDateInput');
+  const endDateInput = document.getElementById('endDateInput');
+  const durationInput = document.getElementById('durationInput');
+  
+  if (startDateInput.value && endDateInput.value) {
+    const startDate = new Date(startDateInput.value);
+    const endDate = new Date(endDateInput.value);
+    
+    // Validate that end date is not before start date
+    if (endDate < startDate) {
+      endDateInput.setCustomValidity('End date cannot be before start date');
+      durationInput.value = '';
+      return;
+    } else {
+      endDateInput.setCustomValidity('');
+    }
+    
+    // Calculate duration in days (inclusive)
+    const diffTime = Math.abs(endDate - startDate);
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
+    
+    durationInput.value = diffDays;
+  } else {
+    durationInput.value = '';
+  }
 }
 
 // Handle selection change - no longer needed
@@ -112,6 +207,10 @@ async function openAddLeaveModal(employeeId, employeeName) {
   
   document.getElementById('modalEmployeeName').textContent = employeeName;
   document.getElementById('modalEmployeeId').textContent = employeeId;
+  
+  // Reset date type to range (default) and trigger the change
+  document.querySelector('input[name="dateType"][value="range"]').checked = true;
+  handleDateTypeChange({ target: { value: 'range' } });
   
   // Define default allocations (for percentage calculation)
   const defaultBalances = {
@@ -214,7 +313,45 @@ async function handleAddLeave(event) {
   const paidOption = formData.get('paid');
   // Convert to boolean: 'Yes' -> true, 'No' -> false, null/empty -> null
   const isPaid = paidOption === 'Yes' ? true : (paidOption === 'No' ? false : null);
-  const startDate = formData.get('startDate');
+  
+  // Get date type
+  const dateType = formData.get('dateType');
+  let startDate, endDate;
+  
+  if (dateType === 'range') {
+    // Date range mode
+    const startDateStr = formData.get('startDate');
+    const endDateStr = formData.get('endDate');
+    
+    if (!startDateStr || !endDateStr) {
+      showGlobalAlert('error', 'Please select both start and end dates.');
+      return;
+    }
+    
+    startDate = startDateStr;
+    endDate = endDateStr;
+  } else {
+    // Specific date mode
+    const specificDateStr = formData.get('specificDate');
+    
+    if (!specificDateStr) {
+      showGlobalAlert('error', 'Please select a leave date.');
+      return;
+    }
+    
+    if (!duration || duration < 1) {
+      showGlobalAlert('error', 'Please enter a valid duration.');
+      return;
+    }
+    
+    // Calculate end date from start date and duration
+    const leaveStart = new Date(specificDateStr);
+    const leaveEnd = new Date(leaveStart);
+    leaveEnd.setDate(leaveEnd.getDate() + duration - 1);
+    
+    startDate = specificDateStr;
+    endDate = leaveEnd.toISOString().split('T')[0];
+  }
   
   // Validate inputs
   if (!employeeId || !leaveType || !duration || !startDate || paidOption === '' || paidOption === null) {
@@ -269,10 +406,9 @@ async function handleAddLeave(event) {
   try {
     const { supabaseClient } = await import('../supabase/supabaseClient.js');
     
-    // Calculate leave end date
+    // Convert dates to proper format
     const leaveStart = new Date(startDate);
-    const leaveEnd = new Date(leaveStart);
-    leaveEnd.setDate(leaveEnd.getDate() + duration - 1);
+    const leaveEnd = new Date(endDate);
     
     // Insert leave record into leave_management
     const { error: leaveError } = await supabaseClient
@@ -328,13 +464,22 @@ async function handleAddLeave(event) {
         Object.values(currentLeaveData[employeeIndex]["Leave Details"]).reduce((sum, val) => sum + val, 0);
     }
     
-    showGlobalAlert('success', `Leave request added successfully! ${duration} day(s) deducted from ${leaveType}.`);
+    const dateRangeText = dateType === 'range' 
+      ? `from ${new Date(startDate).toLocaleDateString()} to ${new Date(endDate).toLocaleDateString()}`
+      : `starting ${new Date(startDate).toLocaleDateString()}`;
+    
+    showGlobalAlert('success', `Leave request added successfully! ${duration} day(s) of ${leaveType} ${dateRangeText}.`);
     
     // Close modal and refresh data from database
     document.getElementById('addLeaveModal').close();
     form.reset();
     delete form.dataset.employeeId;
     delete form.dataset.leaveTrackingId;
+    
+    // Reset date type to range (default)
+    document.querySelector('input[name="dateType"][value="range"]').checked = true;
+    handleDateTypeChange({ target: { value: 'range' } });
+    
     await refreshData();
     
   } catch (error) {
