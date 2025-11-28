@@ -21,6 +21,72 @@ function applyRBAC(user) {
   const employeeId = user.user_metadata?.employee_id;
 
   if (userType === "Employee") {
+    // === Modify columns for Employee role ===
+    if (window.gridApi) {
+      const employeeColumnDefs = [
+        {
+          headerName: "Name",
+          field: "full_name",
+          sortable: true,
+          filter: true,
+          width: 500,
+          minWidth: 180,
+          cellStyle: { fontWeight: "500" },
+          valueGetter: (params) => {
+            const emp = params.data;
+            const parts = [
+              emp.first_name,
+              emp.middle_name,
+              emp.last_name,
+            ].filter(Boolean);
+            return parts.join(" ");
+          },
+        },
+        {
+          headerName: "Cutoff Period",
+          field: "cutoff_period",
+          sortable: true,
+          filter: true,
+          width: 500,
+        },
+        {
+          headerName: "Actions",
+          field: "actions",
+          width: 500,
+          pinned: "right",
+          lockPosition: true,
+          suppressMovable: true,
+          cellStyle: {
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            padding: "8px",
+          },
+          cellRenderer: (params) => {
+            const button = document.createElement("button");
+            button.className =
+              "px-8 py-2 font-medium text-white transition-colors btn btn-primary btn-sm";
+            button.textContent = "Preview";
+
+            button.addEventListener("click", () => {
+              openPreviewModal(params.data.employee_id);
+            });
+
+            return button;
+          },
+        },
+      ];
+
+      // Apply new columns
+      window.gridApi.setGridOption("columnDefs", employeeColumnDefs);
+
+      // Disable multi-select + hide checkbox column
+      window.gridApi.setGridOption("rowSelection", {
+        mode: "singleRow",
+        checkboxes: false,
+      });
+    }
+
     // Hide search bar
     const searchBar = document.getElementById("searchInput");
     if (searchBar) searchBar.closest("label").classList.add("hidden");
@@ -210,6 +276,12 @@ try {
     const api = agGrid.createGrid(gridDiv, gridOptions);
     gridApi = api || gridOptions.api || null;
     console.log("[Payslip] AG Grid initialized:", !!gridApi);
+
+    // Save globally so applyRBAC can modify columns
+    window.gridApi = gridApi;
+
+    // Now that grid is ready, apply RBAC rules
+    if (currentUser) applyRBAC(currentUser);
   } else {
     console.error("AG Grid library not available or grid container missing.");
   }

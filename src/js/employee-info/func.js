@@ -307,6 +307,13 @@ function filterAndDisplayData() {
     }
   });
 
+  // Sort by Employee ID in ascending order
+  filteredData.sort((a, b) => {
+    const idA = parseInt(a["Employee ID"]) || 0;
+    const idB = parseInt(b["Employee ID"]) || 0;
+    return idA - idB;
+  });
+
   setGridData(filteredData);
 }
 
@@ -759,6 +766,11 @@ async function handleAddEmployee(e) {
     );
   } catch (error) {
     console.error("Error saving employee:", error);
+    console.error("Full error object:", JSON.stringify(error, null, 2));
+    console.error("Error message:", error?.message);
+    console.error("Error details:", error?.details);
+    console.error("Error hint:", error?.hint);
+    console.error("Error code:", error?.code);
     showGlobalAlert("error", "Error saving employee data. Please try again.");
   }
 }
@@ -781,7 +793,30 @@ async function addEmployeeToSupabase(formData, officialTimeId) {
     .select()
     .single();
 
-  if (govError) throw govError;
+  if (govError) {
+    console.error("Error creating gov_info:", govError);
+    console.error("gov_info error details:", JSON.stringify(govError, null, 2));
+    throw govError;
+  }
+
+  // Create leave_tracking record with default values
+  const { data: leaveTracking, error: leaveError } = await supabaseClient
+    .from("leave_tracking")
+    .insert({
+      vacation_leave: 15,
+      sick_leave: 15,
+      emergency_leave: 5,
+      personal_leave: 3,
+      maternity_leave: 105,
+    })
+    .select()
+    .single();
+
+  if (leaveError) {
+    console.error("Error creating leave_tracking:", leaveError);
+    console.error("leave_tracking error details:", JSON.stringify(leaveError, null, 2));
+    throw leaveError;
+  }
 
   // Get department ID
   const { data: department, error: deptError } = await supabaseClient
@@ -790,7 +825,11 @@ async function addEmployeeToSupabase(formData, officialTimeId) {
     .eq("department_name", formData.get("department"))
     .single();
 
-  if (deptError) throw deptError;
+  if (deptError) {
+    console.error("Error fetching department:", deptError);
+    console.error("Department error details:", JSON.stringify(deptError, null, 2));
+    throw deptError;
+  }
 
   // Get position ID
   const { data: position, error: posError } = await supabaseClient
@@ -799,10 +838,14 @@ async function addEmployeeToSupabase(formData, officialTimeId) {
     .eq("position_name", formData.get("position"))
     .single();
 
-  if (posError) throw posError;
+  if (posError) {
+    console.error("Error fetching position:", posError);
+    console.error("Position error details:", JSON.stringify(posError, null, 2));
+    throw posError;
+  }
 
-  // Then create employee record
-  const { error: empError } = await supabaseClient.from("employees").insert({
+  // Prepare employee data
+  const employeeData = {
     first_name: formData.get("firstName"),
     last_name: formData.get("lastName"),
     middle_name: formData.get("middleInitial") || null,
@@ -812,9 +855,10 @@ async function addEmployeeToSupabase(formData, officialTimeId) {
     department_id: department.department_id,
     position_id: position.position_id,
     gov_info_id: govInfo.gov_info_id,
+    leave_tracking_id: leaveTracking.leave_tracking_id,
     official_time_id: parseInt(officialTimeId),
     status_id: 1,
-  });
+  };
 
   if (empError) throw empError;
 
@@ -836,6 +880,16 @@ async function addEmployeeToSupabase(formData, officialTimeId) {
     user_agent: navigator.userAgent,
     timestamp: new Date().toISOString(),
   });
+  console.log("Inserting employee with data:", employeeData);
+
+  // Then create employee record
+  const { error: empError } = await supabaseClient.from("employees").insert(employeeData);
+
+  if (empError) {
+    console.error("Error creating employee:", empError);
+    console.error("Employee error details:", JSON.stringify(empError, null, 2));
+    throw empError;
+  }
 }
 
 // Update employee in Supabase
