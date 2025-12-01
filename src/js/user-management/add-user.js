@@ -1,7 +1,7 @@
 import { supabaseAdmin } from "../supabase/adminClient.js";
 import { supabaseClient } from "../supabase/supabaseClient.js";
 import { showGlobalAlert } from "../utils/alerts.js";
-import { fetchUsers } from "./grid.js";
+import { fetchUsers } from "./grid.js"; // *** Import fetchUsers to refresh the grid ***
 
 const modal = document.getElementById("addNewModal");
 const addUserBtn = modal.querySelector("#addUserBtn");
@@ -44,219 +44,107 @@ userTypeInput.addEventListener("change", (e) => {
   }
 });
 
-// Add new leave record
-async function handleAddLeave(event) {
-  event.preventDefault();
-
-  const form = event.target;
-  const formData = new FormData(form);
-
-  const employeeId = form.dataset.employeeId;
-  const leaveTrackingId = form.dataset.leaveTrackingId;
-  const leaveType = formData.get("leaveType");
-  const duration = parseInt(formData.get("duration"));
-  const paidOption = formData.get("paid");
-  // Convert to boolean: 'Yes' -> true, 'No' -> false, null/empty -> null
-  const isPaid =
-    paidOption === "Yes" ? true : paidOption === "No" ? false : null;
-  const startDate = formData.get("startDate");
-
-  // Validate inputs
-  if (
-    !employeeId ||
-    !leaveType ||
-    !duration ||
-    !startDate ||
-    paidOption === "" ||
-    paidOption === null
-  ) {
-    showGlobalAlert("error", "Please fill in all required fields.");
-    return;
-  }
-
-  // Find employee and check leave balance
-  const employee = currentLeaveData.find(
-    (emp) => emp["Employee ID"] === employeeId
-  );
-  if (!employee) {
-    showGlobalAlert("error", "Employee not found.");
-    return;
-  }
-
-  const leaveDetails = employee["Leave Details"];
-  let leaveColumn = "";
-  let currentBalance = 0;
-
-  // Map leave type to database column
-  switch (leaveType) {
-    case "Vacation Leave":
-      leaveColumn = "vacation_leave";
-      currentBalance = leaveDetails["Vacation Leave"];
-      break;
-    case "Sick Leave":
-      leaveColumn = "sick_leave";
-      currentBalance = leaveDetails["Sick Leave"];
-      break;
-    case "Emergency Leave":
-      leaveColumn = "emergency_leave";
-      currentBalance = leaveDetails["Emergency Leave"];
-      break;
-    case "Personal Leave":
-      leaveColumn = "personal_leave";
-      currentBalance = leaveDetails["Personal Leave"];
-      break;
-    case "Maternity Leave":
-      leaveColumn = "maternity_leave";
-      currentBalance = leaveDetails["Maternity Leave"];
-      break;
-    default:
-      showGlobalAlert("error", "Invalid leave type.");
-      return;
-  }
-
-  // Check if employee has enough leave balance
-  if (currentBalance < duration) {
-    showGlobalAlert(
-      "error",
-      `Insufficient ${leaveType} balance. Current balance: ${currentBalance} day(s).`
-    );
-    return;
-  }
+/**
+ * Creates a new user in Supabase Auth using the Admin client
+ * and populates the necessary user metadata for the AG Grid.
+ * @param {object} userData
+ * @returns {Promise<string>} The new user's ID.
+ */
+async function createNewUser({
+  username,
+  firstName,
+  lastName,
+  userType,
+  employeeId,
+  email,
+  password,
+}) {
+  let authUserId = null;
 
   try {
-    const { supabaseClient } = await import("../supabase/supabaseClient.js");
+    // Prepare metadata for both Auth and AG Grid (which reads from metadata)
+    const userMetadata = {
+      username: username,
+      first_name: firstName,
+      last_name: lastName,
+      user_type: userType,
+      status: "active", // Default status for new users
+      // Only include employee_id if the user type is Employee
+      ...(userType === "Employee" && { employee_id: parseInt(employeeId) }),
+    };
 
-    // Calculate leave end date
-    const leaveStart = new Date(startDate);
-    const leaveEnd = new Date(leaveStart);
-    leaveEnd.setDate(leaveEnd.getDate() + duration - 1);
+    // 1. Create user in Supabase Auth via Admin Client
+    const {
+      data: { user: authUser },
+      error: authError,
+    } = await supabaseAdmin.auth.admin.createUser({
+      email: email,
+      password: password,
+      email_confirm: true, // Auto-confirm email for admin-created users
+      user_metadata: userMetadata,
+    });
 
-    // Insert leave record into leave_management
-    const { data: leaveData, error: leaveError } = await supabaseClient
-      .from("leave_management")
-      .insert({
-        emp_id: parseInt(employeeId),
-        leave_type: leaveType,
-        leave_start: leaveStart.toISOString(),
-        leave_end: leaveEnd.toISOString(),
-        is_paid: isPaid,
-      })
-      .select();
+    if (authError) throw new Error(authError.message || "Unknown Auth Error");
 
-    if (leaveError) throw leaveError;
+    if (!authUser)
+      throw new Error("User creation failed, no user object returned.");
 
-    // Update leave_tracking table - deduct the leave days
-    const newBalance = currentBalance - duration;
-    const updateData = {};
-    updateData[leaveColumn] = newBalance;
+    authUserId = authUser.id;
 
-    const { error: trackingError } = await supabaseClient
-      .from("leave_tracking")
-      .update(updateData)
-      .eq("leave_tracking_id", parseInt(leaveTrackingId));
-
-    if (trackingError) throw trackingError;
-
-    // Update local data immediately to reflect the change
-    const employeeIndex = currentLeaveData.findIndex(
-      (emp) => emp["Employee ID"] === employeeId
-    );
-    if (employeeIndex !== -1) {
-      // Map the leaveType to the display name in Leave Details
-      let leaveDetailKey = "";
-      switch (leaveType) {
-        case "Vacation Leave":
-          leaveDetailKey = "Vacation Leave";
-          break;
-        case "Sick Leave":
-          leaveDetailKey = "Sick Leave";
-          break;
-        case "Emergency Leave":
-          leaveDetailKey = "Emergency Leave";
-          break;
-        case "Personal Leave":
-          leaveDetailKey = "Personal Leave";
-          break;
-        case "Maternity Leave":
-          leaveDetailKey = "Maternity Leave";
-          break;
-      }
-
-      // Update the leave balance in the local data
-      currentLeaveData[employeeIndex]["Leave Details"][leaveDetailKey] =
-        newBalance;
-      currentLeaveData[employeeIndex]["Total Leave Balance"] = Object.values(
-        currentLeaveData[employeeIndex]["Leave Details"]
-      ).reduce((sum, val) => sum + val, 0);
-    }
-
-    // Log to Audit Trail
+    // 2. Log to Audit Trail
     try {
-      console.log("Starting audit trail logging for leave addition...");
-
-      const { data: authData, error: authError } =
+      const { data: currentUserData, error: authError } =
         await supabaseClient.auth.getUser();
 
       if (authError) {
-        console.error("Error getting current user for audit:", authError);
-        throw authError;
+        console.warn(
+          "Could not get current user for audit logging, proceeding without user_id.",
+          authError
+        );
       }
 
-      if (!authData?.user) {
-        console.error("No authenticated user found for audit logging");
-        throw new Error("No authenticated user");
-      }
+      const loggedInUserId = currentUserData?.user?.id || null;
+      const employeePart =
+        userType === "Employee" ? ` (EID: ${employeeId})` : "";
+      const description = `Created new user: ${firstName} ${lastName} (${email}, Type: ${userType}${employeePart}). New Auth ID: ${authUserId}`;
 
-      console.log("Current user ID:", authData.user.id);
-
-      // Build description with all relevant details
-      const employeeName =
-        employee["Employee Name"] || `Employee ID: ${employeeId}`;
-      const paidStatus =
-        isPaid === true ? "Paid" : isPaid === false ? "Unpaid" : "N/A";
-      const description = `Added leave record: ${employeeName} - ${leaveType} (${duration} day(s), ${paidStatus}) from ${startDate}. Balance updated: ${currentBalance} → ${newBalance}`;
-
-      console.log("Inserting audit trail with description:", description);
-
-      const { data: auditData, error: auditInsertError } = await supabaseClient
-        .from("audit_trail")
-        .insert({
-          user_id: authData.user.id,
-          action: "create",
-          description: description,
-          module_affected: "Leave Management",
-          record_id: leaveData && leaveData[0] ? leaveData[0].leave_id : null,
-          user_agent: navigator.userAgent,
-          timestamp: new Date().toISOString(),
-        });
-
-      if (auditInsertError) {
-        console.error("Error inserting audit trail:", auditInsertError);
-        throw auditInsertError;
-      }
-
-      console.log("Audit trail logged successfully:", auditData);
+      await supabaseClient.from("audit_trail").insert({
+        user_id: loggedInUserId,
+        action: "create",
+        description: description,
+        module_affected: "User Management",
+        record_id: authUserId,
+        user_agent: navigator.userAgent,
+        timestamp: new Date().toISOString(),
+      });
     } catch (auditError) {
-      console.error("Full audit trail error:", auditError);
-      // Don't throw error - leave addition was successful
+      console.error("Error logging user creation to audit trail:", auditError);
+      // Non-critical error, do not throw.
     }
 
-    showGlobalAlert(
-      "success",
-      `Leave request added successfully! ${duration} day(s) deducted from ${leaveType}.`
-    );
+    // 3. Refresh the AG Grid data to show the new user
+    await fetchUsers();
 
-    // Close modal and refresh data from database
-    document.getElementById("addLeaveModal").close();
-    form.reset();
-    delete form.dataset.employeeId;
-    delete form.dataset.leaveTrackingId;
-    await refreshData();
+    return authUserId;
   } catch (error) {
-    console.error("Error adding leave record:", error);
-    showGlobalAlert("error", "Error adding leave record. Please try again.");
+    // If an auth user was created but something else failed (unlikely here, but good practice)
+    // and we had a user ID, we should try to clean up the partially created user.
+    if (authUserId) {
+      console.warn(
+        `Rolling back partially created user with ID: ${authUserId}`
+      );
+      await supabaseAdmin.auth.admin
+        .deleteUser(authUserId)
+        .catch((e) => console.error("Rollback failed:", e));
+    }
+
+    // Re-throw the original error message to be handled by the click listener
+    throw new Error(`Failed to add user: ${error.message}`);
   }
 }
+
+// NOTE: The handleAddLeave function is not needed here as it relates to leave management,
+// not user management. I am removing it to clean up the file for the user management context.
 
 addUserBtn.addEventListener("click", async (e) => {
   e.preventDefault();
