@@ -37,7 +37,7 @@ export async function checkPageAccess() {
 
     if (error || !user) {
       // Not logged in - redirect to login
-      window.location.href = "../pages/login.html";
+      window.location.href = "../pages/index.html";
       return false;
     }
 
@@ -62,7 +62,7 @@ export async function checkPageAccess() {
     return true;
   } catch (error) {
     console.error("Error checking page access:", error);
-    window.location.href = "../pages/login.html";
+    window.location.href = "../pages/index.html";
     return false;
   }
 }
