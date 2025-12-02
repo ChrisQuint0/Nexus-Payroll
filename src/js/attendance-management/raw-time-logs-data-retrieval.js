@@ -10,6 +10,7 @@ export async function getEmployeeAttendanceTable() {
     const { data: timeLogs, error: timeLogsError } = await supabaseClient
       .from("employee_time_logs")
       .select("*")
+      .order("employee_id", { ascending: true })
       .order("time_in", { ascending: true }); // Ensure chronological order
 
     if (timeLogsError) {
@@ -19,7 +20,7 @@ export async function getEmployeeAttendanceTable() {
 
     // Format data for AG Grid display
     const formattedLogs = timeLogs.map((log) => ({
-      "Date": log.date || "N/A",
+      Date: log.date || "N/A",
       "Employee ID": log.employee_id?.toString() || "",
       "Last Name": log.last_name || "",
       "First Name": log.first_name || "",
@@ -28,10 +29,10 @@ export async function getEmployeeAttendanceTable() {
       "Time In": log.time_in || "",
       "Time Out": log.time_out || "",
       "Late (m)": log.late_m ?? 0,
-      "Undertime": log.undertime ?? 0,
-      "Status": log.status || "N/A",
+      Undertime: log.undertime ?? 0,
+      Status: log.status || "N/A",
       "Cutoff Period": log.cutoff_period || "",
-      "Department": log.department_name || "N/A",
+      Department: log.department_name || "N/A",
     }));
 
     console.log(" Attendance logs ready.");

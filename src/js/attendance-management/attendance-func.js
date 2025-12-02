@@ -1,8 +1,5 @@
 //attendance-func.js
-import {
-  switchView,
-  applyDataFilter,
-} from "./attendance-grid.js";
+import { switchView, applyDataFilter } from "./attendance-grid.js";
 
 // Defer DOM wiring until DOM is ready
 window.addEventListener("DOMContentLoaded", () => {
@@ -17,10 +14,10 @@ window.addEventListener("DOMContentLoaded", () => {
 
   function setActiveButton(activeBtn) {
     const allButtons = [rawBtn, summaryBtn, addTimeLogsBtn];
-    
-    allButtons.forEach(btn => {
+
+    allButtons.forEach((btn) => {
       if (!btn) return;
-      
+
       if (btn === activeBtn) {
         btn.classList.add("btn-primary");
         btn.classList.remove("btn-outline");
@@ -43,6 +40,8 @@ window.addEventListener("DOMContentLoaded", () => {
     cutoffContainer?.classList.remove("hidden"); // show cutoff when Summary is active
     if (dtrBtn) dtrBtn.classList.add("hidden"); //  hide DTR button
     await switchView("summary");
+
+    applyFilters();
   }
 
   async function showAddTimeLogs() {

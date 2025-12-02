@@ -83,7 +83,7 @@ function applyRBAC(user) {
       // Disable multi-select + hide checkbox column
       window.gridApi.setGridOption("rowSelection", {
         mode: "singleRow",
-        checkboxes: false,
+        checkboxes: true,
       });
     }
 
