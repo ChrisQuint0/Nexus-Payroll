@@ -84,6 +84,24 @@ async function computeDescriptor() {
 }
 
 /**
+ * Returns a timestamp string that correctly represents the *local* time
+ * for database storage.
+ * @returns {string} The local timestamp in 'YYYY-MM-DD HH:MM:SS' format.
+ */
+function getLocalTimestamp() {
+  const now = new Date();
+  // We use padStart to ensure two digits for month, day, hours, minutes, seconds
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, "0"); // Months are 0-indexed
+  const day = String(now.getDate()).padStart(2, "0");
+  const hours = String(now.getHours()).padStart(2, "0");
+  const minutes = String(now.getMinutes()).padStart(2, "0");
+  const seconds = String(now.getSeconds()).padStart(2, "0");
+
+  return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+}
+
+/**
  * Call Supabase RPC to find the nearest face match
  * @param {Float32Array} descriptor
  * @returns {Promise<{emp_id: string, full_name: string, distance: number} | null>}
@@ -135,6 +153,9 @@ async function handleTimeLog(emp_id, full_name) {
   const todayEnd = new Date();
   todayEnd.setHours(23, 59, 59, 999);
 
+  // Use a formatted local time string for saving to the database
+  const localTimestamp = getLocalTimestamp(); // <-- NEW: Get the local time string
+
   // Check if user already clocked in today but hasn't clocked out
   const { data: openLogs, error: selErr } = await supabase
     .from("raw_time_logs")
@@ -156,7 +177,7 @@ async function handleTimeLog(emp_id, full_name) {
     const log = openLogs[0];
     const { error: updErr } = await supabase
       .from("raw_time_logs")
-      .update({ time_out: new Date().toISOString() })
+      .update({ time_out: localTimestamp }) // <-- FIX APPLIED HERE
       .eq("time_log_id", log.time_log_id);
     if (updErr) {
       console.error(updErr);
@@ -169,7 +190,7 @@ async function handleTimeLog(emp_id, full_name) {
     const { error: insErr } = await supabase.from("raw_time_logs").insert({
       emp_id,
       official_time_id: 1,
-      time_in: new Date().toISOString(),
+      time_in: localTimestamp, // <-- FIX APPLIED HERE
       status: "present",
     });
     if (insErr) {
