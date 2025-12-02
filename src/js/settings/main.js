@@ -161,6 +161,105 @@ async function loadDeductionRates() {
 // Expose loadDeductionRates globally
 window.loadDeductionRates = loadDeductionRates;
 
+// main.js
+
+/**
+ * Fetches the current deduction rates from the 'deduction_percentages' table,
+ * converts them to percentages (x100), and populates the modal inputs.
+ */
+async function loadDeductionRatesIntoModal() {
+  const { data, error } = await supabase
+    .from("deduction_percentages")
+    // Only fetch the name and percentage for the rates we care about
+    .select("deduction_name, percentage")
+    .in("deduction_name", ["SSS_RATE", "PHILHEALTH_RATE", "PAGIBIG_RATE"]);
+
+  if (error) {
+    console.error("Supabase fetch error:", error);
+    showNotification(
+      "Failed to load deduction rates for editing: " + error.message,
+      "error"
+    );
+    return;
+  }
+
+  // Create a map for easy lookup
+  const ratesMap = data.reduce((acc, item) => {
+    // Convert decimal (e.g., 0.05) to percentage (e.g., 5.00) for display
+    acc[item.deduction_name] = parseFloat(item.percentage) * 100;
+    return acc;
+  }, {});
+
+  // Populate the form inputs
+  document.getElementById("philhealthInput").value =
+    ratesMap.PHILHEALTH_RATE || 0;
+  document.getElementById("sssInput").value = ratesMap.SSS_RATE || 0;
+  document.getElementById("pagibigInput").value = ratesMap.PAGIBIG_RATE || 0;
+}
+
+// Ensure the function is exposed globally for the HTML hook
+window.loadDeductionRatesIntoModal = loadDeductionRatesIntoModal;
+
+// main.js - DEDUCTIONS MODAL SUBMISSION HANDLER
+
+// 1. Get the form element (Confirmed ID from settings.html)
+const deductionsForm = document.getElementById("deductionsForm");
+
+if (deductionsForm) {
+  deductionsForm.addEventListener("submit", async (event) => {
+    event.preventDefault(); // Prevents the form from closing immediately
+
+    // 2. Get and validate values as percentages (e.g., 5.00 for 5%)
+    const philhealthPct = parseFloat(
+      document.getElementById("philhealthInput").value
+    );
+    const sssPct = parseFloat(document.getElementById("sssInput").value);
+    const pagibigPct = parseFloat(
+      document.getElementById("pagibigInput").value
+    );
+
+    if (isNaN(philhealthPct) || isNaN(sssPct) || isNaN(pagibigPct)) {
+      alert("Please enter valid numbers for all rates.");
+      return;
+    }
+
+    // 3. Prepare the updates (convert percentage back to decimal rate required by DB)
+    const updates = [
+      { name: "PHILHEALTH_RATE", percentage: philhealthPct / 100 },
+      { name: "SSS_RATE", percentage: sssPct / 100 },
+      { name: "PAGIBIG_RATE", percentage: pagibigPct / 100 },
+    ];
+
+    // 4. Perform multiple Supabase Updates (one for each deduction row)
+    let updateErrors = [];
+    for (const update of updates) {
+      const { error } = await supabase
+        .from("deduction_percentages") // Correct Table Name
+        .update({ percentage: update.percentage })
+        .eq("deduction_name", update.name); // Match by deduction name
+
+      if (error) {
+        updateErrors.push(`Failed to update ${update.name}: ${error.message}`);
+      }
+    }
+
+    // 5. Handle the result
+    if (updateErrors.length > 0) {
+      console.error("Supabase update errors:", updateErrors);
+      alert("Some rates failed to update. Check console for details.");
+    } else {
+      // Show success and close the modal
+      alert("✅ Deduction rates updated successfully!");
+      document.getElementById("deductionsModal").close();
+
+      // Reload the data displayed on the main settings page
+      if (typeof loadDeductionRates === "function") {
+        loadDeductionRates();
+      }
+    }
+  });
+}
+
 // ========== DEPARTMENTS ==========
 function initializeDepartmentsGrid() {
   const gridDiv = document.getElementById("departmentsGrid");

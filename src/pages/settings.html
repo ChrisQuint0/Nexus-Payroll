@@ -73,7 +73,10 @@
                 />
               </div>
 
-              <div id="departmentsGrid" class="h-[470px] w-full ag-theme-quartz rounded-lg"></div>
+              <div
+                id="departmentsGrid"
+                class="h-[470px] w-full ag-theme-quartz rounded-lg"
+              ></div>
             </div>
           </div>
 
@@ -95,7 +98,10 @@
                 />
               </div>
 
-              <div id="positionsGrid" class="h-[470px] w-full ag-theme-quartz rounded-lg"></div>
+              <div
+                id="positionsGrid"
+                class="h-[470px] w-full ag-theme-quartz rounded-lg"
+              ></div>
             </div>
           </div>
 
@@ -117,7 +123,10 @@
                 />
               </div>
 
-              <div id="officialTimeGrid" class="h-[470px] w-full ag-theme-quartz rounded-lg"></div>
+              <div
+                id="officialTimeGrid"
+                class="h-[470px] w-full ag-theme-quartz rounded-lg"
+              ></div>
             </div>
           </div>
 
@@ -125,11 +134,24 @@
           <div id="tab-content-cutoff" class="hidden">
             <div class="flex flex-col gap-4">
               <div class="flex flex-wrap justify-between items-center gap-3">
-                <button onclick="window.openCutoffModal()" class="btn btn-primary h-10 min-h-0 px-5 text-sm font-semibold">Add Cutoff Period</button>
-                <input id="searchCutoff" type="search" placeholder="Search cutoff periods..." class="input input-bordered w-52 h-10 text-sm focus:input-primary" />
+                <button
+                  onclick="window.openCutoffModal()"
+                  class="btn btn-primary h-10 min-h-0 px-5 text-sm font-semibold"
+                >
+                  Add Cutoff Period
+                </button>
+                <input
+                  id="searchCutoff"
+                  type="search"
+                  placeholder="Search cutoff periods..."
+                  class="input input-bordered w-52 h-10 text-sm focus:input-primary"
+                />
               </div>
 
-              <div id="cutoffGrid" class="h-[470px] w-full ag-theme-quartz rounded-lg"></div>
+              <div
+                id="cutoffGrid"
+                class="h-[470px] w-full ag-theme-quartz rounded-lg"
+              ></div>
             </div>
           </div>
 
@@ -146,37 +168,79 @@
                 </p>
               </div>
 
-              <button onclick="window.openDeductionsModal()" class="btn btn-primary h-10 min-h-0 w-full md:w-auto px-6 text-sm font-semibold mb-6">Edit Deduction Rates</button>
+              <button
+                onclick="window.openDeductionsModal()"
+                class="btn btn-primary h-10 min-h-0 w-full md:w-auto px-6 text-sm font-semibold mb-6"
+              >
+                Edit Deduction Rates
+              </button>
 
               <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                 <div class="form-control">
                   <label class="label pb-1.5">
-                    <span class="label-text font-semibold text-sm">SSS Employee Contribution (%)</span>
+                    <span class="label-text font-semibold text-sm"
+                      >SSS Employee Contribution (%)</span
+                    >
                   </label>
-                  <div class="text-2xl font-bold text-primary" id="currentSSSRate">-</div>
-                  <p class="text-xs text-base-content/60 mt-1">Standard: 5% (Employer: 10%)</p>
+                  <div
+                    class="text-2xl font-bold text-primary"
+                    id="currentSSSRate"
+                  >
+                    -
+                  </div>
+                  <p class="text-xs text-base-content/60 mt-1">
+                    Standard: 5% (Employer: 10%)
+                  </p>
                 </div>
 
                 <div class="form-control">
                   <label class="label pb-1.5">
-                    <span class="label-text font-semibold text-sm">PhilHealth Employee Contribution (%)</span>
+                    <span class="label-text font-semibold text-sm"
+                      >PhilHealth Employee Contribution (%)</span
+                    >
                   </label>
-                  <div class="text-2xl font-bold text-primary" id="currentPhilHealthRate">-</div>
-                  <p class="text-xs text-base-content/60 mt-1">Standard: 2.5% (Employer: 2.5%)</p>
+                  <div
+                    class="text-2xl font-bold text-primary"
+                    id="currentPhilHealthRate"
+                  >
+                    -
+                  </div>
+                  <p class="text-xs text-base-content/60 mt-1">
+                    Standard: 2.5% (Employer: 2.5%)
+                  </p>
                 </div>
 
                 <div class="form-control">
                   <label class="label pb-1.5">
-                    <span class="label-text font-semibold text-sm">Pag-IBIG Employee Contribution (%)</span>
+                    <span class="label-text font-semibold text-sm"
+                      >Pag-IBIG Employee Contribution (%)</span
+                    >
                   </label>
-                  <div class="text-2xl font-bold text-primary" id="currentPagIBIGRate">-</div>
-                  <p class="text-xs text-base-content/60 mt-1">Standard: 2% (Employer: 2%)</p>
+                  <div
+                    class="text-2xl font-bold text-primary"
+                    id="currentPagIBIGRate"
+                  >
+                    -
+                  </div>
+                  <p class="text-xs text-base-content/60 mt-1">
+                    Standard: 2% (Employer: 2%)
+                  </p>
                 </div>
               </div>
 
               <div class="alert bg-info/10 border border-info/30">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="stroke-info shrink-0 w-5 h-5">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  class="stroke-info shrink-0 w-5 h-5"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                  ></path>
                 </svg>
                 <div>
                   <h3 class="font-semibold text-sm">Important Information</h3>
@@ -253,21 +317,52 @@
             />
           </div>
           <div class="form-control mb-4">
-            <label class="label pb-1.5"><span class="label-text font-semibold text-sm">Department</span></label>
-            <select id="positionDepartment" class="select select-bordered w-full h-10 text-sm focus:select-primary" required>
+            <label class="label pb-1.5"
+              ><span class="label-text font-semibold text-sm"
+                >Department</span
+              ></label
+            >
+            <select
+              id="positionDepartment"
+              class="select select-bordered w-full h-10 text-sm focus:select-primary"
+              required
+            >
               <option value="" disabled selected>Select department</option>
             </select>
           </div>
           <div class="form-control mb-4">
-            <label class="label pb-1.5"><span class="label-text font-semibold text-sm">Rank</span></label>
-            <input type="number" id="positionRank" class="input input-bordered w-full h-10 text-sm focus:input-primary" placeholder="e.g., 1 (higher number = higher rank)" min="1" required />
+            <label class="label pb-1.5"
+              ><span class="label-text font-semibold text-sm">Rank</span></label
+            >
+            <input
+              type="number"
+              id="positionRank"
+              class="input input-bordered w-full h-10 text-sm focus:input-primary"
+              placeholder="e.g., 1 (higher number = higher rank)"
+              min="1"
+              required
+            />
             <label class="label">
-              <span class="label-text-alt text-base-content/60">Higher numbers indicate higher positions in hierarchy</span>
+              <span class="label-text-alt text-base-content/60"
+                >Higher numbers indicate higher positions in hierarchy</span
+              >
             </label>
           </div>
           <div class="form-control mb-4">
-            <label class="label pb-1.5"><span class="label-text font-semibold text-sm">Base Salary (₱)</span></label>
-            <input type="number" id="positionSalary" class="input input-bordered w-full h-10 text-sm focus:input-primary" placeholder="30000" step="0.01" min="0" required />
+            <label class="label pb-1.5"
+              ><span class="label-text font-semibold text-sm"
+                >Base Salary (₱)</span
+              ></label
+            >
+            <input
+              type="number"
+              id="positionSalary"
+              class="input input-bordered w-full h-10 text-sm focus:input-primary"
+              placeholder="30000"
+              step="0.01"
+              min="0"
+              required
+            />
           </div>
           <div class="modal-action">
             <button
@@ -390,8 +485,19 @@
             />
           </div>
           <div class="modal-action">
-            <button type="button" onclick="window.closeCutoffModal()" class="btn btn-ghost h-10 min-h-0 px-5 text-sm">Cancel</button>
-            <button type="submit" class="btn btn-primary h-10 min-h-0 px-5 text-sm font-semibold">Add Cutoff Period</button>
+            <button
+              type="button"
+              onclick="window.closeCutoffModal()"
+              class="btn btn-ghost h-10 min-h-0 px-5 text-sm"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              class="btn btn-primary h-10 min-h-0 px-5 text-sm font-semibold"
+            >
+              Add Cutoff Period
+            </button>
           </div>
         </form>
       </div>
@@ -408,36 +514,92 @@
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
             <div class="form-control">
               <label class="label pb-1.5">
-                <span class="label-text font-semibold text-sm">SSS Employee (%)</span>
+                <span class="label-text font-semibold text-sm"
+                  >SSS Employee (%)</span
+                >
               </label>
-              <input type="number" id="sssRate" class="input input-bordered w-full h-10 text-sm focus:input-primary" placeholder="5.00" step="0.01" min="0" max="100" required />
+              <input
+                type="number"
+                id="sssInput"
+                class="input input-bordered w-full h-10 text-sm focus:input-primary"
+                placeholder="5.00"
+                step="0.01"
+                min="0"
+                max="100"
+                required
+              />
             </div>
 
             <div class="form-control">
               <label class="label pb-1.5">
-                <span class="label-text font-semibold text-sm">PhilHealth Employee (%)</span>
+                <span class="label-text font-semibold text-sm"
+                  >PhilHealth Employee (%)</span
+                >
               </label>
-              <input type="number" id="philhealthRate" class="input input-bordered w-full h-10 text-sm focus:input-primary" placeholder="2.50" step="0.01" min="0" max="100" required />
+              <input
+                type="number"
+                id="philhealthInput"
+                class="input input-bordered w-full h-10 text-sm focus:input-primary"
+                placeholder="2.50"
+                step="0.01"
+                min="0"
+                max="100"
+                required
+              />
             </div>
 
             <div class="form-control">
               <label class="label pb-1.5">
-                <span class="label-text font-semibold text-sm">Pag-IBIG Employee (%)</span>
+                <span class="label-text font-semibold text-sm"
+                  >Pag-IBIG Employee (%)</span
+                >
               </label>
-              <input type="number" id="pagibigRate" class="input input-bordered w-full h-10 text-sm focus:input-primary" placeholder="2.00" step="0.01" min="0" max="100" required />
+              <input
+                type="number"
+                id="pagibigInput"
+                class="input input-bordered w-full h-10 text-sm focus:input-primary"
+                placeholder="2.00"
+                step="0.01"
+                min="0"
+                max="100"
+                required
+              />
             </div>
           </div>
 
           <div class="alert alert-warning mb-6">
-            <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="stroke-current shrink-0 h-6 w-6"
+              fill="none"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+              />
             </svg>
-            <span class="text-sm">Changes will apply to new payroll calculations only.</span>
+            <span class="text-sm"
+              >Changes will apply to new payroll calculations only.</span
+            >
           </div>
 
           <div class="modal-action">
-            <button type="button" onclick="window.closeDeductionsModal()" class="btn btn-ghost h-10 min-h-0 px-5 text-sm">Cancel</button>
-            <button type="submit" class="btn btn-primary h-10 min-h-0 px-5 text-sm font-semibold">Save Changes</button>
+            <button
+              type="button"
+              onclick="window.closeDeductionsModal()"
+              class="btn btn-ghost h-10 min-h-0 px-5 text-sm"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              class="btn btn-primary h-10 min-h-0 px-5 text-sm font-semibold"
+            >
+              Save Changes
+            </button>
           </div>
         </form>
       </div>
@@ -460,7 +622,7 @@
         if (window.loadDepartmentsIntoDropdown) {
           window.loadDepartmentsIntoDropdown();
         }
-        document.getElementById('positionModal').showModal();
+        document.getElementById("positionModal").showModal();
       }
       function closePositionModal() {
         document.getElementById("positionModal").close();
@@ -472,28 +634,28 @@
       function closeScheduleModal() {
         document.getElementById("scheduleModal").close();
       }
-      
+
       // Expose cutoff modal functions globally
-      window.openCutoffModal = function() {
-        document.getElementById('cutoffModal').showModal();
-      }
-      
-      window.closeCutoffModal = function() {
-        document.getElementById('cutoffModal').close();
-      }
-      
+      window.openCutoffModal = function () {
+        document.getElementById("cutoffModal").showModal();
+      };
+
+      window.closeCutoffModal = function () {
+        document.getElementById("cutoffModal").close();
+      };
+
       // Expose deductions modal functions globally
-      window.openDeductionsModal = function() {
+      window.openDeductionsModal = function () {
         // Load current deduction rates before opening modal
         if (window.loadDeductionRatesIntoModal) {
           window.loadDeductionRatesIntoModal();
-        }     
-        document.getElementById('deductionsModal').showModal();
-      }
-      
-      window.closeDeductionsModal = function() {
-        document.getElementById('deductionsModal').close();
-      }
+        }
+        document.getElementById("deductionsModal").showModal();
+      };
+
+      window.closeDeductionsModal = function () {
+        document.getElementById("deductionsModal").close();
+      };
     </script>
 
     <!-- Scripts -->
