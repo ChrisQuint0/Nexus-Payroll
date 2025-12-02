@@ -48,19 +48,19 @@ class CustomStatusEditor {
     this.eSelect = document.createElement("select");
     this.eSelect.className = "select select-accent w-full";
     const statuses = [
-      "Present",
-      "Absent",
-      "Undertime",
-      "Late",
-      "Official Business",
-      "Leave with Pay",
-      "Leave w/o Pay",
+      { label: "Present", value: "present" },
+      { label: "Absent", value: "absent" },
+      { label: "Undertime", value: "undertime" },
+      { label: "Late", value: "late" },
+      { label: "Official Business", value: "official_business" },
+      { label: "Leave with Pay", value: "leave with pay" }, // Use lowercase value
+      { label: "Leave w/o Pay", value: "leave w/o pay" }, // Use lowercase value
     ];
     statuses.forEach((status) => {
       const option = document.createElement("option");
-      option.value = status;
-      option.textContent = status;
-      if (status === this.value) option.selected = true;
+      option.value = status.value; // Store lowercase value
+      option.textContent = status.label; // Display Title Case label
+      if (status.value === this.value.toLowerCase()) option.selected = true; // Compare lowercase
       this.eSelect.appendChild(option);
     });
     this.eSelect.addEventListener("change", (e) => {
@@ -82,7 +82,7 @@ class CustomStatusEditor {
     return this.eGui;
   }
   getValue() {
-    return this.value;
+    return this.eSelect.value; // Returns the lowercase value
   }
   afterGuiAttached() {
     if (this.eSelect) this.eSelect.focus();
@@ -431,14 +431,30 @@ async function saveEditedRow(rowData, fieldChanged) {
     // Store old value for audit trail
     const oldValue =
       rowData[fieldChanged + "_original"] || rowData[fieldChanged];
-    const newValue = rowData[fieldChanged];
+    let newValue = rowData[fieldChanged];
 
     const updateData = { [dbField]: rowData[fieldChanged] };
     if (dbField === "time_in" || dbField === "time_out") {
       const value = rowData[fieldChanged];
       if (value && !value.includes("T"))
         updateData[dbField] = value.replace(" ", "T");
+    } else if (dbField === "status") {
+      // Standardize status to lowercase and replace spaces for database consistency
+      // This is necessary because your CustomStatusEditor returns Title Case ("Leave with Pay")
+      let standardizedStatus = newValue.toLowerCase();
+
+      // Handle the "w/o" abbreviation if your DB expects "without"
+      if (standardizedStatus.includes("w/o")) {
+        standardizedStatus = standardizedStatus.replace(
+          "w/o pay",
+          "without pay"
+        );
+      }
+
+      updateData[dbField] = standardizedStatus;
+      newValue = standardizedStatus; // Update newValue for audit log
     }
+
     const { data, error } = await supabaseClient
       .from("raw_time_logs")
       .update(updateData)
