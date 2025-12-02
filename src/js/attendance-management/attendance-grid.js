@@ -461,7 +461,8 @@ async function saveEditedRow(rowData, fieldChanged) {
       .eq("emp_id", rowData["Employee ID"])
       .gte("time_in", rowData["Date"] + "T00:00:00")
       .lt("time_in", rowData["Date"] + "T23:59:59")
-      .select();
+      .select()
+      .order("emp_id", { ascending: true });
     if (error) {
       showErrorAlert(`Failed to save changes: ${error.message}`);
       return;
@@ -1651,6 +1652,9 @@ const gridOptions = {
   columnDefs: rawTimeLogsColumns,
   rowData: [],
   domLayout: "normal",
+  pagination: true, // 1. Enable pagination
+  paginationPageSize: 20, // 2. Set default page size (e.g., 20 rows per page)
+  paginationPageSizeSelector: [10, 20, 50, 100], // 3. Allow user to select page size
   rowSelection: { mode: "multiRow", headerCheckbox: true, pinned: "left" },
   defaultColDef: { filter: true, sortable: true, cellClass: "text-sm" },
   suppressFieldDotNotation: true,
@@ -1682,19 +1686,15 @@ async function loadRawTimeLogs() {
 
 async function loadAttendanceSummary() {
   try {
-    const cutoffIds = [1, 2];
-    let allData = [];
-    for (const cutoffId of cutoffIds) {
-      try {
-        const { data } = await getPayrollSummaryReport(cutoffId);
-        allData = allData.concat(data);
-      } catch (err) {
-        console.warn(`⚠️ Could not load cutoff ${cutoffId}:`, err);
-      }
-    }
+    // 1. Pass the "all" signal directly to your report function.
+    // This correctly triggers the 'fetchAll' logic inside getPayrollSummaryReport.
+    const { data: allData, cutoffInfo } = await getPayrollSummaryReport("all");
+
+    // optional: console.log(cutoffInfo); // Should log: { cutoffId: 'All', cutoffPeriod: 'All Cutoff Periods' }
+
     return allData;
   } catch (e) {
-    console.error("❌ Failed to load summary:", e);
+    console.error("❌ Failed to load all attendance summary:", e);
     return [];
   }
 }
