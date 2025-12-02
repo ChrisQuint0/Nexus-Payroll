@@ -143,7 +143,7 @@ async function handleLogout(e) {
     if (error) throw error;
 
     // Redirect to login page after successful logout
-    window.location.href = "../pages/login.html";
+    window.location.href = "../pages/index.html";
   } catch (error) {
     console.error("Logout error:", error);
     alert("Failed to logout: " + error.message);
