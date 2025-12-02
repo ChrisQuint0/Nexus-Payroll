@@ -69,7 +69,7 @@ function applyRBAC(user) {
             button.textContent = "Preview";
 
             button.addEventListener("click", () => {
-              openPreviewModal(params.data.employee_id);
+              openPreviewModal(params.data);
             });
 
             return button;
@@ -225,7 +225,7 @@ const columnDefs = [
       button.textContent = "Preview";
 
       button.addEventListener("click", () => {
-        openPreviewModal(params.data.employee_id);
+        openPreviewModal(params.data);
       });
 
       return button;
@@ -499,13 +499,9 @@ function setText(id, value) {
 }
 
 // Open preview modal with employee data
-function openPreviewModal(employeeId) {
-  const employee = allEmployeesData.find(
-    (emp) => emp.employee_id === employeeId
-  );
-
-  if (!employee) {
-    alert("Employee not found!");
+function openPreviewModal(employee) {
+  if (!employee || !employee.employee_id) {
+    alert("Invalid employee data for preview!");
     return;
   }
 
