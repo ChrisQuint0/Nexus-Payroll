@@ -445,6 +445,7 @@ async function handleAddLeave(event) {
   }
 
   // Find employee and check leave balance
+  // Find employee and check leave balance
   const employee = currentLeaveData.find(
     (emp) => emp["Employee ID"] === employeeId
   );
@@ -480,27 +481,50 @@ async function handleAddLeave(event) {
       currentBalance = leaveDetails["Maternity Leave"];
       break;
     default:
-      showGlobalAlert("error", "Invalid leave type.");
+      showGlobalAlert("error", "Invalid leave type selected.");
       return;
   }
 
-  // Check if employee has enough leave balance
+  // Check if balance is sufficient
   if (currentBalance < duration) {
     showGlobalAlert(
       "error",
-      `Insufficient ${leaveType} balance. Current balance: ${currentBalance} day(s).`
+      `Insufficient balance. Remaining ${leaveType}: ${currentBalance} day(s).`
     );
     return;
   }
 
+  // Determine the leave status for raw_time_logs
+  const timeLogStatus = isPaid ? "leave with pay" : "leave wo pay";
+
   try {
+    // Import Supabase Client
     const { supabaseClient } = await import("../supabase/supabaseClient.js");
 
-    // Convert dates to proper format
+    // --- NEW: Fetch a default official_time_id (Required for raw_time_logs) ---
+    // NOTE: This queries the first entry. Adjust this logic if you have a specific
+    // official_time_id for non-working days or leaves.
+    const { data: defaultTime, error: timeError } = await supabaseClient
+      .from("official_time")
+      .select("official_time_id")
+      .limit(1)
+      .single();
+
+    if (timeError || !defaultTime) {
+      console.error("Error fetching default official_time_id:", timeError);
+      showGlobalAlert(
+        "error",
+        "Error: Could not determine default time schedule. Please check official_time table."
+      );
+      return;
+    }
+    const officialTimeId = defaultTime.official_time_id;
+    // --- END NEW: official_time_id fetch ---
+
     const leaveStart = new Date(startDate);
     const leaveEnd = new Date(endDate);
 
-    // Insert leave record into leave_management
+    // 1. Insert leave record into leave_management
     const { data: leaveData, error: leaveError } = await supabaseClient
       .from("leave_management")
       .insert({
@@ -515,11 +539,10 @@ async function handleAddLeave(event) {
 
     if (leaveError) throw leaveError;
 
-    // Update leave_tracking table - deduct the leave days
+    // 2. Update leave_tracking table - deduct the leave days
     const newBalance = currentBalance - duration;
     const updateData = {};
     updateData[leaveColumn] = newBalance;
-
     const { error: trackingError } = await supabaseClient
       .from("leave_tracking")
       .update(updateData)
@@ -527,7 +550,49 @@ async function handleAddLeave(event) {
 
     if (trackingError) throw trackingError;
 
-    // Update local data immediately to reflect the change
+    if (trackingError) throw trackingError;
+
+    // --- 3. UPDATED: Insert records into raw_time_logs for SPECIFIC DATE OR RANGED leaves ---
+    const datesToLog = [];
+    const currentDate = new Date(startDate); // Start from the beginning date
+    const endDateObj = new Date(endDate);
+
+    // Loop through each day in the range (inclusive)
+    while (currentDate <= endDateObj) {
+      // Format the date to 'YYYY-MM-DDT00:00:00.000Z' for the time_in column
+      // We use toISOString().split('T')[0] to get the YYYY-MM-DD part reliably,
+      // then append the time and Z for UTC reference.
+      const dateString = currentDate.toISOString().split("T")[0];
+      const timeLogTimeIn = `${dateString}T00:00:00.000Z`;
+
+      // Add the log entry object to our batch
+      datesToLog.push({
+        emp_id: parseInt(employeeId),
+        official_time_id: officialTimeId,
+        time_in: timeLogTimeIn,
+        time_out: null,
+        late: null,
+        undertime: null,
+        status: timeLogStatus, // e.g., 'Leave with Pay'
+      });
+
+      // Move to the next day
+      currentDate.setDate(currentDate.getDate() + 1);
+    }
+
+    if (datesToLog.length > 0) {
+      // Use a batch insert for efficiency
+      const { error: timeLogError } = await supabaseClient
+        .from("raw_time_logs")
+        .insert(datesToLog);
+
+      if (timeLogError) throw timeLogError;
+      console.log(
+        `${datesToLog.length} raw_time_logs entr(y/ies) created successfully for leave.`
+      );
+    }
+
+    // 4. Update local data and UI refresh
     const employeeIndex = currentLeaveData.findIndex(
       (emp) => emp["Employee ID"] === employeeId
     );
@@ -550,70 +615,26 @@ async function handleAddLeave(event) {
         case "Maternity Leave":
           leaveDetailKey = "Maternity Leave";
           break;
+        default:
+          break;
       }
 
-      // Update the leave balance in the local data
       currentLeaveData[employeeIndex]["Leave Details"][leaveDetailKey] =
         newBalance;
-      currentLeaveData[employeeIndex]["Total Leave Balance"] = Object.values(
-        currentLeaveData[employeeIndex]["Leave Details"]
-      ).reduce((sum, val) => sum + val, 0);
+
+      // Update the grid
+      setGridData(currentLeaveData);
     }
 
-    const dateRangeText =
-      dateType === "range"
-        ? `from ${new Date(startDate).toLocaleDateString()} to ${new Date(
-            endDate
-          ).toLocaleDateString()}`
-        : `starting ${new Date(startDate).toLocaleDateString()}`;
-
-    // Log to Audit Trail
-    try {
-      const {
-        data: { user },
-      } = await supabaseClient.auth.getUser();
-
-      const employeeName =
-        employee["Employee Name"] || `Employee ID ${employeeId}`;
-      const paidStatus = isPaid ? "Paid" : "Unpaid";
-
-      const description = `Created ${leaveType} request for ${employeeName} - ${duration} day(s) ${dateRangeText} (${paidStatus})`;
-
-      await supabaseClient.from("audit_trail").insert({
-        user_id: user?.id,
-        action: "create",
-        description: description,
-        module_affected: "Leave Management",
-        record_id: leaveData?.leave_id || null,
-        user_agent: navigator.userAgent,
-        timestamp: new Date().toISOString(),
-      });
-    } catch (auditError) {
-      console.error("Error logging audit trail:", auditError);
-      // Don't throw error - leave request was successful
-    }
-
-    showGlobalAlert(
-      "success",
-      `Leave request added successfully! ${duration} day(s) of ${leaveType} ${dateRangeText}.`
-    );
-
-    // Close modal and refresh data from database
+    showGlobalAlert("success", `${leaveType} successfully filed!`);
     document.getElementById("addLeaveModal").close();
-    form.reset();
-    delete form.dataset.employeeId;
-    delete form.dataset.leaveTrackingId;
-
-    // Reset date type to range (default)
-    document.querySelector(
-      'input[name="dateType"][value="range"]'
-    ).checked = true;
-    handleDateTypeChange({ target: { value: "range" } });
-
-    await refreshData();
+    await refreshData(); // Refresh data to ensure modal balances are up to date
   } catch (error) {
-    console.error("Error adding leave record:", error);
-    showGlobalAlert("error", "Error adding leave record. Please try again.");
+    console.error("Error filing leave:", error);
+    showGlobalAlert(
+      "error",
+      `Failed to file leave: ${error.message}. Please try again.`
+    );
   }
 }
 
