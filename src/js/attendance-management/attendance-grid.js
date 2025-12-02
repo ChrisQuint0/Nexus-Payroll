@@ -461,8 +461,8 @@ async function saveEditedRow(rowData, fieldChanged) {
       .eq("emp_id", rowData["Employee ID"])
       .gte("time_in", rowData["Date"] + "T00:00:00")
       .lt("time_in", rowData["Date"] + "T23:59:59")
-      .select()
-      .order("emp_id", { ascending: true });
+      .select();
+
     if (error) {
       showErrorAlert(`Failed to save changes: ${error.message}`);
       return;
