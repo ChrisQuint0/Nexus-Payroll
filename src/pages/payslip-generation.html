@@ -6,15 +6,184 @@
     <title>Payslip Generation | Nexus Payroll</title>
     <link rel="stylesheet" href="../output.css" />
     <link rel="stylesheet" href="../css/ag-grid/ag-theme-quartz.css" />
+    <style>
+      /* Mobile Responsive Styles - Only applied on mobile (768px and below) */
+      @media (max-width: 768px) {
+        /* Body Layout */
+        body.flex {
+          flex-direction: column;
+        }
+
+        /* Main Content Padding */
+        main.flex-1.p-6 {
+          padding: 1rem;
+        }
+
+        /* Page Title */
+        h1.text-3xl {
+          font-size: 1.5rem;
+          line-height: 2rem;
+        }
+
+        /* Search and Cutoff Container */
+        .mt-5.flex.flex-wrap {
+          flex-direction: column;
+          gap: 1rem;
+        }
+
+        .mt-5.flex.flex-wrap label.input {
+          width: 100%;
+        }
+
+        .mt-5.flex.flex-wrap > div.flex.flex-row {
+          width: 100%;
+          flex-direction: column;
+          gap: 0.5rem;
+        }
+
+        /* Cutoff Period Dropdown */
+        select#cutoffPeriod {
+          width: 100%;
+        }
+
+        #cutoffPeriodLabel {
+          margin-right: 0;
+          margin-bottom: 0.25rem;
+        }
+
+        /* AG Grid Height */
+        #payslipGrid {
+          height: 400px;
+        }
+
+        /* Generate PDF Button */
+        button#generatePdfBtn {
+          width: 100%;
+        }
+
+        .flex.justify-end.mt-5 {
+          justify-content: stretch;
+        }
+
+        /* Modal Adjustments */
+        div.modal-box.max-w-4xl {
+          max-width: 95vw;
+          width: 95vw;
+          margin: 1rem auto;
+          border-radius: 0.5rem;
+          max-height: 90vh;
+        }
+
+        /* Modal Header */
+        .modal-box header.bg-base-200 {
+          padding: 1rem;
+        }
+
+        .modal-box header h3 {
+          font-size: 1.25rem;
+        }
+
+        /* Modal Content Padding */
+        .modal-box .p-8 {
+          padding: 1rem;
+        }
+
+        /* Header Section - Company Info */
+        .modal-box .flex.items-start.justify-between {
+          flex-direction: column;
+          gap: 1.5rem;
+        }
+
+        .modal-box .flex.items-start.justify-between > div {
+          width: 100%;
+        }
+
+        /* Company Name Section */
+        .modal-box .flex.items-center.gap-4 {
+          flex-direction: row;
+          justify-content: flex-start;
+        }
+
+        .modal-box .w-16.h-16 {
+          width: 3rem;
+          height: 3rem;
+          font-size: 1rem;
+        }
+
+        .modal-box .font-bold.text-xl {
+          font-size: 1rem;
+        }
+
+        /* Payslip Title */
+        .modal-box .text-center.flex-shrink-0 {
+          text-align: center;
+        }
+
+        .modal-box .text-4xl {
+          font-size: 2rem;
+        }
+
+        /* Dates Section */
+        .modal-box .text-right.space-y-3 {
+          text-align: left;
+        }
+
+        .modal-box .min-w-\[200px\] {
+          min-width: auto;
+        }
+
+        /* Employee Info Grid */
+        .modal-box .grid.grid-cols-2 {
+          grid-template-columns: 1fr;
+          gap: 1rem;
+        }
+
+        /* Main Panels */
+        .modal-box .grid.grid-cols-2.gap-6 {
+          grid-template-columns: 1fr;
+          gap: 1.5rem;
+        }
+
+        /* Panel Titles */
+        .modal-box .font-bold.text-base {
+          font-size: 0.9rem;
+        }
+
+        /* Net Pay Section */
+        .modal-box .text-3xl {
+          font-size: 1.75rem;
+        }
+
+        /* Signature Section */
+        .modal-box .grid.grid-cols-2.gap-12 {
+          grid-template-columns: 1fr;
+          gap: 2rem;
+        }
+
+        /* Close Button */
+        .modal-box .btn.btn-circle {
+          right: 0.5rem;
+          top: 0.5rem;
+        }
+      }
+
+      /* Tablet Adjustments (769px to 1024px) */
+      @media (min-width: 769px) and (max-width: 1024px) {
+        main.flex-1.p-6 {
+          padding: 1.5rem;
+        }
+
+        #payslipGrid {
+          height: 450px;
+        }
+
+        div.modal-box.max-w-4xl {
+          max-width: 90vw;
+        }
+      }
+    </style>
   </head>
   <body class="flex">
-    <!-- Add this to each protected page -->
-    <script type="module">
-      import { checkPageAccess } from "../js/utils/pageProtection.js";
-
-      // Check access immediately when page loads
-      checkPageAccess();
-    </script>
     <!-- Sidebar placeholder -->
     <div id="sidebar"></div>
 
@@ -403,6 +572,17 @@
 
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script type="module">
+      // Wrap page protection in a try-catch to prevent blocking page load
+      try {
+        const { checkPageAccess } = await import(
+          "../js/utils/pageProtection.js"
+        );
+        checkPageAccess();
+      } catch (error) {
+        console.warn("Page protection not available:", error);
+      }
+    </script>
     <script type="module" src="../js/supabase/supabaseClient.js"></script>
     <script type="module" src="../js/layout/sidebar.js"></script>
     <script src="../js/libs/ag-grid-community.min.js"></script>

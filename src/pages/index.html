@@ -7,92 +7,161 @@
     <link rel="stylesheet" href="../output.css" />
     <style>
       body {
+        position: relative;
         overflow-x: hidden;
         overflow-y: auto;
       }
 
+      .animated-grid {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 0;
+        opacity: 0.15;
+      }
+
+      .grid-line {
+        position: absolute;
+        background: linear-gradient(
+          90deg,
+          transparent,
+          rgba(99, 102, 241, 0.5),
+          transparent
+        );
+      }
+
+      .grid-line-horizontal {
+        width: 100%;
+        height: 2px;
+        animation: slideRight 3s ease-in-out infinite;
+      }
+
+      .grid-line-vertical {
+        width: 2px;
+        height: 100%;
+        animation: slideDown 3s ease-in-out infinite;
+      }
+
+      @keyframes slideRight {
+        0%,
+        100% {
+          transform: translateX(-100%);
+          opacity: 0;
+        }
+        50% {
+          opacity: 1;
+        }
+        100% {
+          transform: translateX(100%);
+        }
+      }
+
+      @keyframes slideDown {
+        0%,
+        100% {
+          transform: translateY(-100%);
+          opacity: 0;
+        }
+        50% {
+          opacity: 1;
+        }
+        100% {
+          transform: translateY(100%);
+        }
+      }
+
+      .grid-dot {
+        position: absolute;
+        width: 4px;
+        height: 4px;
+        background: rgba(99, 102, 241, 0.6);
+        border-radius: 50%;
+        animation: pulse 2s ease-in-out infinite;
+      }
+
+      @keyframes pulse {
+        0%,
+        100% {
+          transform: scale(1);
+          opacity: 0.3;
+        }
+        50% {
+          transform: scale(1.5);
+          opacity: 0.8;
+        }
+      }
+
       .content-wrapper {
         position: relative;
+        z-index: 10;
       }
 
-      /* Mobile Responsive Styles */
-      @media (max-width: 640px) {
-        body {
-          padding: 1rem;
-        }
-
-        .content-wrapper {
-          width: 100%;
-          max-width: 100%;
-          padding: 1.5rem;
-          margin: 0;
-        }
-
-        .content-wrapper h1 {
-          font-size: 1.5rem;
-        }
-
-        .content-wrapper img {
-          height: 40px;
-          width: 40px;
-        }
-
-        .modal-box {
-          width: 90%;
-          max-width: 90%;
-          margin: 0 auto;
-          padding: 1.5rem;
-        }
+      /* Mobile Message - Hidden by default */
+      .mobile-message {
+        display: none;
       }
 
-      @media (max-width: 480px) {
-        body {
-          padding: 0.75rem;
+      /* Show mobile message and hide login form on small screens */
+      @media (max-width: 768px) {
+        .desktop-content {
+          display: none;
         }
 
-        .content-wrapper {
-          padding: 1.25rem;
-        }
-
-        .content-wrapper h1 {
-          font-size: 1.25rem;
-        }
-
-        .content-wrapper p {
-          font-size: 0.875rem;
-        }
-
-        .content-wrapper img {
-          height: 35px;
-          width: 35px;
-        }
-
-        .modal-box {
-          width: 95%;
-          max-width: 95%;
-          padding: 1.25rem;
-        }
-
-        .input {
-          font-size: 16px; /* Prevents zoom on iOS */
-        }
-      }
-
-      /* Extra small devices */
-      @media (max-width: 360px) {
-        .content-wrapper {
-          padding: 1rem;
-        }
-
-        .content-wrapper h1 {
-          font-size: 1.125rem;
+        .mobile-message {
+          display: flex;
         }
       }
     </style>
   </head>
   <body class="min-h-screen flex items-center justify-center bg-base-200">
-    <!-- Login Content -->
-    <div class="content-wrapper card w-full max-w-md bg-base-100 shadow-xl p-6 mx-4">
+    <!-- Animated Grid Background -->
+    <div class="animated-grid" id="gridContainer"></div>
+
+    <!-- Mobile Message -->
+    <div
+      class="content-wrapper mobile-message card w-full max-w-md bg-base-100 shadow-xl p-8 mx-4 text-center flex-col items-center justify-center"
+    >
+      <div class="mb-6">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke-width="1.5"
+          stroke="currentColor"
+          class="w-20 h-20 mx-auto text-primary opacity-70"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            d="M9 17.25v1.007a3 3 0 01-.879 2.122L7.5 21h9l-.621-.621A3 3 0 0115 18.257V17.25m6-12V15a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 15V5.25m18 0A2.25 2.25 0 0018.75 3H5.25A2.25 2.25 0 003 5.25m18 0V12a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 12V5.25"
+          />
+        </svg>
+      </div>
+      <div class="flex items-center justify-center gap-2 mb-4">
+        <img
+          src="../assets/npayroll_logo.png"
+          alt="Nexus Payroll Logo"
+          height="40"
+          width="40"
+        />
+        <h1 class="text-2xl font-bold">Nexus Payroll</h1>
+      </div>
+      <h2 class="text-xl font-semibold mb-3">Desktop Access Required</h2>
+      <p class="text-base opacity-80 mb-4">
+        For security and optimal experience, Nexus Payroll is only accessible on
+        desktop computers.
+      </p>
+      <p class="text-sm opacity-60">
+        Please visit this page on a desktop or laptop to access your account.
+      </p>
+    </div>
+
+    <!-- Desktop Login Form -->
+    <div
+      class="content-wrapper desktop-content card w-full max-w-md bg-base-100 shadow-xl p-6 mx-4"
+    >
       <div class="text-center mb-4">
         <div class="flex items-center justify-center gap-2 mb-2">
           <img
@@ -213,6 +282,39 @@
     </dialog>
 
     <script>
+      // Create animated grid
+      const container = document.getElementById("gridContainer");
+
+      // Create horizontal moving lines
+      for (let i = 0; i < 5; i++) {
+        const line = document.createElement("div");
+        line.className = "grid-line grid-line-horizontal";
+        line.style.top = i * 25 + 10 + "%";
+        line.style.animationDelay = i * 0.5 + "s";
+        container.appendChild(line);
+      }
+
+      // Create vertical moving lines
+      for (let i = 0; i < 5; i++) {
+        const line = document.createElement("div");
+        line.className = "grid-line grid-line-vertical";
+        line.style.left = i * 25 + 10 + "%";
+        line.style.animationDelay = i * 0.5 + 0.25 + "s";
+        container.appendChild(line);
+      }
+
+      // Create pulsing dots at intersections
+      for (let i = 0; i < 5; i++) {
+        for (let j = 0; j < 5; j++) {
+          const dot = document.createElement("div");
+          dot.className = "grid-dot";
+          dot.style.left = i * 25 + 10 + "%";
+          dot.style.top = j * 25 + 10 + "%";
+          dot.style.animationDelay = i * 0.2 + j * 0.2 + "s";
+          container.appendChild(dot);
+        }
+      }
+
       // Toggle password visibility
       const togglePassword = document.getElementById("togglePassword");
       const passwordInput = document.getElementById("password");
