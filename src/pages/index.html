@@ -7,103 +7,92 @@
     <link rel="stylesheet" href="../output.css" />
     <style>
       body {
-        position: relative;
-        overflow: hidden;
-      }
-
-      .animated-grid {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        z-index: 0;
-        opacity: 0.15;
-      }
-
-      .grid-line {
-        position: absolute;
-        background: linear-gradient(
-          90deg,
-          transparent,
-          rgba(99, 102, 241, 0.5),
-          transparent
-        );
-      }
-
-      .grid-line-horizontal {
-        width: 100%;
-        height: 2px;
-        animation: slideRight 3s ease-in-out infinite;
-      }
-
-      .grid-line-vertical {
-        width: 2px;
-        height: 100%;
-        animation: slideDown 3s ease-in-out infinite;
-      }
-
-      @keyframes slideRight {
-        0%,
-        100% {
-          transform: translateX(-100%);
-          opacity: 0;
-        }
-        50% {
-          opacity: 1;
-        }
-        100% {
-          transform: translateX(100%);
-        }
-      }
-
-      @keyframes slideDown {
-        0%,
-        100% {
-          transform: translateY(-100%);
-          opacity: 0;
-        }
-        50% {
-          opacity: 1;
-        }
-        100% {
-          transform: translateY(100%);
-        }
-      }
-
-      .grid-dot {
-        position: absolute;
-        width: 4px;
-        height: 4px;
-        background: rgba(99, 102, 241, 0.6);
-        border-radius: 50%;
-        animation: pulse 2s ease-in-out infinite;
-      }
-
-      @keyframes pulse {
-        0%,
-        100% {
-          transform: scale(1);
-          opacity: 0.3;
-        }
-        50% {
-          transform: scale(1.5);
-          opacity: 0.8;
-        }
+        overflow-x: hidden;
+        overflow-y: auto;
       }
 
       .content-wrapper {
         position: relative;
-        z-index: 10;
+      }
+
+      /* Mobile Responsive Styles */
+      @media (max-width: 640px) {
+        body {
+          padding: 1rem;
+        }
+
+        .content-wrapper {
+          width: 100%;
+          max-width: 100%;
+          padding: 1.5rem;
+          margin: 0;
+        }
+
+        .content-wrapper h1 {
+          font-size: 1.5rem;
+        }
+
+        .content-wrapper img {
+          height: 40px;
+          width: 40px;
+        }
+
+        .modal-box {
+          width: 90%;
+          max-width: 90%;
+          margin: 0 auto;
+          padding: 1.5rem;
+        }
+      }
+
+      @media (max-width: 480px) {
+        body {
+          padding: 0.75rem;
+        }
+
+        .content-wrapper {
+          padding: 1.25rem;
+        }
+
+        .content-wrapper h1 {
+          font-size: 1.25rem;
+        }
+
+        .content-wrapper p {
+          font-size: 0.875rem;
+        }
+
+        .content-wrapper img {
+          height: 35px;
+          width: 35px;
+        }
+
+        .modal-box {
+          width: 95%;
+          max-width: 95%;
+          padding: 1.25rem;
+        }
+
+        .input {
+          font-size: 16px; /* Prevents zoom on iOS */
+        }
+      }
+
+      /* Extra small devices */
+      @media (max-width: 360px) {
+        .content-wrapper {
+          padding: 1rem;
+        }
+
+        .content-wrapper h1 {
+          font-size: 1.125rem;
+        }
       }
     </style>
   </head>
   <body class="min-h-screen flex items-center justify-center bg-base-200">
-    <!-- Animated Grid Background -->
-    <div class="animated-grid" id="gridContainer"></div>
-
-    <!-- Original Content -->
-    <div class="content-wrapper card w-96 bg-base-100 shadow-xl p-6">
+    <!-- Login Content -->
+    <div class="content-wrapper card w-full max-w-md bg-base-100 shadow-xl p-6 mx-4">
       <div class="text-center mb-4">
         <div class="flex items-center justify-center gap-2 mb-2">
           <img
@@ -192,7 +181,7 @@
 
     <!-- DaisyUI dialog for login failure -->
     <dialog id="loginError" class="modal">
-      <div class="modal-box">
+      <div class="modal-box w-full max-w-md">
         <h3 class="font-bold text-lg text-error">Login Failed</h3>
         <p class="py-2">Invalid email or password. Please try again.</p>
         <div class="modal-action">
@@ -201,10 +190,13 @@
           </form>
         </div>
       </div>
+      <form method="dialog" class="modal-backdrop">
+        <button>close</button>
+      </form>
     </dialog>
 
     <dialog id="inactiveError" class="modal">
-      <div class="modal-box">
+      <div class="modal-box w-full max-w-md">
         <h3 class="font-bold text-lg text-warning">Account Inactive</h3>
         <p class="py-2">
           Your account has been disabled. Please contact HR or Admin.
@@ -215,42 +207,12 @@
           </form>
         </div>
       </div>
+      <form method="dialog" class="modal-backdrop">
+        <button>close</button>
+      </form>
     </dialog>
 
     <script>
-      // Create animated grid
-      const container = document.getElementById("gridContainer");
-
-      // Create horizontal moving lines
-      for (let i = 0; i < 5; i++) {
-        const line = document.createElement("div");
-        line.className = "grid-line grid-line-horizontal";
-        line.style.top = i * 25 + 10 + "%";
-        line.style.animationDelay = i * 0.5 + "s";
-        container.appendChild(line);
-      }
-
-      // Create vertical moving lines
-      for (let i = 0; i < 5; i++) {
-        const line = document.createElement("div");
-        line.className = "grid-line grid-line-vertical";
-        line.style.left = i * 25 + 10 + "%";
-        line.style.animationDelay = i * 0.5 + 0.25 + "s";
-        container.appendChild(line);
-      }
-
-      // Create pulsing dots at intersections
-      for (let i = 0; i < 5; i++) {
-        for (let j = 0; j < 5; j++) {
-          const dot = document.createElement("div");
-          dot.className = "grid-dot";
-          dot.style.left = i * 25 + 10 + "%";
-          dot.style.top = j * 25 + 10 + "%";
-          dot.style.animationDelay = i * 0.2 + j * 0.2 + "s";
-          container.appendChild(dot);
-        }
-      }
-
       // Toggle password visibility
       const togglePassword = document.getElementById("togglePassword");
       const passwordInput = document.getElementById("password");
@@ -265,7 +227,6 @@
         passwordInput.setAttribute("type", type);
         eyeIcon.classList.toggle("hidden");
         eyeSlashIcon.classList.toggle("hidden");
-        W;
       });
     </script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
