@@ -364,6 +364,7 @@ const addTimeLogsColumns = [
     sortable: true,
     filter: true,
     width: 130,
+    minWidth: 100,
     valueFormatter: (p) => (p.value ? String(p.value) : ""),
     comparator: (a, b) => String(a || "").localeCompare(String(b || "")),
   },
@@ -372,6 +373,7 @@ const addTimeLogsColumns = [
     sortable: true,
     filter: true,
     width: 200,
+    minWidth: 150,
     valueFormatter: (p) => (p.value ? p.value.toString() : ""),
   },
   {
@@ -379,6 +381,7 @@ const addTimeLogsColumns = [
     sortable: true,
     filter: true,
     width: 200,
+    minWidth: 150,
     valueFormatter: (p) => (p.value ? p.value.toString() : ""),
   },
   {
@@ -386,6 +389,7 @@ const addTimeLogsColumns = [
     sortable: true,
     filter: true,
     width: 140,
+    minWidth: 120,
     valueFormatter: (p) => (p.value ? p.value.toString().toUpperCase() : ""),
   },
   {
@@ -393,6 +397,7 @@ const addTimeLogsColumns = [
     sortable: true,
     filter: true,
     width: 220,
+    minWidth: 180,
     valueFormatter: (p) => {
       if (!p.value) return "";
       const dept = p.value.toString().toLowerCase();
@@ -401,7 +406,7 @@ const addTimeLogsColumns = [
       return p.value;
     },
   },
-  { field: "Position", sortable: true, filter: true, width: 220 },
+  { field: "Position", sortable: true, filter: true, width: 220, minWidth: 180 },
 ];
 
 // Save Edited Row Function
@@ -1652,6 +1657,8 @@ const gridOptions = {
   columnDefs: rawTimeLogsColumns,
   rowData: [],
   domLayout: "normal",
+  suppressSizeToFit: true,
+  suppressHorizontalScroll: false,
   pagination: true, // 1. Enable pagination
   paginationPageSize: 20, // 2. Set default page size (e.g., 20 rows per page)
   paginationPageSizeSelector: [10, 20, 50, 100], // 3. Allow user to select page size
@@ -1788,7 +1795,7 @@ export async function switchView(view) {
   gridApi.setFilterModel(null);
   gridApi.setGridOption("quickFilterText", "");
   gridApi.deselectAll();
-  if (view === "addTimeLogs") setTimeout(() => gridApi.sizeColumnsToFit(), 100);
+  // Removed sizeColumnsToFit for Add Time Logs to prevent cramped columns
 }
 
 function populateCutoffDropdown(data) {
