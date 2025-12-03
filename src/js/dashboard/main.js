@@ -459,6 +459,8 @@ async function updateChart(dept_id) {
         ],
       },
       options: {
+        responsive: true,
+        maintainAspectRatio: true,
         scales: {
           y: {
             beginAtZero: true,
@@ -474,7 +476,12 @@ async function updateChart(dept_id) {
           },
         },
         layout: {
-          padding: 20,
+          padding: {
+            top: 10,
+            right: 10,
+            bottom: 10,
+            left: 10,
+          },
         },
       },
     });
