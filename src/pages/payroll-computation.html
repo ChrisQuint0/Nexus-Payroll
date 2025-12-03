@@ -10,6 +10,103 @@
       .ag-header-cell[col-id="Actions"] .ag-header-cell-label {
         justify-content: center !important;
       }
+
+      /* Mobile Responsive Styles */
+      @media (max-width: 768px) {
+        /* Main content adjustments */
+        main {
+          padding: 1rem;
+        }
+
+        /* Page title */
+        h1 {
+          font-size: 1.5rem;
+        }
+
+        /* Search and Cutoff container wrapper */
+        main > div:first-of-type {
+          flex-direction: column;
+          align-items: stretch;
+          gap: 1rem;
+        }
+
+        /* Search bar label */
+        main > div:first-of-type > label {
+          width: 100%;
+        }
+
+        /* Cutoff period wrapper */
+        main > div:first-of-type > div {
+          flex-direction: column;
+          align-items: flex-start;
+        }
+
+        main > div:first-of-type > div > p {
+          margin-right: 0;
+          margin-bottom: 0.5rem;
+        }
+
+        /* Cutoff select full width */
+        #cutoffSelect {
+          width: 100%;
+        }
+
+        /* AG Grid container */
+        #payrollComputationGrid {
+          height: 400px;
+          overflow-x: auto;
+        }
+
+        /* Generate CSV button wrapper */
+        main > div:last-of-type {
+          justify-content: center;
+        }
+
+        main > div:last-of-type button {
+          width: 100%;
+        }
+
+        /* Modal boxes */
+        .modal-box {
+          max-width: 95vw;
+          margin: 0.5rem;
+          padding: 1rem;
+        }
+
+        /* Modal flex containers */
+        .modal-box > div.flex {
+          flex-direction: column;
+          align-items: flex-start;
+          margin-bottom: 1rem;
+        }
+
+        .modal-box > div.flex > input,
+        .modal-box > div.flex > fieldset {
+          width: 100%;
+          margin-left: 0;
+          margin-top: 0.5rem;
+        }
+
+        .modal-box > div.flex > fieldset > select {
+          width: 100%;
+        }
+
+        /* Generate CSV modal button */
+        #genCSV .modal-box > div.flex.justify-end {
+          justify-content: center;
+        }
+
+        #genCSV .modal-box > div.flex.justify-end button {
+          width: 100%;
+        }
+
+        /* Other computations modal inputs */
+        #otherComputation .modal-box input {
+          width: 100%;
+          margin-left: 0;
+          margin-top: 0.5rem;
+        }
+      }
     </style>
   </head>
   <body class="flex">
