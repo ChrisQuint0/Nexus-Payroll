@@ -22,14 +22,16 @@ function initializeGrid() {
     });
 
   const columnDefs = [
-    { field: "Employee ID" },
-    { field: "Last Name" },
-    { field: "First Name" },
-    { field: "Middle Initial" },
-    { field: "Position" },
-    { field: "Department" },
+    { field: "Employee ID", width: 120, minWidth: 100 },
+    { field: "Last Name", width: 150, minWidth: 120 },
+    { field: "First Name", width: 150, minWidth: 120 },
+    { field: "Middle Initial", width: 120, minWidth: 100 },
+    { field: "Position", width: 180, minWidth: 150 },
+    { field: "Department", width: 200, minWidth: 150 },
     { 
       field: "Rate",
+      width: 150,
+      minWidth: 120,
       valueFormatter: (params) => {
         if (params.value) {
           const rate = parseFloat(params.value);
@@ -40,6 +42,8 @@ function initializeGrid() {
     },
     { 
       field: "Status",
+      width: 120,
+      minWidth: 100,
       valueFormatter: (params) => {
         // Capitalize the status text
         if (params.value) {
@@ -57,6 +61,8 @@ function initializeGrid() {
     },
     {
       field: "Actions",
+      width: 140,
+      minWidth: 120,
       cellRenderer: (params) => {
         return `
             <button
@@ -79,9 +85,8 @@ function initializeGrid() {
     columnDefs,
     rowData: [], // Start with empty array
     domLayout: "normal",
-    autoSizeStrategy: {
-      type: "fitGridWidth",
-    },
+    suppressSizeToFit: true,
+    suppressHorizontalScroll: false,
     rowSelection: {
       mode: "multiRow",
       headerCheckbox: true,
