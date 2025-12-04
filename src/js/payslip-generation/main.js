@@ -3,6 +3,37 @@
 import { supabaseClient } from "../supabase/supabaseClient.js";
 const supabase = supabaseClient;
 
+// Configuration constants (Add these to main.js)
+const COMPANY_BUCKET = "company_logo";
+const FALLBACK_LOGO_URL =
+  "https://placehold.co/100x100/9b97ef/FFFFFF/png?text=CN";
+
+/**
+ * Generates the public URL for the logo with a cache-busting timestamp.
+ * @param {string} path - The logo file path.
+ * @returns {string | null} The public URL with cache-buster, or null.
+ */
+function getLogoUrl(path) {
+  if (!path) return null;
+
+  try {
+    const { data } = supabase.storage.from(COMPANY_BUCKET).getPublicUrl(path);
+
+    if (data?.publicUrl) {
+      // Use Date.now() as the cache-buster 'v' parameter
+      const cacheBuster = Date.now();
+      const separator = data.publicUrl.includes("?") ? "&" : "?";
+
+      // Return the URL with the unique timestamp (This forces the browser to reload)
+      return `${data.publicUrl}${separator}v=${cacheBuster}`;
+    }
+    return null;
+  } catch (e) {
+    console.warn("Could not generate logo URL:", e);
+    return null;
+  }
+}
+
 let currentUser = null;
 
 async function getCurrentUser() {
@@ -524,20 +555,8 @@ function openPreviewModal(employee) {
   }
 
   //Company Details
-  let logoUrl = null;
-  const logoPath = companyDetails?.logo_path;
 
-  if (logoPath) {
-    try {
-      // Assuming your bucket is named 'company_logos' as discussed earlier
-      const { data } = supabase.storage
-        .from("company_logo")
-        .getPublicUrl(logoPath);
-      logoUrl = data.publicUrl;
-    } catch (e) {
-      console.warn("Could not generate logo URL:", e);
-    }
-  }
+  const logoUrl = getLogoUrl(companyDetails?.logo_path) || FALLBACK_LOGO_URL;
 
   // Populate Company Info
   setText("previewCompanyName", companyDetails?.name || "Company Name");

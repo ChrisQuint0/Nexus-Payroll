@@ -68,14 +68,29 @@ function setupTabs() {
   const tabs = document.querySelectorAll('[role="tab"]');
   const tabContents = document.querySelectorAll('[id^="tab-content-"]');
 
-  const firstTab = tabs[0];
-  const firstTabContent = document.getElementById("tab-content-departments");
+  // --- START OF FIXED INITIALIZATION LOGIC ---
+  const activeTabLink = document.querySelector('[role="tab"].tab-active');
+  const initialTabTarget = activeTabLink
+    ? activeTabLink.getAttribute("data-tab")
+    : null;
 
-  if (firstTab && firstTabContent) {
-    firstTab.classList.add("tab-active");
-    firstTabContent.classList.remove("hidden", "opacity-0");
-    firstTabContent.classList.add("opacity-100");
+  // 1. Hide all contents using the existing class method
+  tabContents.forEach((content) => {
+    content.classList.add("hidden", "opacity-0");
+    content.classList.remove("opacity-100");
+  });
+
+  // 2. Show the content corresponding to the active link found in the HTML
+  if (initialTabTarget) {
+    const initialContent = document.getElementById(
+      `tab-content-${initialTabTarget}`
+    );
+    if (initialContent) {
+      initialContent.classList.remove("hidden", "opacity-0");
+      initialContent.classList.add("opacity-100");
+    }
   }
+  // --- END OF FIXED INITIALIZATION LOGIC ---
 
   tabs.forEach((tab) => {
     tab.addEventListener("click", (e) => {
