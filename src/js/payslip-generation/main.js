@@ -14,6 +14,23 @@ async function getCurrentUser() {
   return data.user;
 }
 
+async function fetchCompanyDetails() {
+  try {
+    const { data, error } = await supabase
+      .from("company_details")
+      .select("*")
+      .limit(1)
+      .single(); // We expect only one company record
+
+    if (error) throw error;
+
+    console.log("[Payslip] Company details fetched successfully.");
+    companyDetails = data;
+  } catch (error) {
+    console.error("[Payslip] Error fetching company details:", error);
+  }
+}
+
 function applyRBAC(user) {
   if (!user) return;
 
@@ -119,6 +136,7 @@ function applyRBAC(user) {
 let allEmployeesData = [];
 let filteredData = [];
 let gridApi = null;
+let companyDetails = null;
 
 // Helper function to get full name
 function getFullName(emp) {
@@ -505,7 +523,44 @@ function openPreviewModal(employee) {
     return;
   }
 
-  console.log("[Payslip] Opening preview for employee:", employee);
+  //Company Details
+  let logoUrl = null;
+  const logoPath = companyDetails?.logo_path;
+
+  if (logoPath) {
+    try {
+      // Assuming your bucket is named 'company_logos' as discussed earlier
+      const { data } = supabase.storage
+        .from("company_logo")
+        .getPublicUrl(logoPath);
+      logoUrl = data.publicUrl;
+    } catch (e) {
+      console.warn("Could not generate logo URL:", e);
+    }
+  }
+
+  // Populate Company Info
+  setText("previewCompanyName", companyDetails?.name || "Company Name");
+  setText(
+    "previewCompanyAddress",
+    companyDetails?.company_address || "Company Address"
+  );
+
+  const logoContainer = document.getElementById("previewLogoContainer");
+  if (logoContainer) {
+    if (logoUrl) {
+      // Use an actual image tag
+      logoContainer.innerHTML = `<img src="${logoUrl}" alt="${
+        companyDetails?.name || "Company"
+      } Logo" class="w-16 h-16 rounded-full object-cover shadow-lg">`;
+    } else {
+      // Fallback to text initials
+      const initials = (companyDetails?.name || "CN").substring(0, 2);
+      logoContainer.innerHTML = `<div class="w-16 h-16 rounded-full bg-primary text-primary-content flex items-center justify-center font-bold text-xl flex-shrink-0 shadow-lg">${initials}</div>`;
+    }
+  }
+
+  //End of Company Details
 
   // Populate modal with employee data
   setText("previewEmpId", employee.employee_id || "");
@@ -643,23 +698,30 @@ async function generateEmployeesPdf(employees) {
     doc.setFillColor(248, 248, 248);
     doc.roundedRect(margin, y, pageWidth - margin * 2, 60, 6, 6, "F");
 
-    // Company Logo Circle
-    doc.setFillColor(99, 102, 241);
+    // Company Logo/Initials (PDF cannot easily load external images like the Preview, so we use initials)
+    const initials = (companyDetails?.name || "CN").substring(0, 2);
+    doc.setFillColor(99, 102, 241); // Primary Color
     doc.circle(margin + 18, y + 25, 15, "F");
     doc.setFont("helvetica", "bold");
     doc.setFontSize(10);
     doc.setTextColor(255, 255, 255);
-    doc.text("CN", margin + 18, y + 28, { align: "center" });
+    doc.text(initials, margin + 18, y + 28, { align: "center" });
 
     // Company Info
     doc.setTextColor(0, 0, 0);
     doc.setFont("helvetica", "bold");
     doc.setFontSize(10);
-    doc.text("Company Name", margin + 45, y + 20);
+    // Use fetched data for company name
+    doc.text(companyDetails?.name || "Company Name", margin + 45, y + 20);
     doc.setFont("helvetica", "normal");
     doc.setFontSize(7);
     doc.setTextColor(100, 100, 100);
-    doc.text("Company Address", margin + 45, y + 32);
+    // Use fetched data for company address
+    doc.text(
+      companyDetails?.company_address || "Company Address",
+      margin + 45,
+      y + 32
+    );
 
     // Payslip Title
     doc.setFont("helvetica", "bold");
@@ -1070,6 +1132,7 @@ window.addEventListener("unhandledrejection", (e) => {
 // Initialize data on page load
 document.addEventListener("DOMContentLoaded", async () => {
   currentUser = await getCurrentUser();
+  await fetchCompanyDetails();
   applyRBAC(currentUser);
   fetchPayslipData();
 });
@@ -1080,5 +1143,6 @@ if (document.readyState === "loading") {
 } else {
   // DOM is already loaded
   console.log("[Payslip] DOM already loaded, fetching data...");
+  await fetchCompanyDetails();
   fetchPayslipData();
 }
