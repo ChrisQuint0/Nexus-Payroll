@@ -36,7 +36,10 @@
           <a
             role="tab"
             class="tab tab-active font-medium text-sm"
-            data-tab="departments"
+            data-tab="company-details"
+            >Company Details</a
+          >
+          <a role="tab" class="tab font-medium text-sm" data-tab="departments"
             >Departments</a
           >
           <a role="tab" class="tab font-medium text-sm" data-tab="positions"
@@ -55,8 +58,97 @@
 
         <!-- Tab Content -->
         <div class="tab-content-container">
+          <!-- Company Details -->
+          <div id="tab-content-company-details" class="">
+            <div class="card bg-base-100 shadow-xl">
+              <div class="card-body">
+                <h2 class="card-title text-xl mb-4">Company Profile</h2>
+
+                <form id="companyDetailsForm" class="space-y-6">
+                  <input type="hidden" id="companyId" name="companyId" />
+
+                  <div
+                    class="flex flex-col items-start gap-4 p-4 border border-base-300 rounded-lg"
+                  >
+                    <p class="font-semibold">Current Logo</p>
+                    <img
+                      id="currentLogo"
+                      src="https://placehold.co/100x100/9b97ef/FFFFFF/png?text=CN"
+                      alt="Current Company Logo"
+                      class="w-24 h-24 object-cover rounded-full border-2 border-primary"
+                    />
+
+                    <div class="w-full">
+                      <label class="label">
+                        <span class="label-text"
+                          >Update Logo (500x500 PNG required)</span
+                        >
+                      </label>
+                      <input
+                        id="logoUpload"
+                        name="logoUpload"
+                        type="file"
+                        accept="image/png"
+                        class="file-input file-input-bordered file-input-primary w-full max-w-xs"
+                      />
+                      <p class="text-xs text-warning mt-2">
+                        Uploading a new logo will delete the previous one upon
+                        saving.
+                      </p>
+                    </div>
+                  </div>
+
+                  <label class="form-control w-full">
+                    <div class="label">
+                      <span class="label-text font-semibold">Company Name</span>
+                    </div>
+                    <input
+                      id="companyName"
+                      name="companyName"
+                      type="text"
+                      placeholder="Nexus Payroll"
+                      class="input input-bordered w-full"
+                      required
+                    />
+                  </label>
+
+                  <label class="form-control w-full">
+                    <div class="label">
+                      <span class="label-text font-semibold"
+                        >Company Address</span
+                      >
+                    </div>
+                    <textarea
+                      id="companyAddress"
+                      name="companyAddress"
+                      placeholder="01 Conching St. Buting Pasig City"
+                      class="textarea textarea-bordered h-24 w-full"
+                      required
+                    ></textarea>
+                  </label>
+
+                  <div class="card-actions justify-end pt-4">
+                    <button
+                      type="submit"
+                      id="saveDetailsBtn"
+                      class="btn btn-primary btn-lg"
+                    >
+                      <span id="saveDetailsBtnText">Save Changes</span>
+                      <span
+                        id="loadingSpinner"
+                        class="loading loading-spinner hidden"
+                      ></span>
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+
+          <div id="departments" class="tab-content"></div>
+
           <!-- Departments Tab -->
-          <div id="tab-content-departments" class="">
+          <div id="tab-content-departments" class="hidden">
             <div class="flex flex-col gap-4">
               <div class="flex flex-wrap justify-between items-center gap-3">
                 <button
@@ -663,6 +755,7 @@
     <script src="../js/libs/ag-grid-community.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script type="module" src="../js/supabase/supabaseClient.js"></script>
+    <script type="module" src="../js/settings/company-details.js"></script>
     <script type="module" src="../js/settings/main.js"></script>
   </body>
 </html>
