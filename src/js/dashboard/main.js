@@ -387,26 +387,22 @@ async function updateChart(dept_id) {
       getTardinessData(dept_id),
       getLeaveData(dept_id),
     ]);
-
     // Combine all unique cutoff date ranges from all datasets
     const allCutoffs = new Set([
       ...absencesData.map((item) => item[0]),
       ...tardinessData.map((item) => item[0]),
       ...leaveData.map((item) => item[0]),
     ]);
-
     // Sort cutoffs chronologically based on the start date in the key string
     const sortedCutoffs = Array.from(allCutoffs).sort((a, b) => {
       const startDateA = new Date(a.split(" to ")[0]);
       const startDateB = new Date(b.split(" to ")[0]);
       return startDateA - startDateB;
     });
-
     // Create data maps for easy lookup
     const absencesMap = new Map(absencesData);
     const tardinessMap = new Map(tardinessData);
     const leaveMap = new Map(leaveData);
-
     // Build aligned datasets
     const absencesValues = sortedCutoffs.map(
       (cutoff) => absencesMap.get(cutoff) || 0
@@ -417,15 +413,12 @@ async function updateChart(dept_id) {
     const leaveValues = sortedCutoffs.map(
       (cutoff) => leaveMap.get(cutoff) || 0
     );
-
     // Get or create the chart
     const ctx = document.getElementById("myChart");
-
     // Destroy existing chart if it exists
     if (window.myChartInstance) {
       window.myChartInstance.destroy();
     }
-
     // Create new chart
     window.myChartInstance = new Chart(ctx, {
       type: "line",
@@ -464,14 +457,54 @@ async function updateChart(dept_id) {
         scales: {
           y: {
             beginAtZero: true,
+            title: {
+              display: true,
+              text: "Count",
+              font: {
+                size: 14,
+                weight: "bold",
+              },
+            },
           },
           x: {
-            // Added x-axis configuration for better display of date range labels
+            title: {
+              display: true,
+              text: "Cutoff Period",
+              font: {
+                size: 14,
+                weight: "bold",
+              },
+            },
             ticks: {
-              display: false,
+              display: true,
+              autoSkip: true,
+              maxRotation: 45,
+              minRotation: 45,
+              font: {
+                size: 10,
+              },
+              callback: function (value, index, ticks) {
+                // Format the label to show shortened date range
+                const label = this.getLabelForValue(value);
+                const dates = label.split(" to ");
+                if (dates.length === 2) {
+                  // Format: "MM/DD - MM/DD"
+                  const start = new Date(dates[0]).toLocaleDateString("en-US", {
+                    month: "2-digit",
+                    day: "2-digit",
+                  });
+                  const end = new Date(dates[1]).toLocaleDateString("en-US", {
+                    month: "2-digit",
+                    day: "2-digit",
+                  });
+                  return `${start} - ${end}`;
+                }
+                return label;
+              },
             },
             grid: {
-              display: false,
+              display: true,
+              color: "rgba(0, 0, 0, 0.05)",
             },
           },
         },
@@ -483,13 +516,22 @@ async function updateChart(dept_id) {
             left: 10,
           },
         },
+        plugins: {
+          tooltip: {
+            callbacks: {
+              title: function (context) {
+                // Show full date range in tooltip
+                return context[0].label;
+              },
+            },
+          },
+        },
       },
     });
   } catch (error) {
     console.error("Error updating chart:", error);
   }
 }
-
 /**
  * Fetches government deadlines and displays them in the list.
  * Populates the deadlines list with data from the government_deadlines table.
@@ -565,30 +607,88 @@ async function getGovDeadlines(editMode = false) {
 }
 
 /**
- * Saves all updated government deadlines
+ * Saves all updated government deadlines with proper audit logging
  */
 async function saveGovDeadlines() {
   const dateInputs = document.querySelectorAll(
     '#deadlines-list-values input[type="date"]'
   );
 
+  // Get current user info for audit log
+  const {
+    data: { user },
+  } = await supabaseClient.auth.getUser();
+
+  if (!user) {
+    console.error("No user found for audit logging");
+    return;
+  }
+
   const updates = [];
+  const auditLogs = [];
+
+  // First, fetch the current deadlines to compare
+  const { data: currentDeadlines, error: fetchError } = await supabaseClient
+    .from("government_deadlines")
+    .select("*");
+
+  if (fetchError) {
+    console.error("Error fetching current deadlines:", fetchError.message);
+    return;
+  }
+
+  // Create a map for quick lookup
+  const deadlineMap = new Map(currentDeadlines.map((d) => [d.id, d]));
 
   dateInputs.forEach((input) => {
-    const deadlineId = input.dataset.deadlineId;
+    const deadlineId = parseInt(input.dataset.deadlineId);
     const newDate = input.value;
+    const currentDeadline = deadlineMap.get(deadlineId);
 
-    updates.push(
-      supabaseClient
-        .from("government_deadlines")
-        .update({ deadline: newDate })
-        .eq("id", deadlineId)
-    );
+    // Only update and log if the date actually changed
+    if (currentDeadline && currentDeadline.deadline !== newDate) {
+      // Add update query
+      updates.push(
+        supabaseClient
+          .from("government_deadlines")
+          .update({ deadline: newDate })
+          .eq("id", deadlineId)
+      );
+
+      // Create audit log entry
+      auditLogs.push({
+        user_id: user.id,
+        action: "Edit",
+        description: `Updated ${currentDeadline.gov_dept} deadline from ${currentDeadline.deadline} to ${newDate}`,
+        module_affected: "Government Deadlines",
+        record_id: deadlineId,
+        user_agent: navigator.userAgent,
+        timestamp: new Date().toISOString(),
+      });
+    }
   });
 
+  if (updates.length === 0) {
+    console.log("No changes detected");
+    toggleEditMode(false);
+    return;
+  }
+
   try {
+    // Execute all updates
     await Promise.all(updates);
     console.log("All deadlines updated successfully");
+
+    // Insert audit logs
+    const { error: auditError } = await supabaseClient
+      .from("audit_trail")
+      .insert(auditLogs);
+
+    if (auditError) {
+      console.error("Error creating audit logs:", auditError.message);
+    } else {
+      console.log(`Created ${auditLogs.length} audit log entries`);
+    }
 
     // Refresh the list in view mode
     await getGovDeadlines(false);

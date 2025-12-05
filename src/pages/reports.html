@@ -13,13 +13,11 @@
     <!-- Add this to each protected page -->
     <script type="module">
       import { checkPageAccess } from "../js/utils/pageProtection.js";
-
       // Check access immediately when page loads
       checkPageAccess();
     </script>
     <!-- Sidebar placeholder -->
     <div id="sidebar"></div>
-
     <!-- Main content -->
     <main class="flex-1 p-6">
       <!-- Top Part-->
@@ -28,7 +26,6 @@
           <h1 class="text-5xl font-medium">Audit Trail</h1>
         </div>
       </div>
-
       <!-- Table area -->
       <div id="dataArea" class="p-4 flex flex-col gap-4">
         <!-- Toolbar -->
@@ -44,7 +41,14 @@
               <option value="Delete">Delete</option>
               <option value="View">View</option>
             </select>
-            <!--- This button shows modals.-->
+            <!-- Date Filter Button -->
+            <button
+              id="dateFilterBtn"
+              class="px-4 py-2 rounded-box btn btn-neutral"
+            >
+              Filter by Date
+            </button>
+            <!-- Generate CSV Button -->
             <button
               id="generateCsvBtn"
               class="px-4 py-2 rounded-box btn btn-primary"
@@ -77,7 +81,6 @@
             />
           </label>
         </div>
-
         <!-- AG Grid -->
         <div
           id="myGrid"
@@ -86,6 +89,52 @@
         ></div>
       </div>
     </main>
+
+    <!-- Date Filter Modal -->
+    <dialog id="dateFilterModal" class="modal">
+      <div class="modal-box">
+        <h3 class="font-bold text-lg mb-4">Filter by Date Range</h3>
+
+        <div class="flex flex-col gap-4">
+          <div class="form-control">
+            <label class="label">
+              <span class="label-text">Start Date</span>
+            </label>
+            <input
+              type="date"
+              id="startDate"
+              class="input input-bordered w-full"
+            />
+          </div>
+
+          <div class="form-control">
+            <label class="label">
+              <span class="label-text">End Date</span>
+            </label>
+            <input
+              type="date"
+              id="endDate"
+              class="input input-bordered w-full"
+            />
+          </div>
+        </div>
+
+        <div class="modal-action">
+          <button id="clearDateFilter" class="btn btn-ghost">
+            Clear Filter
+          </button>
+          <button id="applyDateFilter" class="btn btn-primary">
+            Apply Filter
+          </button>
+          <form method="dialog">
+            <button class="btn">Close</button>
+          </form>
+        </div>
+      </div>
+      <form method="dialog" class="modal-backdrop">
+        <button>close</button>
+      </form>
+    </dialog>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script type="module" src="../js/layout/sidebar.js"></script>
