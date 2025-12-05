@@ -5,6 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Leave Management | Nexus Payroll</title>
     <link rel="stylesheet" href="../output.css" />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="32x32"
+      href="../assets/npayroll_logo.png"
+    />
     <link rel="stylesheet" href="../css/ag-grid/ag-theme-quartz.css" />
     <style>
       .ag-header-cell[col-id="Actions"] .ag-header-cell-label {
@@ -121,7 +127,7 @@
           </button>
         </form>
         <h3 class="text-lg font-bold">Generate Employee Leave Balance PDF</h3>
-        
+
         <div class="space-y-4 mt-4">
           <!-- Department Filter -->
           <div class="flex justify-between items-center">
@@ -152,8 +158,12 @@
         </div>
 
         <div class="flex justify-end gap-2 mt-6">
-          <button type="button" class="btn btn-ghost" onclick="genPDF.close()">Cancel</button>
-          <button id="generatePdfBtn" class="btn btn-accent">Generate PDF</button>
+          <button type="button" class="btn btn-ghost" onclick="genPDF.close()">
+            Cancel
+          </button>
+          <button id="generatePdfBtn" class="btn btn-accent">
+            Generate PDF
+          </button>
         </div>
       </div>
     </dialog>
@@ -162,19 +172,23 @@
     <dialog id="genCSV" class="modal">
       <div class="modal-box">
         <form method="dialog">
-          <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">
+          <button
+            class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2"
+          >
             ✕
           </button>
         </form>
         <h3 class="text-lg font-bold">Generate Employee Leave Balance CSV</h3>
-        
+
         <div class="space-y-4 mt-4">
           <!-- Department Filter -->
           <div class="flex justify-between items-center">
             <span class="font-medium">Department</span>
             <select id="csvDepartment" class="select select-bordered w-48">
               <option value="all">All Departments</option>
-              <option value="Information Technology">Information Technology</option>
+              <option value="Information Technology">
+                Information Technology
+              </option>
               <option value="Human Resources">Human Resources</option>
               <option value="Accounting">Accounting</option>
               <option value="Sales">Sales</option>
@@ -210,8 +224,13 @@
     <dialog id="addLeaveModal" class="modal">
       <div class="modal-box max-w-2xl">
         <h3 class="font-bold text-lg mb-4">File Leave Request</h3>
-        <button onclick="document.getElementById('addLeaveModal').close()" class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
-        
+        <button
+          onclick="document.getElementById('addLeaveModal').close()"
+          class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2"
+        >
+          ✕
+        </button>
+
         <!-- Employee Info Display -->
         <div class="bg-base-200 p-4 rounded-lg mb-4">
           <div class="grid grid-cols-2 gap-2">
@@ -233,87 +252,141 @@
             <!-- Vacation Leave -->
             <div>
               <div class="flex justify-between items-center mb-1">
-                <span class="font-semibold text-sm text-gray-700">Vacation Leave</span>
+                <span class="font-semibold text-sm text-gray-700"
+                  >Vacation Leave</span
+                >
                 <span id="vacationBalance" class="font-bold text-lg">-</span>
               </div>
               <div class="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
-                <div id="vacationBar" class="h-full bg-green-500 transition-all duration-300" style="width: 0%"></div>
+                <div
+                  id="vacationBar"
+                  class="h-full bg-green-500 transition-all duration-300"
+                  style="width: 0%"
+                ></div>
               </div>
               <div class="flex justify-between mt-1">
-                <span id="vacationUsed" class="text-xs text-gray-500">Used: - day(s)</span>
-                <span id="vacationTotal" class="text-xs text-gray-500">Total: - day(s)</span>
+                <span id="vacationUsed" class="text-xs text-gray-500"
+                  >Used: - day(s)</span
+                >
+                <span id="vacationTotal" class="text-xs text-gray-500"
+                  >Total: - day(s)</span
+                >
               </div>
             </div>
 
             <!-- Sick Leave -->
             <div>
               <div class="flex justify-between items-center mb-1">
-                <span class="font-semibold text-sm text-gray-700">Sick Leave</span>
+                <span class="font-semibold text-sm text-gray-700"
+                  >Sick Leave</span
+                >
                 <span id="sickBalance" class="font-bold text-lg">-</span>
               </div>
               <div class="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
-                <div id="sickBar" class="h-full bg-green-500 transition-all duration-300" style="width: 0%"></div>
+                <div
+                  id="sickBar"
+                  class="h-full bg-green-500 transition-all duration-300"
+                  style="width: 0%"
+                ></div>
               </div>
               <div class="flex justify-between mt-1">
-                <span id="sickUsed" class="text-xs text-gray-500">Used: - day(s)</span>
-                <span id="sickTotal" class="text-xs text-gray-500">Total: - day(s)</span>
+                <span id="sickUsed" class="text-xs text-gray-500"
+                  >Used: - day(s)</span
+                >
+                <span id="sickTotal" class="text-xs text-gray-500"
+                  >Total: - day(s)</span
+                >
               </div>
             </div>
 
             <!-- Emergency Leave -->
             <div>
               <div class="flex justify-between items-center mb-1">
-                <span class="font-semibold text-sm text-gray-700">Emergency Leave</span>
+                <span class="font-semibold text-sm text-gray-700"
+                  >Emergency Leave</span
+                >
                 <span id="emergencyBalance" class="font-bold text-lg">-</span>
               </div>
               <div class="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
-                <div id="emergencyBar" class="h-full bg-green-500 transition-all duration-300" style="width: 0%"></div>
+                <div
+                  id="emergencyBar"
+                  class="h-full bg-green-500 transition-all duration-300"
+                  style="width: 0%"
+                ></div>
               </div>
               <div class="flex justify-between mt-1">
-                <span id="emergencyUsed" class="text-xs text-gray-500">Used: - day(s)</span>
-                <span id="emergencyTotal" class="text-xs text-gray-500">Total: - day(s)</span>
+                <span id="emergencyUsed" class="text-xs text-gray-500"
+                  >Used: - day(s)</span
+                >
+                <span id="emergencyTotal" class="text-xs text-gray-500"
+                  >Total: - day(s)</span
+                >
               </div>
             </div>
 
             <!-- Personal Leave -->
             <div>
               <div class="flex justify-between items-center mb-1">
-                <span class="font-semibold text-sm text-gray-700">Personal Leave</span>
+                <span class="font-semibold text-sm text-gray-700"
+                  >Personal Leave</span
+                >
                 <span id="personalBalance" class="font-bold text-lg">-</span>
               </div>
               <div class="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
-                <div id="personalBar" class="h-full bg-green-500 transition-all duration-300" style="width: 0%"></div>
+                <div
+                  id="personalBar"
+                  class="h-full bg-green-500 transition-all duration-300"
+                  style="width: 0%"
+                ></div>
               </div>
               <div class="flex justify-between mt-1">
-                <span id="personalUsed" class="text-xs text-gray-500">Used: - day(s)</span>
-                <span id="personalTotal" class="text-xs text-gray-500">Total: - day(s)</span>
+                <span id="personalUsed" class="text-xs text-gray-500"
+                  >Used: - day(s)</span
+                >
+                <span id="personalTotal" class="text-xs text-gray-500"
+                  >Total: - day(s)</span
+                >
               </div>
             </div>
 
             <!-- Maternity Leave -->
             <div>
               <div class="flex justify-between items-center mb-1">
-                <span class="font-semibold text-sm text-gray-700">Maternity Leave</span>
+                <span class="font-semibold text-sm text-gray-700"
+                  >Maternity Leave</span
+                >
                 <span id="maternityBalance" class="font-bold text-lg">-</span>
               </div>
               <div class="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
-                <div id="maternityBar" class="h-full bg-green-500 transition-all duration-300" style="width: 0%"></div>
+                <div
+                  id="maternityBar"
+                  class="h-full bg-green-500 transition-all duration-300"
+                  style="width: 0%"
+                ></div>
               </div>
               <div class="flex justify-between mt-1">
-                <span id="maternityUsed" class="text-xs text-gray-500">Used: - day(s)</span>
-                <span id="maternityTotal" class="text-xs text-gray-500">Total: - day(s)</span>
+                <span id="maternityUsed" class="text-xs text-gray-500"
+                  >Used: - day(s)</span
+                >
+                <span id="maternityTotal" class="text-xs text-gray-500"
+                  >Total: - day(s)</span
+                >
               </div>
             </div>
           </div>
         </div>
-        
+
         <form id="addLeaveForm" class="space-y-4">
           <div class="grid grid-cols-2 gap-4">
             <div class="form-control">
               <label class="label">
                 <span class="label-text">Leave Type *</span>
               </label>
-              <select name="leaveType" class="select select-bordered w-full" required>
+              <select
+                name="leaveType"
+                class="select select-bordered w-full"
+                required
+              >
                 <option value="">Select Leave Type</option>
                 <option value="Vacation Leave">Vacation Leave</option>
                 <option value="Sick Leave">Sick Leave</option>
@@ -327,7 +400,15 @@
               <label class="label">
                 <span class="label-text">Duration (days) *</span>
               </label>
-              <input type="number" name="duration" id="durationInput" class="input input-bordered w-full" min="1" placeholder="Number of days" required />
+              <input
+                type="number"
+                name="duration"
+                id="durationInput"
+                class="input input-bordered w-full"
+                min="1"
+                placeholder="Number of days"
+                required
+              />
             </div>
           </div>
 
@@ -338,11 +419,22 @@
             </label>
             <div class="flex gap-6">
               <label class="label cursor-pointer gap-2">
-                <input type="radio" name="dateType" value="range" class="radio radio-primary" checked />
+                <input
+                  type="radio"
+                  name="dateType"
+                  value="range"
+                  class="radio radio-primary"
+                  checked
+                />
                 <span class="label-text">Date Range</span>
               </label>
               <label class="label cursor-pointer gap-2">
-                <input type="radio" name="dateType" value="specific" class="radio radio-primary" />
+                <input
+                  type="radio"
+                  name="dateType"
+                  value="specific"
+                  class="radio radio-primary"
+                />
                 <span class="label-text">Specific Date</span>
               </label>
             </div>
@@ -354,23 +446,44 @@
               <label class="label">
                 <span class="label-text">Start Date *</span>
               </label>
-              <input type="date" name="startDate" id="startDateInput" class="input input-bordered w-full" required />
+              <input
+                type="date"
+                name="startDate"
+                id="startDateInput"
+                class="input input-bordered w-full"
+                required
+              />
             </div>
 
             <div class="form-control">
               <label class="label">
                 <span class="label-text">End Date *</span>
               </label>
-              <input type="date" name="endDate" id="endDateInput" class="input input-bordered w-full" required />
+              <input
+                type="date"
+                name="endDate"
+                id="endDateInput"
+                class="input input-bordered w-full"
+                required
+              />
             </div>
           </div>
 
           <!-- Specific Date Field (hidden by default) -->
-          <div id="specificDateField" class="form-control" style="display: none;">
+          <div
+            id="specificDateField"
+            class="form-control"
+            style="display: none"
+          >
             <label class="label">
               <span class="label-text">Leave Date *</span>
             </label>
-            <input type="date" name="specificDate" id="specificDateInput" class="input input-bordered w-full" />
+            <input
+              type="date"
+              name="specificDate"
+              id="specificDateInput"
+              class="input input-bordered w-full"
+            />
           </div>
 
           <div class="form-control">
@@ -385,7 +498,13 @@
           </div>
 
           <div class="modal-action">
-            <button type="button" class="btn btn-ghost" onclick="document.getElementById('addLeaveModal').close()">Cancel</button>
+            <button
+              type="button"
+              class="btn btn-ghost"
+              onclick="document.getElementById('addLeaveModal').close()"
+            >
+              Cancel
+            </button>
             <button type="submit" class="btn btn-primary">File Leave</button>
           </div>
         </form>
@@ -424,20 +543,28 @@
     <script type="module" src="../js/layout/sidebar.js"></script>
     <script src="../js/libs/ag-grid-community.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    
+
     <!-- PDF Generation Libraries -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-    
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    ></script>
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    ></script>
+
     <!-- Verify jsPDF loaded -->
     <script>
-      window.addEventListener('load', function() {
+      window.addEventListener("load", function () {
         if (window.jspdf && window.jspdf.jsPDF) {
-          console.log('✅ jsPDF loaded successfully');
+          console.log("✅ jsPDF loaded successfully");
         } else if (window.jsPDF) {
-          console.log('✅ jsPDF loaded successfully (global)');
+          console.log("✅ jsPDF loaded successfully (global)");
         } else {
-          console.error('❌ jsPDF failed to load');
+          console.error("❌ jsPDF failed to load");
         }
       });
     </script>
