@@ -129,7 +129,7 @@ const gridOptions = {
     resizable: true,
   },
   pagination: true,
-  paginationPageSize: 5,
+  paginationPageSize: 10,
   suppressRowClickSelection: true,
 
   onCellEditingStopped: async (event) => {
