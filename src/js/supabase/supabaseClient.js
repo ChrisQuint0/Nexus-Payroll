@@ -1,5 +1,5 @@
-// Import the global supabase object from the CDN
-const { createClient } = supabase;
+// Access the global supabase object exposed by the CDN
+const { createClient } = window.supabase;
 
 // Replace with your actual credentials from Supabase settings
 const SUPABASE_URL = "https://gsihnjyewuzyxzdcztge.supabase.co";

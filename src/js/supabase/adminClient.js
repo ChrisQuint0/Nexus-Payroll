@@ -1,5 +1,6 @@
 // adminClient.js
-import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
+// Access the global supabase object exposed by the CDN
+const { createClient } = window.supabase;
 
 const SUPABASE_URL = "https://gsihnjyewuzyxzdcztge.supabase.co";
 const SUPABASE_SERVICE_ROLE_KEY =
