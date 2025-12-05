@@ -137,12 +137,17 @@ applyDateFilter.addEventListener("click", () => {
     return;
   }
 
+  // Add one day to endDate to include the entire end date
+  const endDatePlusOne = new Date(endDate);
+  endDatePlusOne.setDate(endDatePlusOne.getDate() + 1);
+  const endDateInclusive = endDatePlusOne.toISOString().split("T")[0];
+
   // Apply custom filter to Time column
   gridApi.setColumnFilterModel("Time", {
     filterType: "date",
     type: "inRange",
     dateFrom: startDate,
-    dateTo: endDate,
+    dateTo: endDateInclusive,
   });
 
   gridApi.onFilterChanged();
