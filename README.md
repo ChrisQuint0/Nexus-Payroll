@@ -11,3 +11,25 @@
 
 🚀 **Live Demo:** https://nexus-payroll.vercel.app
 
+## Features
+
+- **Dashboard**: Real-time overview of payroll and employee statistics.
+- **Employee Management**: Comprehensive database for storing and managing employee information.
+- **Face Enrollment & Biometric Log-in**: Facial recognition system for secure and automated time tracking.
+- **Attendance Management**: Automated processing of employee logs and attendance records.
+- **Leave Management**: System for tracking and managing employee leave requests.
+- **Payroll Computation**: Intelligent and automated calculation of salaries, deductions, and taxes.
+- **Payslip Generation**: Generate professional and detailed payslips for employees.
+- **Reports**: Data-driven insights and reporting for payroll and attendance.
+- **User Management**: Role-based access control and user administration.
+- **Settings**: Customizable system configurations.
+
+## Technologies Used
+
+- **Frontend**: HTML5, Vanilla JavaScript (ES6+).
+- **Styling**: Tailwind CSS v4, DaisyUI.
+- **Data Grid**: AG Grid (Community & Enterprise) for advanced data handling and visualization.
+- **Backend/Database**: Supabase (PostgreSQL, Authentication).
+- **Hosting**: Vercel.
+- **Build Tools**: PostCSS.
+
